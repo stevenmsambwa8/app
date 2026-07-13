@@ -10,8 +10,7 @@
   justify-content: center;
   gap: 4px;
   padding: 8px;
-  background: rgba(var(--bg-rgb), 0.92);
-  backdrop-filter: blur(14px);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
   box-shadow: 0 12px 32px -12px rgba(0,0,0,0.28);
