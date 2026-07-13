@@ -24,7 +24,7 @@ export default function Sidebar() {
     <aside className={styles.sidebar}>
       <Link href="/feed" className={styles.logo}>
         <Image
-          src={theme === 'dark' ? '/advat-white.png' : '/advat-black.png'}
+          src={theme === 'dark' ? '/advat-black.png' : '/advat-white.png'}
           alt="Advat"
           width={671}
           height={315}
