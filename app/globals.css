@@ -91,6 +91,22 @@ body {
   transition: background 0.2s ease, color 0.2s ease;
 }
 
+.app-shell {
+  min-height: 100%;
+}
+.app-content {
+  min-width: 0;
+}
+@media (min-width: 900px) {
+  .app-shell {
+    display: flex;
+  }
+  .app-content {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 main {
   max-width: var(--shell);
   margin: 0 auto;
@@ -109,6 +125,12 @@ main {
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
     box-shadow: 0 0 60px rgba(0,0,0,0.05);
+  }
+}
+
+@media (min-width: 900px) {
+  main {
+    padding-bottom: 40px;
   }
 }
 

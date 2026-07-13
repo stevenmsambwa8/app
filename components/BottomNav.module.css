@@ -30,3 +30,9 @@
   font-weight: 500;
 }
 .active { color: var(--accent); }
+
+@media (min-width: 900px) {
+  .nav {
+    display: none;
+  }
+}

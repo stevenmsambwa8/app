@@ -1,6 +1,7 @@
 import './globals.css'
 import TopBar from '../components/TopBar'
 import BottomNav from '../components/BottomNav'
+import Sidebar from '../components/Sidebar'
 import ThemeProvider from '../components/ThemeProvider'
 import ThemeScript from '../components/ThemeScript'
 
@@ -23,8 +24,13 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <TopBar />
-          <main>{children}</main>
+          <div className="app-shell">
+            <Sidebar />
+            <div className="app-content">
+              <TopBar />
+              <main>{children}</main>
+            </div>
+          </div>
           <BottomNav />
         </ThemeProvider>
       </body>
