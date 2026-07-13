@@ -14,7 +14,7 @@
   flex: 1;
   font-size: 13px;
   color: var(--text-muted);
-  background: rgba(255,255,255,0.05);
+  background: var(--chip-bg);
   border-radius: 999px;
   padding: 10px 16px;
 }

@@ -1,6 +1,6 @@
 'use client'
 import Avatar from './Avatar'
-import RankBadge from './RankBadge'
+import UserBadge from './UserBadge'
 import { userById } from '../lib/mockData'
 import styles from './PostCard.module.css'
 
@@ -14,7 +14,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           <div>
             <div className={styles.nameRow}>
               <span className={styles.name}>{user.name}</span>
-              <RankBadge rank={user.rank} />
+              <UserBadge badge={user.badge} />
             </div>
             <span className={styles.meta}>{post.time} · {post.tag}</span>
           </div>
@@ -26,7 +26,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
       {post.gradient && (
         <div className={styles.media} style={{ background: post.gradient }}>
-          <i className="ri-gamepad-line" />
+          <i className="ri-image-line" />
         </div>
       )}
 

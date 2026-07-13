@@ -1,15 +1,21 @@
 'use client'
 import Link from 'next/link'
 import Avatar from './Avatar'
+import { useTheme } from './ThemeProvider'
 import { ME, NOTIFS } from '../lib/mockData'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
   const unread = NOTIFS.filter((n) => n.unread).length;
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className={styles.bar}>
       <Link href="/feed" className={styles.logo}>ADVAT</Link>
       <div className={styles.right}>
+        <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Toggle theme">
+          <i className={theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line'} />
+        </button>
         <Link href="/notifications" className={styles.bell}>
           <i className="ri-notification-3-line" />
           {unread > 0 && <span className={styles.badge}>{unread}</span>}

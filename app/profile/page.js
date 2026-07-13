@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import RankBadge from '../../components/RankBadge'
+import VibeTag from '../../components/VibeTag'
+import UserBadge from '../../components/UserBadge'
 import { ME, POSTS, FLEX_CARDS } from '../../lib/mockData'
 import styles from './page.module.css'
 
@@ -19,13 +20,16 @@ export default function ProfilePage() {
 
         <div className={styles.nameRow}>
           <span className={styles.name}>{ME.name}</span>
-          <RankBadge rank={ME.rank} />
+          <UserBadge badge={ME.badge} />
         </div>
-        <span className={styles.handle}>{ME.handle} · {ME.game}</span>
-        <p className={styles.bio}>Solo-queue grinder. Chicken dinner enthusiast. DM for scrims.</p>
+        <div className={styles.handleRow}>
+          <span className={styles.handle}>{ME.handle}</span>
+          <VibeTag vibe={ME.vibe} />
+        </div>
+        <p className={styles.bio}>Always chasing good light and better company. DM me anytime.</p>
 
         <div className={styles.statsRow}>
-          <span><b>214</b> <span>wins</span></span>
+          <span><b>214</b> <span>posts</span></span>
           <span><b>1.2k</b> <span>followers</span></span>
           <span><b>318</b> <span>following</span></span>
         </div>

@@ -7,7 +7,7 @@
   align-items: center;
   justify-content: space-around;
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
-  background: rgba(18,18,24,0.92);
+  background: rgba(var(--bg-rgb), 0.92);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   z-index: 20;

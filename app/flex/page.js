@@ -3,10 +3,10 @@ import { FLEX_CARDS, LEADERBOARD } from '../../lib/mockData'
 import styles from './page.module.css'
 
 const STATS = [
-  { label: 'Wins', value: 214 },
+  { label: 'Posts', value: 214 },
   { label: 'Streak', value: 17 },
-  { label: 'MVPs', value: 9 },
-  { label: 'Rank', value: 'Diamond' },
+  { label: 'Featured', value: 9 },
+  { label: 'Followers', value: '1.2k' },
 ];
 
 export default function FlexPage() {
