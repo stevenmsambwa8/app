@@ -2,6 +2,7 @@ import './globals.css'
 import TopBar from '../components/TopBar'
 import BottomNav from '../components/BottomNav'
 import Sidebar from '../components/Sidebar'
+import RightRail from '../components/RightRail'
 import ThemeProvider from '../components/ThemeProvider'
 import ThemeScript from '../components/ThemeScript'
 
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
               <TopBar />
               <main>{children}</main>
             </div>
+            <RightRail />
           </div>
           <BottomNav />
         </ThemeProvider>

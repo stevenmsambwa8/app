@@ -102,8 +102,15 @@ body {
     display: flex;
   }
   .app-content {
-    flex: 1;
+    flex: 1 1 var(--shell);
+    max-width: var(--shell);
     min-width: 0;
+  }
+}
+
+@media (min-width: 1180px) {
+  .app-content {
+    flex: 0 0 var(--shell);
   }
 }
 

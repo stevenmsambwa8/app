@@ -24,6 +24,9 @@
 @media (min-width: 900px) {
   .bar {
     left: 240px;
+    right: auto;
+    width: var(--shell);
+    margin: 0;
     justify-content: flex-end;
     border-left: none;
   }
@@ -31,6 +34,7 @@
     display: none;
   }
 }
+
 .logo {
   display: flex;
   align-items: center;
