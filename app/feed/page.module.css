@@ -4,6 +4,16 @@
   gap: 12px;
   padding: 12px 16px 24px;
 }
+.postsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 900px) {
+  .postsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
 .heroTrack {
   display: flex;
   gap: 12px;
@@ -24,6 +34,11 @@
   justify-content: flex-end;
   position: relative;
   overflow: hidden;
+}
+@media (min-width: 900px) {
+  .hero {
+    flex: 0 0 340px;
+  }
 }
 .heroIcon {
   position: absolute;

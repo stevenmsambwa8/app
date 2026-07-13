@@ -34,19 +34,21 @@ export default function FeedPage() {
         <div className={styles.input}>Flex kitu leo...</div>
       </div>
 
-      {POSTS.map((post) =>
-        post.kind === 'ad' ? (
-          <AdCard key={post.id} ad={ADS[post.id % ADS.length]} />
-        ) : (
-          <PostCard
-            key={post.id}
-            post={post}
-            liked={!!likes[post.id]}
-            likeCount={post.likes + (likes[post.id] ? 1 : 0)}
-            onLike={() => setLikes((l) => ({ ...l, [post.id]: !l[post.id] }))}
-          />
-        )
-      )}
+      <div className={styles.postsGrid}>
+        {POSTS.map((post) =>
+          post.kind === 'ad' ? (
+            <AdCard key={post.id} ad={ADS[post.id % ADS.length]} />
+          ) : (
+            <PostCard
+              key={post.id}
+              post={post}
+              liked={!!likes[post.id]}
+              likeCount={post.likes + (likes[post.id] ? 1 : 0)}
+              onLike={() => setLikes((l) => ({ ...l, [post.id]: !l[post.id] }))}
+            />
+          )
+        )}
+      </div>
     </div>
   );
 }

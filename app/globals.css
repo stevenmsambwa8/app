@@ -45,12 +45,26 @@ input, textarea, [contenteditable] {
   --accent-amber: #ffb020;
   --accent-text: #ffffff;
 
-  /* Shared width driving TopBar / main / BottomNav so they always line up */
+  /* Shared width driving TopBar / main / BottomNav so they always line up.
+     Below 900px there's no sidebar/rail, so it's just a comfortable reading width.
+     From 900px+, it fills whatever space is left after the sidebar (and, from
+     1180px+, the right rail too), capped so text never gets too wide to read. */
   --shell: 480px;
 }
 
 @media (min-width: 720px) {
   :root { --shell: 560px; }
+}
+
+@media (min-width: 900px) {
+  :root { --shell: min(720px, calc(100vw - 240px - 32px)); }
+}
+
+@media (min-width: 1180px) {
+  :root {
+    --rail-width: 320px;
+    --shell: clamp(560px, calc(100vw - 240px - var(--rail-width) - 48px), 920px);
+  }
 }
 
 /* ── Dark theme ── */
@@ -102,15 +116,9 @@ body {
     display: flex;
   }
   .app-content {
-    flex: 1 1 var(--shell);
+    flex: 0 0 var(--shell);
     max-width: var(--shell);
     min-width: 0;
-  }
-}
-
-@media (min-width: 1020px) {
-  .app-content {
-    flex: 0 0 var(--shell);
   }
 }
 
