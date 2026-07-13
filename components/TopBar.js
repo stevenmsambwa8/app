@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import Link from 'next/link'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
@@ -12,8 +13,14 @@ export default function TopBar() {
   return (
     <div className={styles.bar}>
       <Link href="/feed" className={styles.logo}>
-        <i className="ri-add-line" />
-        ADVAT
+        <Image
+          src={theme === 'dark' ? '/advat-white.png' : '/advat-black.png'}
+          alt="Advat"
+          width={671}
+          height={315}
+          priority
+          className={styles.logoImg}
+        />
       </Link>
       <div className={styles.right}>
         <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Badilisha mandhari">

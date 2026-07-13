@@ -9,6 +9,11 @@ import ThemeScript from '../components/ThemeScript'
 export const metadata = {
   title: 'Advat — Shiriki Matukio Yako',
   description: 'Ukurasa wa kijamii wa kufurahisha kuchapisha, ku-flex na kuungana.',
+  icons: {
+    icon: '/advat-multi.png',
+    shortcut: '/advat-multi.png',
+    apple: '/advat-multi.png',
+  },
 }
 
 export const viewport = {

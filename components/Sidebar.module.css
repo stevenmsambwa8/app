@@ -20,16 +20,13 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 21px;
-  color: var(--accent);
-  letter-spacing: 0.02em;
   padding: 0 10px;
   margin-bottom: 28px;
 }
-.logo i { font-size: 22px; }
+.logoImg {
+  height: 26px;
+  width: auto;
+}
 
 .nav {
   display: flex;

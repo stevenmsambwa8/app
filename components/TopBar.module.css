@@ -24,14 +24,11 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 20px;
-  color: var(--accent);
-  letter-spacing: 0.02em;
 }
-.logo i { font-size: 22px; }
+.logoImg {
+  height: 22px;
+  width: auto;
+}
 
 @media (min-width: 900px) {
   .bar {
