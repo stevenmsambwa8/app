@@ -1,0 +1,44 @@
+.bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: rgba(11,11,15,0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  z-index: 20;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.bell {
+  position: relative;
+  font-size: 19px;
+}
+.badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 16px; height: 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,47 @@
+.card {
+  overflow: hidden;
+}
+.media {
+  height: 110px;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+.brand {
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+.body {
+  padding: 16px;
+}
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.tag i { color: var(--accent); font-size: 12px; }
+.tagText {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.headline {
+  font-weight: 600;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+}
+.copy {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.cta {
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  text-align: center;
+}

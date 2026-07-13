@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+:root {
+  --bg: #0b0b0f;
+  --bg-2: #121218;
+  --surface: #121218;
+  --surface-2: #181820;
+
+  --border: #232329;
+  --border-light: #2c2c34;
+
+  --text: #f4f4f6;
+  --text-dim: #b9b9c2;
+  --text-muted: #74747f;
+
+  --font-display: 'Rajdhani', sans-serif;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Advat accent system - electric coral-rose + lime spark */
+  --accent: #ff3e6c;
+  --accent-2: #7a2bff;
+  --accent-lime: #c6ff3d;
+  --accent-teal: #0fb5a3;
+  --accent-amber: #ffb020;
+  --accent-text: #0b0b0f;
+}
+
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding-bottom: 84px;
+  padding-top: 56px;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+p { color: var(--text-dim); }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+input {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+
+/* Shared primitives, reused across page modules */
+
+.card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 18px;
+}
+
+.badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+  border: 1px solid var(--border-light);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.btnAccent {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.btnGhost {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-dim);
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

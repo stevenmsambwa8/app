@@ -1,0 +1,70 @@
+.cover {
+  height: 112px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  margin: -1px -1px 0;
+}
+.body { padding: 0 16px 24px; }
+.headRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: -40px;
+}
+.avatarBig {
+  width: 80px; height: 80px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 4px solid var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+.editBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+}
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+.name { font-size: 18px; }
+.handle { font-size: 12px; color: var(--text-muted); }
+.bio { font-size: 13px; color: var(--text-dim); margin-top: 8px; }
+.statsRow { display: flex; align-items: center; gap: 20px; margin-top: 12px; font-size: 13px; }
+.statsRow b { font-weight: 700; }
+.statsRow span { color: var(--text-muted); }
+
+.tabs {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  padding-bottom: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+}
+.tabActive {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.posts { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.postCard { padding: 14px; }
+.postText { font-size: 13px; color: var(--text-dim); }
+.postMeta { display: flex; align-items: center; gap: 16px; margin-top: 8px; color: var(--text-muted); }
+.postMeta span { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+
+.flexGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.flexCard { border-radius: 16px; padding: 14px; }
+.flexIcon { color: white; font-size: 18px; margin-bottom: 22px; display: block; }
+.flexTitle { color: white; font-weight: 700; font-size: 13px; line-height: 1.3; }
+.flexStat { color: rgba(255,255,255,0.8); font-size: 12px; }
