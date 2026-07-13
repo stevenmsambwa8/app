@@ -88,7 +88,7 @@ main {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100%;
-  padding-bottom: 84px;
+  padding-bottom: 104px;
   padding-top: 56px;
   position: relative;
 }
@@ -137,9 +137,6 @@ input {
   background: linear-gradient(135deg, var(--accent), var(--accent-2), var(--accent-lime));
   flex-shrink: 0;
 }
-.ring .avatar {
-  border: 2.5px solid var(--bg);
-}
 
 /* Dot-grid texture used behind gradient media blocks so they read as art, not empty color */
 .texture {
@@ -165,7 +162,6 @@ input {
   justify-content: center;
   border-radius: 999px;
   background: var(--surface-2);
-  border: 1px solid var(--border-light);
   flex-shrink: 0;
 }
 

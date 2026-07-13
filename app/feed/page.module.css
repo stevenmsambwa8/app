@@ -4,28 +4,52 @@
   gap: 12px;
   padding: 12px 16px 24px;
 }
-.stories {
+.heroTrack {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   overflow-x: auto;
-  padding: 4px 2px 10px;
-  margin-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  margin: 0 -16px 4px;
+  padding: 0 16px 6px;
 }
-.stories::-webkit-scrollbar { display: none; }
-.story {
+.heroTrack::-webkit-scrollbar { display: none; }
+.hero {
+  scroll-snap-align: start;
+  flex: 0 0 88%;
+  height: 220px;
+  border-radius: 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.storyName {
-  font-size: 10px;
-  color: var(--text-muted);
-  max-width: 56px;
+  justify-content: flex-end;
+  position: relative;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+.heroIcon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  font-size: 26px;
+  color: rgba(255,255,255,0.55);
+}
+.heroEyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px;
+}
+.heroTitle {
+  color: #fff;
+  font-size: 19px;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.heroBody {
+  color: rgba(255,255,255,0.85);
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 .composer {
   padding: 12px;

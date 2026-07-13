@@ -24,7 +24,6 @@
   width: 80px; height: 80px;
   border-radius: 999px;
   background: var(--surface);
-  border: 4px solid var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;

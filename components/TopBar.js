@@ -11,7 +11,10 @@ export default function TopBar() {
 
   return (
     <div className={styles.bar}>
-      <Link href="/feed" className={styles.logo}>ADVAT</Link>
+      <Link href="/feed" className={styles.logo}>
+        <i className="ri-add-circle-fill" />
+        ADVAT
+      </Link>
       <div className={styles.right}>
         <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Badilisha mandhari">
           <i className={theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line'} />

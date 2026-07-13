@@ -14,12 +14,16 @@
   z-index: 20;
 }
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: 20px;
   color: var(--accent);
   letter-spacing: 0.02em;
 }
+.logo i { font-size: 17px; }
 .right {
   display: flex;
   align-items: center;

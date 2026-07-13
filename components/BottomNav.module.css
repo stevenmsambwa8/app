@@ -1,15 +1,19 @@
 .nav {
   position: fixed;
-  bottom: 0; left: 0; right: 0;
-  max-width: 480px;
-  margin: 0 auto;
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 420px;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  padding: 10px 8px;
   background: rgba(var(--bg-rgb), 0.92);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: 0 12px 32px -12px rgba(0,0,0,0.28);
   z-index: 20;
 }
 .item {
