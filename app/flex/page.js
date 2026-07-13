@@ -3,10 +3,10 @@ import { FLEX_CARDS, LEADERBOARD } from '../../lib/mockData'
 import styles from './page.module.css'
 
 const STATS = [
-  { label: 'Posts', value: 214 },
-  { label: 'Streak', value: 17 },
-  { label: 'Featured', value: 9 },
-  { label: 'Followers', value: '1.2k' },
+  { label: 'Machapisho', value: 214 },
+  { label: 'Mfululizo', value: 17 },
+  { label: 'Umeangaziwa', value: 9 },
+  { label: 'Wafuasi', value: '1.2k' },
 ];
 
 export default function FlexPage() {
@@ -15,7 +15,7 @@ export default function FlexPage() {
       <div className={`card ${styles.hero}`}>
         <div className={styles.heroTitle}>
           <i className="ri-fire-fill" />
-          <h2>Your Flex</h2>
+          <h2>Flex Yako</h2>
         </div>
         <div className={styles.statGrid}>
           {STATS.map((s) => (
@@ -27,7 +27,7 @@ export default function FlexPage() {
         </div>
       </div>
 
-      <p className={styles.sectionTitle}>Flex cards</p>
+      <p className={styles.sectionTitle}>Kadi za Flex</p>
       <div className={styles.cardGrid}>
         {FLEX_CARDS.map((c) => (
           <div key={c.id} className={styles.flexCardOuter}>
@@ -40,12 +40,12 @@ export default function FlexPage() {
         ))}
       </div>
 
-      <p className={styles.sectionTitle}>Top flexers this week</p>
+      <p className={styles.sectionTitle}>Waflex Bora Wiki Hii</p>
       <div className={styles.board}>
         {LEADERBOARD.map((u, i) => (
           <div key={u.id} className={`card ${styles.boardRow}`}>
             <span className={`${styles.rank} ${i === 0 ? styles.rankFirst : ''}`}>{i + 1}</span>
-            <Avatar emoji={u.avatar} size={32} />
+            <Avatar emoji={u.avatar} size={32} ring={i === 0} />
             <span className={styles.boardName}>{u.name}</span>
             <span className={styles.boardScore}>{u.flexScore}</span>
           </div>

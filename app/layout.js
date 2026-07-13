@@ -5,8 +5,8 @@ import ThemeProvider from '../components/ThemeProvider'
 import ThemeScript from '../components/ThemeScript'
 
 export const metadata = {
-  title: 'Advat — Share your moments',
-  description: 'The fun social page to post, flex and connect.',
+  title: 'Advat — Shiriki Matukio Yako',
+  description: 'Ukurasa wa kijamii wa kufurahisha kuchapisha, ku-flex na kuungana.',
 }
 
 export const viewport = {
@@ -17,7 +17,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="sw" suppressHydrationWarning>
       <head>
         <ThemeScript />
       </head>

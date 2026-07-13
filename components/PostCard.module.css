@@ -37,13 +37,29 @@
   line-height: 1.5;
 }
 .media {
-  height: 160px;
+  height: 180px;
   border-radius: 14px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.25);
-  font-size: 32px;
+  align-items: flex-end;
+  justify-content: flex-end;
+  position: relative;
+  color: rgba(255,255,255,0.3);
+  font-size: 34px;
+  padding: 12px;
+  overflow: hidden;
+}
+.mediaTag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.22);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 .actions {
   display: flex;

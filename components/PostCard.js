@@ -25,7 +25,8 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       <p className={styles.text}>{post.text}</p>
 
       {post.gradient && (
-        <div className={styles.media} style={{ background: post.gradient }}>
+        <div className={`${styles.media} texture`} style={{ background: post.gradient }}>
+          <span className={styles.mediaTag}>{post.tag}</span>
           <i className="ri-image-line" />
         </div>
       )}

@@ -13,7 +13,7 @@ export default function TopBar() {
     <div className={styles.bar}>
       <Link href="/feed" className={styles.logo}>ADVAT</Link>
       <div className={styles.right}>
-        <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Toggle theme">
+        <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Badilisha mandhari">
           <i className={theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line'} />
         </button>
         <Link href="/notifications" className={styles.bell}>
@@ -21,7 +21,7 @@ export default function TopBar() {
           {unread > 0 && <span className={styles.badge}>{unread}</span>}
         </Link>
         <Link href="/profile">
-          <Avatar emoji={ME.avatar} size={28} />
+          <Avatar emoji={ME.avatar} size={28} ring />
         </Link>
       </div>
     </div>

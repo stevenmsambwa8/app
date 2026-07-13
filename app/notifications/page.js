@@ -11,8 +11,8 @@ const ICONS = {
 
 export default function NotificationsPage() {
   const groups = [
-    ['Today', NOTIFS.filter((n) => n.unread)],
-    ['Earlier', NOTIFS.filter((n) => !n.unread)],
+    ['Leo', NOTIFS.filter((n) => n.unread)],
+    ['Awali', NOTIFS.filter((n) => !n.unread)],
   ];
 
   return (

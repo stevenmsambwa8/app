@@ -14,8 +14,10 @@ export default function ProfilePage() {
       <div className={styles.cover} />
       <div className={styles.body}>
         <div className={styles.headRow}>
-          <div className={styles.avatarBig}>{ME.avatar}</div>
-          <button className={`btnGhost ${styles.editBtn}`}>Edit profile</button>
+          <div className={styles.avatarBigRing}>
+            <div className={styles.avatarBig}>{ME.avatar}</div>
+          </div>
+          <button className={`btnGhost ${styles.editBtn}`}>Hariri Wasifu</button>
         </div>
 
         <div className={styles.nameRow}>
@@ -26,22 +28,25 @@ export default function ProfilePage() {
           <span className={styles.handle}>{ME.handle}</span>
           <VibeTag vibe={ME.vibe} />
         </div>
-        <p className={styles.bio}>Always chasing good light and better company. DM me anytime.</p>
+        <p className={styles.bio}>Daima ninafuatilia mwanga mzuri na urafiki bora. Nitumie ujumbe wakati wowote.</p>
 
         <div className={styles.statsRow}>
-          <span><b>214</b> <span>posts</span></span>
-          <span><b>1.2k</b> <span>followers</span></span>
-          <span><b>318</b> <span>following</span></span>
+          <span><b>214</b> <span>machapisho</span></span>
+          <span><b>1.2k</b> <span>wafuasi</span></span>
+          <span><b>318</b> <span>anaowafuata</span></span>
         </div>
 
         <div className={styles.tabs}>
-          {['posts', 'flex'].map((t) => (
+          {[
+            { key: 'posts', label: 'Machapisho' },
+            { key: 'flex', label: 'Flex' },
+          ].map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`${styles.tab} ${tab === t ? styles.tabActive : ''}`}
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`${styles.tab} ${tab === t.key ? styles.tabActive : ''}`}
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>

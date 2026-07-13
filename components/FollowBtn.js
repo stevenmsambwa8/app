@@ -8,7 +8,7 @@ export default function FollowBtn({ following, onClick }) {
       className={`${styles.btn} ${following ? 'btnGhost' : 'btnAccent'}`}
     >
       <i className={following ? 'ri-check-line' : 'ri-user-add-line'} />
-      {following ? 'Following' : 'Follow'}
+      {following ? 'Unamfuata' : 'Fuata'}
     </button>
   );
 }

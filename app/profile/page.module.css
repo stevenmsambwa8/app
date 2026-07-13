@@ -1,6 +1,10 @@
 .cover {
-  height: 112px;
+  height: 128px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background-image:
+    radial-gradient(rgba(255,255,255,0.28) 1.5px, transparent 1.5px),
+    linear-gradient(135deg, var(--accent), var(--accent-2));
+  background-size: 16px 16px, 100% 100%;
   margin: -1px -1px 0;
 }
 .body { padding: 0 16px 24px; }
@@ -8,7 +12,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-top: -40px;
+  margin-top: -44px;
+}
+.avatarBigRing {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-lime), var(--accent-teal));
 }
 .avatarBig {
   width: 80px; height: 80px;

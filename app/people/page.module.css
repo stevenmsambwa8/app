@@ -32,6 +32,29 @@
   letter-spacing: 0.03em;
   font-weight: 600;
 }
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border-light);
+  color: var(--text-dim);
+}
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
 .list { display: flex; flex-direction: column; gap: 8px; }
 .row {
   display: flex;

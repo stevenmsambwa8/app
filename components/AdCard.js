@@ -9,7 +9,7 @@ export default function AdCard({ ad }) {
       <div className={styles.body}>
         <div className={styles.tag}>
           <i className="ri-sparkling-2-fill" />
-          <span className={styles.tagText}>Sponsored</span>
+          <span className={styles.tagText}>Imedhaminiwa</span>
         </div>
         <p className={styles.headline}>{ad.headline}</p>
         <p className={styles.copy}>{ad.body}</p>

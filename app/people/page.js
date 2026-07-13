@@ -4,15 +4,18 @@ import Avatar from '../../components/Avatar'
 import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
 import FollowBtn from '../../components/FollowBtn'
-import { USERS } from '../../lib/mockData'
+import { USERS, VIBES } from '../../lib/mockData'
 import styles from './page.module.css'
 
 export default function PeoplePage() {
   const [query, setQuery] = useState('');
+  const [vibe, setVibe] = useState(null);
   const [following, setFollowing] = useState({});
 
-  const filtered = USERS.filter((u) =>
-    u.name.toLowerCase().includes(query.toLowerCase())
+  const filtered = USERS.filter(
+    (u) =>
+      u.name.toLowerCase().includes(query.toLowerCase()) &&
+      (!vibe || u.vibe === vibe)
   );
 
   return (
@@ -22,19 +25,37 @@ export default function PeoplePage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Find people..."
+          placeholder="Tafuta watu..."
         />
       </div>
 
       <div className={styles.trending}>
         <i className="ri-line-chart-line" />
-        <span className={styles.trendingText}>Popular in Nairobi &amp; Dar es Salaam</span>
+        <span className={styles.trendingText}>Maarufu Nairobi na Dar es Salaam</span>
+      </div>
+
+      <div className={styles.chips}>
+        <button
+          className={`${styles.chip} ${!vibe ? styles.chipActive : ''}`}
+          onClick={() => setVibe(null)}
+        >
+          Wote
+        </button>
+        {VIBES.map((v) => (
+          <button
+            key={v}
+            className={`${styles.chip} ${vibe === v ? styles.chipActive : ''}`}
+            onClick={() => setVibe(v === vibe ? null : v)}
+          >
+            {v}
+          </button>
+        ))}
       </div>
 
       <div className={styles.list}>
         {filtered.map((u) => (
           <div key={u.id} className={`card ${styles.row}`}>
-            <Avatar emoji={u.avatar} size={44} />
+            <Avatar emoji={u.avatar} size={44} ring />
             <div className={styles.who}>
               <div className={styles.nameRow}>
                 <span className={styles.name}>{u.name}</span>
@@ -42,7 +63,7 @@ export default function PeoplePage() {
               </div>
               <div className={styles.metaRow}>
                 <VibeTag vibe={u.vibe} />
-                <span className={styles.meta}>{u.followers} followers</span>
+                <span className={styles.meta}>wafuasi {u.followers}</span>
               </div>
             </div>
             <FollowBtn
@@ -51,7 +72,7 @@ export default function PeoplePage() {
             />
           </div>
         ))}
-        {filtered.length === 0 && <p className={styles.empty}>No one found.</p>}
+        {filtered.length === 0 && <p className={styles.empty}>Hakuna aliyepatikana.</p>}
       </div>
     </div>
   );

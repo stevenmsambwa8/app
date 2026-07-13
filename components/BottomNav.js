@@ -4,11 +4,11 @@ import { usePathname } from 'next/navigation'
 import styles from './BottomNav.module.css'
 
 const TABS = [
-  { href: '/feed', label: 'Feed', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
-  { href: '/people', label: 'People', icon: 'ri-team-line', activeIcon: 'ri-team-fill' },
+  { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
+  { href: '/people', label: 'Watu', icon: 'ri-team-line', activeIcon: 'ri-team-fill' },
   { href: '/flex', label: 'Flex', icon: 'ri-fire-line', activeIcon: 'ri-fire-fill' },
-  { href: '/dm', label: 'DM', icon: 'ri-chat-3-line', activeIcon: 'ri-chat-3-fill' },
-  { href: '/profile', label: 'Profile', icon: 'ri-user-line', activeIcon: 'ri-user-fill' },
+  { href: '/dm', label: 'Ujumbe', icon: 'ri-chat-3-line', activeIcon: 'ri-chat-3-fill' },
+  { href: '/profile', label: 'Wasifu', icon: 'ri-user-line', activeIcon: 'ri-user-fill' },
 ];
 
 export default function BottomNav() {

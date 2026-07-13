@@ -36,7 +36,7 @@ export default function DMPage() {
           const last = c.messages[c.messages.length - 1]?.text || '';
           return (
             <button key={c.id} className={`card ${styles.row}`} onClick={() => setActiveId(c.id)}>
-              <Avatar emoji={user.avatar} size={44} />
+              <Avatar emoji={user.avatar} size={44} ring={c.unread > 0} />
               <div className={styles.who}>
                 <div className={styles.name}>{user.name}</div>
                 <span className={styles.last}>{last}</span>
@@ -75,7 +75,7 @@ export default function DMPage() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder="Message..."
+          placeholder="Andika ujumbe..."
         />
         <button className={styles.send} onClick={send}>
           <i className="ri-send-plane-fill" />
