@@ -21,6 +21,18 @@
   }
 }
 
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.logo i { font-size: 22px; }
+
 @media (min-width: 900px) {
   .bar {
     left: 240px;
@@ -34,18 +46,6 @@
     display: none;
   }
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 20px;
-  color: var(--accent);
-  letter-spacing: 0.02em;
-}
-.logo i { font-size: 22px; }
 .right {
   display: flex;
   align-items: center;

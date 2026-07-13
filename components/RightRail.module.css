@@ -2,14 +2,14 @@
   display: none;
 }
 
-@media (min-width: 1180px) {
+@media (min-width: 1020px) {
   .rail {
     display: flex;
     flex-direction: column;
     gap: 16px;
     flex: 1;
-    min-width: 280px;
-    max-width: 340px;
+    min-width: 260px;
+    max-width: 420px;
     padding: 22px 16px 22px 20px;
     align-self: flex-start;
     position: sticky;

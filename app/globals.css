@@ -108,7 +108,7 @@ body {
   }
 }
 
-@media (min-width: 1180px) {
+@media (min-width: 1020px) {
   .app-content {
     flex: 0 0 var(--shell);
   }
