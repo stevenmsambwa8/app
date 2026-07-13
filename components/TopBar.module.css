@@ -1,7 +1,7 @@
 .bar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  max-width: 480px;
+  max-width: var(--shell);
   margin: 0 auto;
   height: 56px;
   display: flex;
@@ -13,6 +13,13 @@
   border-bottom: 1px solid var(--border);
   z-index: 20;
 }
+
+@media (min-width: 720px) {
+  .bar {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
 .logo {
   display: flex;
   align-items: center;
@@ -23,7 +30,7 @@
   color: var(--accent);
   letter-spacing: 0.02em;
 }
-.logo i { font-size: 17px; }
+.logo i { font-size: 22px; }
 .right {
   display: flex;
   align-items: center;

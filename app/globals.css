@@ -44,6 +44,13 @@ input, textarea, [contenteditable] {
   --accent-teal: #0fb5a3;
   --accent-amber: #ffb020;
   --accent-text: #ffffff;
+
+  /* Shared width driving TopBar / main / BottomNav so they always line up */
+  --shell: 480px;
+}
+
+@media (min-width: 720px) {
+  :root { --shell: 560px; }
 }
 
 /* ── Dark theme ── */
@@ -85,12 +92,24 @@ body {
 }
 
 main {
-  max-width: 480px;
+  max-width: var(--shell);
   margin: 0 auto;
   min-height: 100%;
   padding-bottom: 104px;
   padding-top: 56px;
   position: relative;
+}
+
+@media (min-width: 720px) {
+  body {
+    background: var(--bg-2);
+  }
+  main {
+    background: var(--bg);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 60px rgba(0,0,0,0.05);
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {

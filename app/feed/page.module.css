@@ -9,8 +9,8 @@
   gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  margin: 0 -16px 4px;
-  padding: 0 16px 6px;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
 }
 .heroTrack::-webkit-scrollbar { display: none; }
 .hero {

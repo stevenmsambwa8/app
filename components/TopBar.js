@@ -12,7 +12,7 @@ export default function TopBar() {
   return (
     <div className={styles.bar}>
       <Link href="/feed" className={styles.logo}>
-        <i className="ri-add-circle-fill" />
+        <i className="ri-add-line" />
         ADVAT
       </Link>
       <div className={styles.right}>

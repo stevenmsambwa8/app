@@ -4,7 +4,7 @@
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
-  max-width: 420px;
+  max-width: calc(var(--shell) - 60px);
   display: flex;
   align-items: center;
   justify-content: space-around;
