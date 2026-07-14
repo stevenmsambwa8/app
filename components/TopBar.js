@@ -1,6 +1,7 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
 import { useAuthModal } from './AuthModalProvider'
@@ -8,9 +9,12 @@ import { ME, NOTIFS } from '../lib/mockData'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
+  const pathname = usePathname();
   const unread = NOTIFS.filter((n) => n.unread).length;
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
+
+  if (pathname?.startsWith('/create')) return null;
 
   return (
     <div className={styles.bar}>

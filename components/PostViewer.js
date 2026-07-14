@@ -10,12 +10,18 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
+  const [imageHidden, setImageHidden] = useState(false);
   const comments = commentsForPost(post);
 
   function handleScroll(e) {
     const el = e.currentTarget;
     const idx = Math.round(el.scrollLeft / el.clientWidth);
     if (idx !== active) setActive(idx);
+  }
+
+  function handleCommentsScroll(e) {
+    const hidden = e.currentTarget.scrollTop > 4;
+    setImageHidden((v) => (v === hidden ? v : hidden));
   }
 
   return (
@@ -43,27 +49,29 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
         </div>
 
         <div className={styles.top}>
-          {images.length > 1 ? (
-            <div className={styles.carouselWrap}>
-              <div className={styles.carousel} onScroll={handleScroll}>
-                {images.map((bg, i) => (
-                  <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
-                    <i className="ri-image-line" />
-                  </div>
-                ))}
+          <div className={`${styles.mediaCollapse} ${imageHidden ? styles.mediaCollapsed : ''}`}>
+            {images.length > 1 ? (
+              <div className={styles.carouselWrap}>
+                <div className={styles.carousel} onScroll={handleScroll}>
+                  {images.map((bg, i) => (
+                    <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
+                      <i className="ri-image-line" />
+                    </div>
+                  ))}
+                </div>
+                <span className={styles.count}>{active + 1}/{images.length}</span>
+                <div className={styles.dots}>
+                  {images.map((_, i) => (
+                    <span key={i} className={`${styles.dot} ${i === active ? styles.dotActive : ''}`} />
+                  ))}
+                </div>
               </div>
-              <span className={styles.count}>{active + 1}/{images.length}</span>
-              <div className={styles.dots}>
-                {images.map((_, i) => (
-                  <span key={i} className={`${styles.dot} ${i === active ? styles.dotActive : ''}`} />
-                ))}
+            ) : images.length === 1 ? (
+              <div className={`${styles.media} texture`} style={{ background: images[0] }}>
+                <i className="ri-image-line" />
               </div>
-            </div>
-          ) : images.length === 1 ? (
-            <div className={`${styles.media} texture`} style={{ background: images[0] }}>
-              <i className="ri-image-line" />
-            </div>
-          ) : null}
+            ) : null}
+          </div>
 
           <div className={styles.topBody}>
             <p className={styles.text}>{post.text}</p>
@@ -94,7 +102,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </div>
         </div>
 
-        <div className={styles.commentsScroll}>
+        <div className={styles.commentsScroll} onScroll={handleCommentsScroll}>
           <div className={styles.commentsSection}>
             <p className={styles.commentsTitle}>Maoni</p>
             <div className={styles.commentsList}>
