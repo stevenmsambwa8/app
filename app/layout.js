@@ -7,6 +7,7 @@ import ThemeProvider from '../components/ThemeProvider'
 import AuthModalProvider from '../components/AuthModalProvider'
 import PostsProvider from '../components/PostsProvider'
 import PostViewerProvider from '../components/PostViewerProvider'
+import PageMain from '../components/PageMain'
 import ThemeScript from '../components/ThemeScript'
 
 export const metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({ children }) {
                   <Sidebar />
                   <div className="app-content">
                     <TopBar />
-                    <main>{children}</main>
+                    <PageMain>{children}</PageMain>
                   </div>
                   <RightRail />
                 </div>

@@ -33,6 +33,9 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
         aria-modal="true"
       >
         <div className={styles.head}>
+          <button className={styles.close} onClick={onClose} aria-label="Rudi nyuma">
+            <i className="ri-arrow-left-line" />
+          </button>
           <div className={styles.who}>
             <Avatar emoji={user.avatar} />
             <div>
@@ -43,9 +46,6 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
               <span className={styles.meta}>{post.time} · {post.tag}</span>
             </div>
           </div>
-          <button className={styles.close} onClick={onClose} aria-label="Funga">
-            <i className="ri-close-line" />
-          </button>
         </div>
 
         <div className={styles.top}>
