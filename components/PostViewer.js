@@ -11,7 +11,12 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
   const [imageHidden, setImageHidden] = useState(false);
+  const [openReplies, setOpenReplies] = useState({});
   const comments = commentsForPost(post);
+
+  function toggleReplies(id) {
+    setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
+  }
 
   function handleScroll(e) {
     const el = e.currentTarget;
@@ -108,6 +113,8 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
             <div className={styles.commentsList}>
               {comments.map((c) => {
                 const cu = userById(c.uid);
+                const hasReplies = c.replies && c.replies.length > 0;
+                const repliesOpen = !!openReplies[c.id];
                 return (
                   <div key={c.id} className={styles.comment}>
                     <Avatar emoji={cu.avatar} size={32} />
@@ -123,6 +130,47 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                           {c.likes > 0 ? c.likes : ''}
                         </button>
                       </div>
+
+                      {hasReplies && (
+                        <>
+                          <button
+                            type="button"
+                            className={styles.viewReplies}
+                            onClick={() => toggleReplies(c.id)}
+                          >
+                            <i className={repliesOpen ? 'ri-corner-down-right-line' : 'ri-corner-down-right-line'} />
+                            {repliesOpen
+                              ? 'Ficha majibu'
+                              : `Ona majibu (${c.replies.length})`}
+                          </button>
+
+                          {repliesOpen && (
+                            <div className={styles.repliesList}>
+                              {c.replies.map((r) => {
+                                const ru = userById(r.uid);
+                                return (
+                                  <div key={r.id} className={styles.comment}>
+                                    <Avatar emoji={ru.avatar} size={26} />
+                                    <div className={styles.commentBody}>
+                                      <div className={styles.commentBubble}>
+                                        <span className={styles.commentName}>{ru.name}</span>
+                                        <p className={styles.commentText}>{r.text}</p>
+                                      </div>
+                                      <div className={styles.commentMeta}>
+                                        <span>{r.time}</span>
+                                        <button className={styles.commentLike}>
+                                          <i className="ri-heart-line" />
+                                          {r.likes > 0 ? r.likes : ''}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 );
