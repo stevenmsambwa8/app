@@ -45,7 +45,8 @@ export default function PostDetailPage() {
   }
 
   function handleCommentsScroll(e) {
-    const hidden = e.currentTarget.scrollTop > 4;
+    if (comments.length <= 1) return;
+    const hidden = e.currentTarget.scrollTop > 0;
     setImageHidden((v) => (v === hidden ? v : hidden));
   }
 

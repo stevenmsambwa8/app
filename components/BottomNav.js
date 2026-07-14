@@ -28,6 +28,7 @@ function NavItem({ t, pathname }) {
 
 export default function BottomNav() {
   const pathname = usePathname();
+  if (pathname?.startsWith('/post/')) return null;
   return (
     <nav className={styles.nav}>
       {LEFT_TABS.map((t) => (

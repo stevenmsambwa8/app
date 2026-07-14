@@ -134,6 +134,9 @@ main {
 main.no-topbar {
   padding-top: 0;
 }
+main.no-bottomnav {
+  padding-bottom: 0;
+}
 
 @media (min-width: 720px) {
   body {
