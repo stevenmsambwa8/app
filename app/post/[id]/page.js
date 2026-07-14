@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
@@ -20,6 +20,18 @@ export default function PostDetailPage() {
   const [imageHidden, setImageHidden] = useState(false);
   const [openReplies, setOpenReplies] = useState({});
   const lastScrollTop = useRef(0);
+  const commentsRef = useRef(null);
+  // Overflow is measured once, before any media-collapse toggling has had a
+  // chance to resize this container. Collapsing the media changes commentsScroll's
+  // own height, and re-measuring scrollHeight/clientHeight on every scroll tick
+  // fed that resize back into the overflow calc — a loop that made the media
+  // flap open/closed. Freezing the baseline here breaks the loop.
+  const baselineOverflow = useRef(null);
+
+  useLayoutEffect(() => {
+    const el = commentsRef.current;
+    if (el) baselineOverflow.current = el.scrollHeight - el.clientHeight;
+  }, []);
 
   if (!post) {
     return (
@@ -47,7 +59,9 @@ export default function PostDetailPage() {
 
   function handleCommentsScroll(e) {
     const el = e.currentTarget;
-    const overflow = el.scrollHeight - el.clientHeight;
+    // Use the height captured before the first collapse, not a live
+    // recomputation — see baselineOverflow above for why.
+    const overflow = baselineOverflow.current ?? (el.scrollHeight - el.clientHeight);
 
     // Not enough content to actually scroll — keep media visible, don't react to bounce/noise.
     if (overflow < 24) {
@@ -151,7 +165,7 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className={styles.commentsScroll} onScroll={handleCommentsScroll}>
+      <div className={styles.commentsScroll} ref={commentsRef} onScroll={handleCommentsScroll}>
         <div className={styles.commentsSection}>
           <p className={styles.commentsTitle}>Maoni</p>
           <div className={styles.commentsList}>
