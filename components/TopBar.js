@@ -3,12 +3,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
+import { useAuthModal } from './AuthModalProvider'
 import { ME, NOTIFS } from '../lib/mockData'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
   const unread = NOTIFS.filter((n) => n.unread).length;
   const { theme, toggleTheme } = useTheme();
+  const { openAuth } = useAuthModal();
 
   return (
     <div className={styles.bar}>
@@ -23,6 +25,9 @@ export default function TopBar() {
         />
       </Link>
       <div className={styles.right}>
+        <button onClick={() => openAuth('signin')} className={styles.themeBtn} aria-label="Ingia au jisajili">
+          <i className="ri-login-box-line" />
+        </button>
         <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Badilisha mandhari">
           <i className={theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line'} />
         </button>

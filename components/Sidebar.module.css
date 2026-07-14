@@ -70,6 +70,17 @@
 .footerBtn i { font-size: 17px; }
 .footerBtn:hover { background: var(--chip-bg); }
 
+.authBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.authBtn i { font-size: 16px; }
+
 .profileRow {
   display: flex;
   align-items: center;

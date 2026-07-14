@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
+import { useAuthModal } from './AuthModalProvider'
 import { ME, NOTIFS } from '../lib/mockData'
 import styles from './Sidebar.module.css'
 
@@ -18,6 +19,7 @@ const TABS = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const { openAuth } = useAuthModal();
   const unread = NOTIFS.filter((n) => n.unread).length;
 
   return (
@@ -58,6 +60,10 @@ export default function Sidebar() {
           <i className="ri-notification-3-line" />
           <span>Arifa{unread > 0 ? ` · ${unread}` : ''}</span>
         </Link>
+        <button onClick={() => openAuth('signin')} className={`btnAccent ${styles.authBtn}`}>
+          <i className="ri-login-box-line" />
+          <span>Ingia / Jisajili</span>
+        </button>
         <Link href="/profile" className={styles.profileRow}>
           <Avatar emoji={ME.avatar} size={32} ring />
           <div className={styles.profileText}>

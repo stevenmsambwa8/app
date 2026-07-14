@@ -1,5 +1,11 @@
 .card {
-  padding: 16px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.body {
+  padding: 14px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -37,8 +43,9 @@
   line-height: 1.5;
 }
 .media {
-  height: 180px;
-  border-radius: 14px;
+  height: 220px;
+  width: 100%;
+  border-radius: 0;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -47,6 +54,7 @@
   font-size: 34px;
   padding: 12px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .mediaTag {
   position: absolute;

@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import Sidebar from '../components/Sidebar'
 import RightRail from '../components/RightRail'
 import ThemeProvider from '../components/ThemeProvider'
+import AuthModalProvider from '../components/AuthModalProvider'
 import ThemeScript from '../components/ThemeScript'
 
 export const metadata = {
@@ -30,15 +31,17 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <div className="app-shell">
-            <Sidebar />
-            <div className="app-content">
-              <TopBar />
-              <main>{children}</main>
+          <AuthModalProvider>
+            <div className="app-shell">
+              <Sidebar />
+              <div className="app-content">
+                <TopBar />
+                <main>{children}</main>
+              </div>
+              <RightRail />
             </div>
-            <RightRail />
-          </div>
-          <BottomNav />
+            <BottomNav />
+          </AuthModalProvider>
         </ThemeProvider>
       </body>
     </html>
