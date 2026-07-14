@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
@@ -19,6 +19,7 @@ export default function PostDetailPage() {
   const [comment, setComment] = useState('');
   const [imageHidden, setImageHidden] = useState(false);
   const [openReplies, setOpenReplies] = useState({});
+  const lastScrollTop = useRef(0);
 
   if (!post) {
     return (
@@ -45,9 +46,33 @@ export default function PostDetailPage() {
   }
 
   function handleCommentsScroll(e) {
-    if (comments.length <= 1) return;
-    const hidden = e.currentTarget.scrollTop > 0;
-    setImageHidden((v) => (v === hidden ? v : hidden));
+    const el = e.currentTarget;
+    const overflow = el.scrollHeight - el.clientHeight;
+
+    // Not enough content to actually scroll — keep media visible, don't react to bounce/noise.
+    if (overflow < 24) {
+      lastScrollTop.current = 0;
+      setImageHidden(false);
+      return;
+    }
+
+    const top = Math.max(0, el.scrollTop);
+    const prev = lastScrollTop.current;
+    const delta = top - prev;
+    lastScrollTop.current = top;
+
+    if (top <= 0) {
+      setImageHidden(false);
+      return;
+    }
+    // Ignore tiny jitters (momentum/rubber-band noise) so it doesn't flicker.
+    if (Math.abs(delta) < 6) return;
+
+    if (delta > 0) {
+      setImageHidden(true);
+    } else {
+      setImageHidden(false);
+    }
   }
 
   function toggleReplies(id) {
