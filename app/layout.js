@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar'
 import RightRail from '../components/RightRail'
 import ThemeProvider from '../components/ThemeProvider'
 import AuthModalProvider from '../components/AuthModalProvider'
+import PostsProvider from '../components/PostsProvider'
 import ThemeScript from '../components/ThemeScript'
 
 export const metadata = {
@@ -32,15 +33,17 @@ export default function RootLayout({ children }) {
       <body>
         <ThemeProvider>
           <AuthModalProvider>
-            <div className="app-shell">
-              <Sidebar />
-              <div className="app-content">
-                <TopBar />
-                <main>{children}</main>
+            <PostsProvider>
+              <div className="app-shell">
+                <Sidebar />
+                <div className="app-content">
+                  <TopBar />
+                  <main>{children}</main>
+                </div>
+                <RightRail />
               </div>
-              <RightRail />
-            </div>
-            <BottomNav />
+              <BottomNav />
+            </PostsProvider>
           </AuthModalProvider>
         </ThemeProvider>
       </body>

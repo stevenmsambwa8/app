@@ -1,0 +1,240 @@
+.wrap {
+  padding: 12px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0 4px;
+}
+.back {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chip-bg);
+  color: var(--text);
+  font-size: 18px;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.name {
+  font-weight: 700;
+  font-size: 14px;
+}
+.handle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 14px;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  resize: none;
+}
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sectionLabel {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tagChip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.tagChipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.imageSwatch {
+  position: relative;
+  height: 78px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+}
+.imageOrder {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.previewNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.switch {
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+.switchOn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.switchKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.switchOn .switchKnob {
+  transform: translateX(16px);
+}
+
+.ctaFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.ctaInput {
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--text);
+}
+.ctaInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.iconRow {
+  display: flex;
+  gap: 8px;
+}
+.iconChip {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.iconChipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.ctaPreview {
+  padding: 11px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.submit {
+  width: 100%;
+  padding: 14px;
+  font-size: 14.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.submit:disabled {
+  opacity: 0.55;
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

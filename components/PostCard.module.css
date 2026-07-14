@@ -56,6 +56,61 @@
   overflow: hidden;
   flex-shrink: 0;
 }
+.carouselWrap {
+  position: relative;
+}
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar { display: none; }
+.mediaSlide {
+  scroll-snap-align: start;
+  flex: 0 0 100%;
+}
+.count {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0,0,0,0.35);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.5);
+}
+.dotActive {
+  background: #fff;
+  width: 14px;
+}
+.cta {
+  width: 100%;
+  padding: 11px;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.cta i { font-size: 16px; }
 .mediaTag {
   position: absolute;
   top: 12px;
