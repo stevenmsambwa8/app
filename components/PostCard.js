@@ -1,14 +1,26 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import { userById } from '../lib/mockData'
+import { usePostViewer } from './PostViewerProvider'
 import styles from './PostCard.module.css'
 
 export default function PostCard({ post, liked, likeCount, onLike }) {
   const user = userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+  const [clamped, setClamped] = useState(false);
+  const textRef = useRef(null);
+  const { openPost } = usePostViewer();
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (el && !expanded) {
+      setClamped(el.scrollHeight > el.clientHeight + 1);
+    }
+  }, [post.text, expanded]);
 
   function handleScroll(e) {
     const el = e.currentTarget;
@@ -16,10 +28,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     if (idx !== active) setActive(idx);
   }
 
+  function viewPost() {
+    openPost(post, { liked, likeCount, onLike });
+  }
+
   return (
     <div className={`card ${styles.card}`}>
       {images.length > 1 ? (
-        <div className={styles.carouselWrap}>
+        <div className={styles.carouselWrap} onClick={viewPost}>
           <div className={styles.carousel} onScroll={handleScroll}>
             {images.map((bg, i) => (
               <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
@@ -38,7 +54,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         </div>
       ) : images.length === 1 ? (
-        <div className={`${styles.media} texture`} style={{ background: images[0] }}>
+        <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
           <span className={styles.mediaTag}>{post.tag}</span>
           <i className="ri-image-line" />
         </div>
@@ -59,7 +75,23 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           <i className={`ri-more-fill ${styles.more}`} />
         </div>
 
-        <p className={styles.text}>{post.text}</p>
+        <div className={styles.textWrap}>
+          <p
+            ref={textRef}
+            className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
+          >
+            {post.text}
+          </p>
+          {(clamped || expanded) && (
+            <button
+              type="button"
+              className={styles.readMore}
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {expanded ? 'Ficha' : 'Soma Zaidi'}
+            </button>
+          )}
+        </div>
 
         {post.cta && (
           <button className={`btnAccent ${styles.cta}`}>
@@ -76,10 +108,10 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
             {likeCount}
           </button>
-          <span className={styles.action}>
+          <button className={styles.action} onClick={viewPost}>
             <i className="ri-chat-3-line" />
             {post.comments}
-          </span>
+          </button>
           <button className={`${styles.action} ${styles.spacer}`}>
             <i className="ri-share-forward-line" />
           </button>

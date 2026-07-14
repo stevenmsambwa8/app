@@ -35,6 +35,11 @@ export default function Sidebar() {
         />
       </Link>
 
+      <Link href="/create" className={`btnAccent ${styles.createBtn}`}>
+        <i className="ri-add-line" />
+        <span>Unda</span>
+      </Link>
+
       <nav className={styles.nav}>
         {TABS.map((t) => {
           const isActive = pathname?.startsWith(t.href);

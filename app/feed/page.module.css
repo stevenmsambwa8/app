@@ -66,17 +66,4 @@
   font-size: 12.5px;
   line-height: 1.4;
 }
-.composer {
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.input {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-muted);
-  background: var(--chip-bg);
-  border-radius: 999px;
-  padding: 10px 16px;
-}
+

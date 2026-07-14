@@ -37,10 +37,28 @@
   color: var(--text-muted);
   font-size: 16px;
 }
+.textWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .text {
   font-size: 13.5px;
   color: var(--text-dim);
   line-height: 1.5;
+  white-space: pre-wrap;
+}
+.textClamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.readMore {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
 }
 .media {
   height: 220px;
@@ -55,6 +73,7 @@
   padding: 12px;
   overflow: hidden;
   flex-shrink: 0;
+  cursor: pointer;
 }
 .carouselWrap {
   position: relative;

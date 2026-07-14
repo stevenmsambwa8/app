@@ -28,6 +28,18 @@
   width: auto;
 }
 
+.createBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+.createBtn i { font-size: 18px; }
+
 .nav {
   display: flex;
   flex-direction: column;

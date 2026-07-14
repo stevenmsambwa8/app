@@ -1,11 +1,9 @@
 'use client'
 import { useState } from 'react'
-import Link from 'next/link'
-import Avatar from '../../components/Avatar'
 import PostCard from '../../components/PostCard'
 import AdCard from '../../components/AdCard'
 import { usePosts } from '../../components/PostsProvider'
-import { ADS, ME, HEROES } from '../../lib/mockData'
+import { ADS, HEROES } from '../../lib/mockData'
 import styles from './page.module.css'
 
 export default function FeedPage() {
@@ -31,11 +29,6 @@ export default function FeedPage() {
           </div>
         ))}
       </div>
-
-      <Link href="/create" className={`card ${styles.composer}`}>
-        <Avatar emoji={ME.avatar} size={36} />
-        <div className={styles.input}>Flex kitu leo...</div>
-      </Link>
 
       <div className={styles.postsGrid}>
         {posts.map((post) =>
