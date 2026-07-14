@@ -11,7 +11,6 @@ const LEFT_TABS = [
 const RIGHT_TABS = [
   { href: '/flex', label: 'Flex', icon: 'ri-fire-line', activeIcon: 'ri-fire-fill' },
   { href: '/dm', label: 'Ujumbe', icon: 'ri-chat-3-line', activeIcon: 'ri-chat-3-fill' },
-  { href: '/profile', label: 'Wasifu', icon: 'ri-user-line', activeIcon: 'ri-user-fill' },
 ];
 
 function NavItem({ t, pathname }) {

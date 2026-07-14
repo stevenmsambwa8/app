@@ -42,7 +42,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </button>
         </div>
 
-        <div className={styles.scroll}>
+        <div className={styles.top}>
           {images.length > 1 ? (
             <div className={styles.carouselWrap}>
               <div className={styles.carousel} onScroll={handleScroll}>
@@ -65,7 +65,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
             </div>
           ) : null}
 
-          <div className={styles.body}>
+          <div className={styles.topBody}>
             <p className={styles.text}>{post.text}</p>
 
             {post.cta && (
@@ -91,32 +91,34 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                 <i className="ri-share-forward-line" />
               </button>
             </div>
+          </div>
+        </div>
 
-            <div className={styles.commentsSection}>
-              <p className={styles.commentsTitle}>Maoni</p>
-              <div className={styles.commentsList}>
-                {comments.map((c) => {
-                  const cu = userById(c.uid);
-                  return (
-                    <div key={c.id} className={styles.comment}>
-                      <Avatar emoji={cu.avatar} size={32} />
-                      <div className={styles.commentBody}>
-                        <div className={styles.commentBubble}>
-                          <span className={styles.commentName}>{cu.name}</span>
-                          <p className={styles.commentText}>{c.text}</p>
-                        </div>
-                        <div className={styles.commentMeta}>
-                          <span>{c.time}</span>
-                          <button className={styles.commentLike}>
-                            <i className="ri-heart-line" />
-                            {c.likes > 0 ? c.likes : ''}
-                          </button>
-                        </div>
+        <div className={styles.commentsScroll}>
+          <div className={styles.commentsSection}>
+            <p className={styles.commentsTitle}>Maoni</p>
+            <div className={styles.commentsList}>
+              {comments.map((c) => {
+                const cu = userById(c.uid);
+                return (
+                  <div key={c.id} className={styles.comment}>
+                    <Avatar emoji={cu.avatar} size={32} />
+                    <div className={styles.commentBody}>
+                      <div className={styles.commentBubble}>
+                        <span className={styles.commentName}>{cu.name}</span>
+                        <p className={styles.commentText}>{c.text}</p>
+                      </div>
+                      <div className={styles.commentMeta}>
+                        <span>{c.time}</span>
+                        <button className={styles.commentLike}>
+                          <i className="ri-heart-line" />
+                          {c.likes > 0 ? c.likes : ''}
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

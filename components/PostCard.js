@@ -82,13 +82,22 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           >
             {post.text}
           </p>
-          {(clamped || expanded) && (
+          {!expanded && clamped && (
+            <button
+              type="button"
+              className={styles.readMoreInline}
+              onClick={() => setExpanded(true)}
+            >
+              Soma Zaidi
+            </button>
+          )}
+          {expanded && (
             <button
               type="button"
               className={styles.readMore}
-              onClick={() => setExpanded((v) => !v)}
+              onClick={() => setExpanded(false)}
             >
-              {expanded ? 'Ficha' : 'Soma Zaidi'}
+              Ficha
             </button>
           )}
         </div>
