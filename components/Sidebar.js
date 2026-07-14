@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
 import { useAuthModal } from './AuthModalProvider'
-import { ME, NOTIFS } from '../lib/mockData'
+import { useAuth } from './AuthProvider'
+import { NOTIFS } from '../lib/mockData'
 import styles from './Sidebar.module.css'
 
 const TABS = [
@@ -20,7 +21,10 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
+  const { user, signOut } = useAuth();
   const unread = NOTIFS.filter((n) => n.unread).length;
+  const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
+  const displayHandle = user ? `@${displayName}` : '@wewe';
 
   return (
     <aside className={styles.sidebar}>
@@ -65,15 +69,22 @@ export default function Sidebar() {
           <i className="ri-notification-3-line" />
           <span>Arifa{unread > 0 ? ` · ${unread}` : ''}</span>
         </Link>
-        <button onClick={() => openAuth('signin')} className={`btnAccent ${styles.authBtn}`}>
-          <i className="ri-login-box-line" />
-          <span>Ingia / Jisajili</span>
-        </button>
+        {user ? (
+          <button onClick={signOut} className={`btnGhost ${styles.authBtn}`}>
+            <i className="ri-logout-box-line" />
+            <span>Toka</span>
+          </button>
+        ) : (
+          <button onClick={() => openAuth('signin')} className={`btnAccent ${styles.authBtn}`}>
+            <i className="ri-login-box-line" />
+            <span>Ingia / Jisajili</span>
+          </button>
+        )}
         <Link href="/profile" className={styles.profileRow}>
-          <Avatar emoji={ME.avatar} size={32} ring />
+          <Avatar emoji="🐧" size={32} ring />
           <div className={styles.profileText}>
-            <span className={styles.profileName}>{ME.name}</span>
-            <span className={styles.profileHandle}>{ME.handle}</span>
+            <span className={styles.profileName}>{displayName}</span>
+            <span className={styles.profileHandle}>{displayHandle}</span>
           </div>
         </Link>
       </div>

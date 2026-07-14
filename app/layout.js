@@ -4,6 +4,7 @@ import BottomNav from '../components/BottomNav'
 import Sidebar from '../components/Sidebar'
 import RightRail from '../components/RightRail'
 import ThemeProvider from '../components/ThemeProvider'
+import AuthProvider from '../components/AuthProvider'
 import AuthModalProvider from '../components/AuthModalProvider'
 import PostsProvider from '../components/PostsProvider'
 import PageMain from '../components/PageMain'
@@ -33,19 +34,21 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <AuthModalProvider>
-            <PostsProvider>
-              <div className="app-shell">
-                <Sidebar />
-                <div className="app-content">
-                  <TopBar />
-                  <PageMain>{children}</PageMain>
+          <AuthProvider>
+            <AuthModalProvider>
+              <PostsProvider>
+                <div className="app-shell">
+                  <Sidebar />
+                  <div className="app-content">
+                    <TopBar />
+                    <PageMain>{children}</PageMain>
+                  </div>
+                  <RightRail />
                 </div>
-                <RightRail />
-              </div>
-              <BottomNav />
-            </PostsProvider>
-          </AuthModalProvider>
+                <BottomNav />
+              </PostsProvider>
+            </AuthModalProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

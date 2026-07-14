@@ -2,12 +2,32 @@
 import { useState } from 'react'
 import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
+import { useAuth } from '../../components/AuthProvider'
+import { useAuthModal } from '../../components/AuthModalProvider'
 import { ME, POSTS, FLEX_CARDS } from '../../lib/mockData'
 import styles from './page.module.css'
 
 export default function ProfilePage() {
   const [tab, setTab] = useState('posts');
+  const { user, loading } = useAuth();
+  const { openAuth } = useAuthModal();
   const myPosts = POSTS.filter((p) => p.kind === 'post').slice(0, 3);
+
+  if (loading) return null;
+
+  if (!user) {
+    return (
+      <div className={styles.body} style={{ textAlign: 'center', paddingTop: 48 }}>
+        <p style={{ marginBottom: 16 }}>Ingia ili kuona na kuhariri wasifu wako.</p>
+        <button className="btnAccent" onClick={() => openAuth('signin')}>
+          Ingia / Jisajili
+        </button>
+      </div>
+    );
+  }
+
+  const displayName = user.user_metadata?.username || user.email?.split('@')[0] || ME.name;
+  const displayHandle = `@${displayName}`;
 
   return (
     <div>
@@ -21,11 +41,11 @@ export default function ProfilePage() {
         </div>
 
         <div className={styles.nameRow}>
-          <span className={styles.name}>{ME.name}</span>
+          <span className={styles.name}>{displayName}</span>
           <UserBadge badge={ME.badge} />
         </div>
         <div className={styles.handleRow}>
-          <span className={styles.handle}>{ME.handle}</span>
+          <span className={styles.handle}>{displayHandle}</span>
           <VibeTag vibe={ME.vibe} />
         </div>
         <p className={styles.bio}>Daima ninafuatilia mwanga mzuri na urafiki bora. Nitumie ujumbe wakati wowote.</p>

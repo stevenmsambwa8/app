@@ -1,18 +1,33 @@
 'use client'
 import { useState } from 'react'
+import { useAuth } from './AuthProvider'
 import styles from './AuthModal.module.css'
 
 export default function AuthModal({ mode, setMode, onClose }) {
+  const { signInWithPassword, signUpWithPassword } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const isSignup = mode === 'signup';
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+    setError('');
+    const form = e.target;
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    const username = form.username?.value?.trim();
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      onClose();
-    }, 700);
+    const { error } = isSignup
+      ? await signUpWithPassword(email, password, username)
+      : await signInWithPassword(email, password);
+    setSubmitting(false);
+
+    if (error) {
+      setError(error.message || 'Hitilafu imetokea. Jaribu tena.');
+      return;
+    }
+    onClose();
   }
 
   return (
@@ -44,52 +59,37 @@ export default function AuthModal({ mode, setMode, onClose }) {
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${!isSignup ? styles.tabActive : ''}`}
-            onClick={() => setMode('signin')}
+            onClick={() => { setMode('signin'); setError(''); }}
             type="button"
           >
             Ingia
           </button>
           <button
             className={`${styles.tab} ${isSignup ? styles.tabActive : ''}`}
-            onClick={() => setMode('signup')}
+            onClick={() => { setMode('signup'); setError(''); }}
             type="button"
           >
             Jisajili
           </button>
         </div>
 
-        <button type="button" className={styles.social}>
-          <i className="ri-google-fill" />
-          Endelea na Google
-        </button>
-
-        <div className={styles.divider}>
-          <span />
-          <p>au tumia barua pepe</p>
-          <span />
-        </div>
-
         <form className={styles.form} onSubmit={handleSubmit}>
           {isSignup && (
             <div className={styles.field}>
               <label>Jina la mtumiaji</label>
-              <input type="text" placeholder="mfano: baraka22" required />
+              <input name="username" type="text" placeholder="mfano: baraka22" required />
             </div>
           )}
           <div className={styles.field}>
             <label>Barua pepe</label>
-            <input type="email" placeholder="wewe@mfano.com" required />
+            <input name="email" type="email" placeholder="wewe@mfano.com" required />
           </div>
           <div className={styles.field}>
             <label>Nywila</label>
-            <input type="password" placeholder="••••••••" required minLength={6} />
+            <input name="password" type="password" placeholder="••••••••" required minLength={6} />
           </div>
 
-          {!isSignup && (
-            <button type="button" className={styles.forgot}>
-              Umesahau nywila?
-            </button>
-          )}
+          {error && <p className={styles.error}>{error}</p>}
 
           <button type="submit" className={`btnAccent ${styles.submit}`} disabled={submitting}>
             {submitting ? (
@@ -107,7 +107,7 @@ export default function AuthModal({ mode, setMode, onClose }) {
           <button
             type="button"
             className={styles.switchLink}
-            onClick={() => setMode(isSignup ? 'signin' : 'signup')}
+            onClick={() => { setMode(isSignup ? 'signin' : 'signup'); setError(''); }}
           >
             {isSignup ? 'Ingia' : 'Jisajili'}
           </button>
