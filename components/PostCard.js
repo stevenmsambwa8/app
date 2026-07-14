@@ -1,9 +1,9 @@
 'use client'
 import { useState, useRef, useLayoutEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import { userById } from '../lib/mockData'
-import { usePostViewer } from './PostViewerProvider'
 import styles from './PostCard.module.css'
 
 export default function PostCard({ post, liked, likeCount, onLike }) {
@@ -13,7 +13,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
   const textRef = useRef(null);
-  const { openPost } = usePostViewer();
+  const router = useRouter();
 
   useLayoutEffect(() => {
     const el = textRef.current;
@@ -29,7 +29,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   }
 
   function viewPost() {
-    openPost(post, { liked, likeCount, onLike });
+    router.push(`/post/${post.id}`);
   }
 
   return (

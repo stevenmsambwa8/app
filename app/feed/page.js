@@ -1,5 +1,4 @@
 'use client'
-import { useState } from 'react'
 import PostCard from '../../components/PostCard'
 import AdCard from '../../components/AdCard'
 import { usePosts } from '../../components/PostsProvider'
@@ -7,8 +6,7 @@ import { ADS, HEROES } from '../../lib/mockData'
 import styles from './page.module.css'
 
 export default function FeedPage() {
-  const [likes, setLikes] = useState({});
-  const { posts } = usePosts();
+  const { posts, likes, toggleLike } = usePosts();
 
   return (
     <div className={styles.wrap}>
@@ -40,7 +38,7 @@ export default function FeedPage() {
               post={post}
               liked={!!likes[post.id]}
               likeCount={post.likes + (likes[post.id] ? 1 : 0)}
-              onLike={() => setLikes((l) => ({ ...l, [post.id]: !l[post.id] }))}
+              onLike={() => toggleLike(post.id)}
             />
           )
         )}

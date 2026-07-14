@@ -14,7 +14,7 @@ export default function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
 
-  if (pathname?.startsWith('/create')) return null;
+  if (pathname?.startsWith('/create') || pathname?.startsWith('/post/')) return null;
 
   return (
     <div className={styles.bar}>
