@@ -21,10 +21,12 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const unread = NOTIFS.filter((n) => n.unread).length;
-  const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
+  const displayName = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
   const displayHandle = user ? `@${displayName}` : '@wewe';
+  const avatarEmoji = profile?.avatar || '🐧';
+  const avatarUrl = profile?.avatar_url || null;
 
   return (
     <aside className={styles.sidebar}>
@@ -81,7 +83,7 @@ export default function Sidebar() {
           </button>
         )}
         <Link href="/profile" className={styles.profileRow}>
-          <Avatar emoji="🐧" size={32} ring />
+          <Avatar emoji={avatarEmoji} src={avatarUrl} alt={displayName} size={32} ring />
           <div className={styles.profileText}>
             <span className={styles.profileName}>{displayName}</span>
             <span className={styles.profileHandle}>{displayHandle}</span>

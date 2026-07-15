@@ -14,11 +14,13 @@ export default function TopBar() {
   const unread = NOTIFS.filter((n) => n.unread).length;
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   if (pathname?.startsWith('/create') || pathname?.startsWith('/post/')) return null;
 
-  const displayName = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
+  const displayName = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
+  const avatarEmoji = profile?.avatar || '🐧';
+  const avatarUrl = profile?.avatar_url || null;
 
   return (
     <div className={styles.bar}>
@@ -50,7 +52,7 @@ export default function TopBar() {
           {unread > 0 && <span className={styles.badge}>{unread}</span>}
         </Link>
         <Link href="/profile" title={displayName}>
-          <Avatar emoji="🐧" size={28} ring />
+          <Avatar emoji={avatarEmoji} src={avatarUrl} alt={displayName} size={28} ring />
         </Link>
       </div>
     </div>
