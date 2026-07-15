@@ -1,0 +1,72 @@
+.bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  max-width: var(--shell);
+  margin: 0 auto;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 20;
+}
+
+@media (min-width: 720px) {
+  .bar {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+.logoImg {
+  height: 46px;
+  width: auto;
+}
+
+@media (min-width: 900px) {
+  .bar {
+    left: 240px;
+    right: auto;
+    width: var(--shell);
+    margin: 0;
+    justify-content: flex-end;
+    border-left: none;
+  }
+  .logo {
+    display: none;
+  }
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.themeBtn {
+  font-size: 17px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+}
+.bell {
+  position: relative;
+  font-size: 19px;
+}
+.badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  width: 16px; height: 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

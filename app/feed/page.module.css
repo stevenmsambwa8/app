@@ -9,6 +9,26 @@
   grid-template-columns: 1fr;
   gap: 12px;
 }
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 32px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.stateBox i {
+  font-size: 28px;
+  color: var(--text-muted);
+}
+.stateDetail {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  word-break: break-word;
+}
 @media (min-width: 900px) {
   .postsGrid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

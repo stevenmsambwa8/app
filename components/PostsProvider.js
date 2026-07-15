@@ -3,11 +3,11 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { supabase } from '../lib/supabaseClient'
 import { compressToWebp } from '../lib/compressImage'
 import { useAuth } from './AuthProvider'
-import { POSTS as SEED_POSTS } from '../lib/mockData'
 
 const PostsContext = createContext({
-  posts: SEED_POSTS,
+  posts: [],
   loading: true,
+  error: '',
   likes: {},
   toggleLike: () => {},
   addPost: async () => ({ error: null }),
@@ -36,20 +36,44 @@ function pathFromPublicUrl(url, bucket) {
   return url.slice(idx + marker.length);
 }
 
+// Ensures a profiles row exists for this user before we try to insert a post
+// that has a foreign key pointing at it (posts.user_id -> profiles.id).
+// Cheap no-op if the row is already there.
+async function ensureProfileRow(authUser) {
+  if (!authUser) return;
+  const { data } = await supabase.from('profiles').select('id').eq('id', authUser.id).maybeSingle();
+  if (data) return;
+
+  const fallbackUsername =
+    authUser.user_metadata?.username ||
+    authUser.email?.split('@')[0] ||
+    `user_${authUser.id.slice(0, 6)}`;
+
+  await supabase.from('profiles').upsert({ id: authUser.id, username: fallbackUsername }, { onConflict: 'id' });
+}
+
 export default function PostsProvider({ children }) {
   const { user } = useAuth();
   const [realPosts, setRealPosts] = useState([]);
-  const [likes, setLikes] = useState({}); // { [postId]: liked-by-me } — shared by real & mock posts
+  const [likes, setLikes] = useState({}); // { [postId]: liked-by-me }
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const loadPosts = useCallback(async () => {
-    const { data: rows, error } = await supabase
+    setError('');
+    const { data: rows, error: fetchError } = await supabase
       .from('posts')
       .select('id, user_id, text, tag, images, cta, created_at, profiles(username, avatar, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50);
 
-    if (error || !rows) {
+    if (fetchError) {
+      console.warn('Failed to load posts:', fetchError.message);
+      setError(fetchError.message);
+      setLoading(false);
+      return;
+    }
+    if (!rows) {
       setLoading(false);
       return;
     }
@@ -84,7 +108,7 @@ export default function PostsProvider({ children }) {
         gradient: hasImages ? undefined : null,
         cta: r.cta || undefined,
         // base count excludes my own like — the shared `likes[id]` toggle adds
-        // it back, same convention the mock feed already uses everywhere.
+        // it back in, same display convention used everywhere else.
         likes: total - (myLike ? 1 : 0),
         comments: 0,
         time: relativeTime(r.created_at),
@@ -109,7 +133,7 @@ export default function PostsProvider({ children }) {
     loadPosts();
   }, [loadPosts]);
 
-  const posts = [...realPosts, ...SEED_POSTS];
+  const posts = realPosts;
 
   async function uploadPostImage(file) {
     if (!user) return { error: new Error('Ingia kwanza kupakia picha.') };
@@ -142,14 +166,27 @@ export default function PostsProvider({ children }) {
   async function addPost(draft) {
     if (!user) return { error: new Error('Ingia kwanza kuchapisha.') };
 
-    const { error } = await supabase.from('posts').insert({
+    const payload = {
       user_id: user.id,
       text: draft.text,
       tag: draft.tag,
       images: draft.images && draft.images.length ? draft.images : [],
       cta: draft.cta || null,
-    });
-    if (error) return { error };
+    };
+
+    let { error } = await supabase.from('posts').insert(payload);
+
+    // Most common real-world failure: the profiles row (posts.user_id's FK
+    // target) doesn't exist yet — self-heal it and retry once.
+    if (error && (error.code === '23503' || /foreign key/i.test(error.message || ''))) {
+      await ensureProfileRow(user);
+      ({ error } = await supabase.from('posts').insert(payload));
+    }
+
+    if (error) {
+      console.warn('Failed to create post:', error.message);
+      return { error };
+    }
 
     await loadPosts();
     return { error: null };
@@ -163,7 +200,6 @@ export default function PostsProvider({ children }) {
     const { error } = await supabase.from('posts').delete().eq('id', id).eq('user_id', user.id);
     if (error) return { error };
 
-    // Best-effort: clean up this post's uploaded images too.
     if (target?.images?.length) {
       const paths = target.images
         .map((url) => pathFromPublicUrl(url, 'post-images'))
@@ -178,11 +214,10 @@ export default function PostsProvider({ children }) {
   }
 
   async function toggleLike(id) {
-    const isReal = typeof id === 'string';
     const wasLiked = !!likes[id];
     setLikes((l) => ({ ...l, [id]: !wasLiked }));
 
-    if (!isReal || !user) return; // mock posts: local-only toggle, same as before
+    if (!user) return;
 
     const action = wasLiked
       ? supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', user.id)
@@ -197,6 +232,7 @@ export default function PostsProvider({ children }) {
       value={{
         posts,
         loading,
+        error,
         likes,
         toggleLike,
         addPost,

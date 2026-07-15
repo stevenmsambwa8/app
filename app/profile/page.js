@@ -5,7 +5,8 @@ import UserBadge from '../../components/UserBadge'
 import Avatar from '../../components/Avatar'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
-import { ME, POSTS, FLEX_CARDS } from '../../lib/mockData'
+import { usePosts } from '../../components/PostsProvider'
+import { ME, FLEX_CARDS } from '../../lib/mockData'
 import styles from './page.module.css'
 
 export default function ProfilePage() {
@@ -19,7 +20,8 @@ export default function ProfilePage() {
 
   const { user, profile, loading, updateUsername, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
-  const myPosts = POSTS.filter((p) => p.kind === 'post').slice(0, 3);
+  const { posts } = usePosts();
+  const myPosts = posts.filter((p) => p.uid === user?.id);
 
   if (loading) return null;
 
@@ -154,7 +156,7 @@ export default function ProfilePage() {
         <p className={styles.bio}>{bioText}</p>
 
         <div className={styles.statsRow}>
-          <span><b>214</b> <span>machapisho</span></span>
+          <span><b>{myPosts.length}</b> <span>machapisho</span></span>
           <span><b>1.2k</b> <span>wafuasi</span></span>
           <span><b>318</b> <span>anaowafuata</span></span>
         </div>
@@ -176,15 +178,21 @@ export default function ProfilePage() {
 
         {tab === 'posts' ? (
           <div className={styles.posts}>
-            {myPosts.map((p) => (
-              <div key={p.id} className={`card ${styles.postCard}`}>
-                <p className={styles.postText}>{p.text}</p>
-                <div className={styles.postMeta}>
-                  <span><i className="ri-thumb-up-line" />{p.likes}</span>
-                  <span><i className="ri-chat-3-line" />{p.comments}</span>
+            {myPosts.length === 0 ? (
+              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+                Hujachapisha bado.
+              </p>
+            ) : (
+              myPosts.map((p) => (
+                <div key={p.id} className={`card ${styles.postCard}`}>
+                  <p className={styles.postText}>{p.text}</p>
+                  <div className={styles.postMeta}>
+                    <span><i className="ri-thumb-up-line" />{p.likes}</span>
+                    <span><i className="ri-chat-3-line" />{p.comments}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         ) : (
           <div className={styles.flexGrid}>
