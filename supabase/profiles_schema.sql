@@ -5,7 +5,7 @@ create table if not exists public.profiles (
   username text unique,
   avatar text default '🐧',
   avatar_url text,
-  bio text default 'Everything about business!',
+  bio text default 'Daima ninafuatilia mwanga mzuri na urafiki bora.',
   vibe text default 'Mwanachama Mpya',
   created_at timestamptz default now()
 );

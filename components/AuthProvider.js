@@ -1,6 +1,26 @@
 'use client'
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { compressToWebp } from '../lib/compressImage'
+
+// Removes every file in a user's own avatars/<uid>/ folder except the one
+// that matches their current profile.avatar_url. Runs client-side using the
+// signed-in user's own storage permissions (folder-scoped RLS), so it only
+// ever touches that user's own files — safe to call often.
+async function sweepAvatarFolder(uid, currentAvatarUrl) {
+  if (!uid) return;
+  const { data: files, error } = await supabase.storage.from('avatars').list(uid);
+  if (error || !files || files.length === 0) return;
+
+  const currentFileName = currentAvatarUrl ? currentAvatarUrl.split('/').pop() : null;
+  const orphaned = files
+    .filter((f) => f.name !== currentFileName)
+    .map((f) => `${uid}/${f.name}`);
+
+  if (orphaned.length > 0) {
+    await supabase.storage.from('avatars').remove(orphaned);
+  }
+}
 
 const AuthContext = createContext({
   user: null,
@@ -35,6 +55,7 @@ export default function AuthProvider({ children }) {
 
     if (data) {
       setProfile(data);
+      sweepAvatarFolder(authUser.id, data.avatar_url).catch(() => {});
       return;
     }
 
@@ -133,12 +154,22 @@ export default function AuthProvider({ children }) {
     if (!uid) return { error: new Error('Umetoka. Ingia kwanza.') };
     if (!file) return { error: new Error('Hakuna picha iliyochaguliwa.') };
 
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${uid}/${Date.now()}.${ext}`;
+    let compressed;
+    try {
+      compressed = await compressToWebp(file, { maxBytes: 1024 });
+    } catch (compressError) {
+      return { error: compressError };
+    }
+
+    const path = `${uid}/${Date.now()}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(path, file, { upsert: true, cacheControl: '3600' });
+      .upload(path, compressed, {
+        upsert: true,
+        cacheControl: '3600',
+        contentType: 'image/webp',
+      });
     if (uploadError) return { error: uploadError };
 
     const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(path);
@@ -153,6 +184,10 @@ export default function AuthProvider({ children }) {
     if (updateError) return { error: updateError };
 
     setProfile((p) => ({ ...(p || {}), ...data }));
+
+    // Old avatar file(s) for this user are now orphaned — remove them immediately.
+    sweepAvatarFolder(uid, avatar_url).catch(() => {});
+
     return { error: null, avatar_url };
   }
 
