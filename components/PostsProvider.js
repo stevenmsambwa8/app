@@ -63,7 +63,7 @@ export default function PostsProvider({ children }) {
     setError('');
     const { data: rows, error: fetchError } = await supabase
       .from('posts')
-      .select('id, user_id, text, tag, images, cta, created_at, profiles(username, avatar, avatar_url)')
+      .select('id, user_id, text, tag, images, cta, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50);
 
