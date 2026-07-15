@@ -5,8 +5,12 @@ import UserBadge from './UserBadge'
 import { userById, commentsForPost } from '../lib/mockData'
 import styles from './PostViewer.module.css'
 
+function isImageUrl(src) {
+  return typeof src === 'string' && /^https?:\/\//.test(src);
+}
+
 export default function PostViewer({ post, liked, likeCount, onLike, onClose }) {
-  const user = userById(post.uid);
+  const user = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
@@ -42,7 +46,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
             <i className="ri-arrow-left-line" />
           </button>
           <div className={styles.who}>
-            <Avatar emoji={user.avatar} />
+            <Avatar emoji={user.avatar} src={user.avatarUrl} alt={user.name} />
             <div>
               <div className={styles.nameRow}>
                 <span className={styles.name}>{user.name}</span>
@@ -58,11 +62,18 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
             {images.length > 1 ? (
               <div className={styles.carouselWrap}>
                 <div className={styles.carousel} onScroll={handleScroll}>
-                  {images.map((bg, i) => (
-                    <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
-                      <i className="ri-image-line" />
-                    </div>
-                  ))}
+                  {images.map((bg, i) =>
+                    isImageUrl(bg) ? (
+                      <div key={i} className={styles.media}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={bg} alt="" className={styles.mediaImg} />
+                      </div>
+                    ) : (
+                      <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
+                        <i className="ri-image-line" />
+                      </div>
+                    )
+                  )}
                 </div>
                 <span className={styles.count}>{active + 1}/{images.length}</span>
                 <div className={styles.dots}>
@@ -72,9 +83,16 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                 </div>
               </div>
             ) : images.length === 1 ? (
-              <div className={`${styles.media} texture`} style={{ background: images[0] }}>
-                <i className="ri-image-line" />
-              </div>
+              isImageUrl(images[0]) ? (
+                <div className={styles.media}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={images[0]} alt="" className={styles.mediaImg} />
+                </div>
+              ) : (
+                <div className={`${styles.media} texture`} style={{ background: images[0] }}>
+                  <i className="ri-image-line" />
+                </div>
+              )
             ) : null}
           </div>
 

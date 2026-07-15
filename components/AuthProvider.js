@@ -156,7 +156,11 @@ export default function AuthProvider({ children }) {
 
     let compressed;
     try {
-      compressed = await compressToWebp(file, { maxBytes: 1024 });
+      compressed = await compressToWebp(file, {
+        maxBytes: 10 * 1024,
+        startDimension: 200,
+        minDimension: 64,
+      });
     } catch (compressError) {
       return { error: compressError };
     }

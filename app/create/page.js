@@ -1,47 +1,117 @@
 'use client'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Avatar from '../../components/Avatar'
 import { usePosts } from '../../components/PostsProvider'
+import { useAuth } from '../../components/AuthProvider'
+import { useAuthModal } from '../../components/AuthModalProvider'
 import { ME, VIBES, IMAGE_PRESETS, CTA_ICON_PRESETS } from '../../lib/mockData'
 import styles from './page.module.css'
 
+const MAX_IMAGES = 5;
+
 export default function CreatePostPage() {
   const router = useRouter();
-  const { addPost } = usePosts();
+  const { addPost, uploadPostImage } = usePosts();
+  const { user, profile, loading: authLoading } = useAuth();
+  const { openAuth } = useAuthModal();
 
   const [text, setText] = useState('');
   const [tag, setTag] = useState(VIBES[0]);
-  const [images, setImages] = useState([]);
+  const [presetImages, setPresetImages] = useState([]);
+  const [photos, setPhotos] = useState([]); // [{ localId, url, uploading, error }]
   const [ctaOn, setCtaOn] = useState(false);
   const [ctaLabel, setCtaLabel] = useState('');
   const [ctaIcon, setCtaIcon] = useState(CTA_ICON_PRESETS[0].icon);
   const [posting, setPosting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const fileInputRef = useRef(null);
 
-  function toggleImage(preset) {
-    setImages((imgs) =>
-      imgs.includes(preset) ? imgs.filter((i) => i !== preset) : imgs.length < 5 ? [...imgs, preset] : imgs
+  const usedSlots = photos.length + presetImages.length;
+
+  if (authLoading) return null;
+
+  if (!user) {
+    return (
+      <div className={styles.wrap} style={{ textAlign: 'center', paddingTop: 60 }}>
+        <p style={{ marginBottom: 16 }}>Ingia ili kuunda chapisho.</p>
+        <button className="btnAccent" onClick={() => openAuth('signin')}>
+          Ingia / Jisajili
+        </button>
+      </div>
     );
   }
 
-  function handleSubmit(e) {
+  function toggleImage(preset) {
+    setPresetImages((imgs) => {
+      if (imgs.includes(preset)) return imgs.filter((i) => i !== preset);
+      if (usedSlots >= MAX_IMAGES) return imgs;
+      return [...imgs, preset];
+    });
+  }
+
+  async function handleFilesSelected(e) {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+
+    const room = MAX_IMAGES - usedSlots;
+    const toUpload = files.slice(0, Math.max(0, room));
+
+    for (const file of toUpload) {
+      if (!file.type.startsWith('image/')) continue;
+      const localId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setPhotos((p) => [...p, { localId, url: null, uploading: true, error: '' }]);
+
+      const { url, error } = await uploadPostImage(file);
+
+      setPhotos((p) =>
+        p.map((ph) =>
+          ph.localId === localId
+            ? { ...ph, uploading: false, url: url || null, error: error ? error.message : '' }
+            : ph
+        )
+      );
+    }
+  }
+
+  function removePhoto(localId) {
+    setPhotos((p) => p.filter((ph) => ph.localId !== localId));
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     if (!text.trim()) return;
+
+    const stillUploading = photos.some((p) => p.uploading);
+    if (stillUploading) {
+      setSubmitError('Subiri picha zimalize kupakia.');
+      return;
+    }
+
+    setSubmitError('');
     setPosting(true);
 
-    const draft = {
+    const uploadedUrls = photos.filter((p) => p.url).map((p) => p.url);
+    const finalImages = uploadedUrls.length ? uploadedUrls : presetImages;
+
+    const { error } = await addPost({
       text: text.trim(),
       tag,
-      images: images.length ? images : undefined,
-      gradient: images.length ? undefined : null,
+      images: finalImages.length ? finalImages : undefined,
       cta: ctaOn && ctaLabel.trim() ? { label: ctaLabel.trim(), icon: ctaIcon } : undefined,
-    };
+    });
 
-    setTimeout(() => {
-      addPost(draft);
-      router.push('/feed');
-    }, 400);
+    setPosting(false);
+
+    if (error) {
+      setSubmitError(error.message || 'Imeshindwa kuchapisha. Jaribu tena.');
+      return;
+    }
+    router.push('/feed');
   }
+
+  const displayName = profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || ME.name;
 
   return (
     <div className={styles.wrap}>
@@ -55,10 +125,10 @@ export default function CreatePostPage() {
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.who}>
-          <Avatar emoji={ME.avatar} size={40} ring />
+          <Avatar emoji={profile?.avatar || ME.avatar} src={profile?.avatar_url} size={40} ring />
           <div>
-            <div className={styles.name}>{ME.name}</div>
-            <div className={styles.handle}>{ME.handle}</div>
+            <div className={styles.name}>{displayName}</div>
+            <div className={styles.handle}>@{displayName}</div>
           </div>
         </div>
 
@@ -89,28 +159,80 @@ export default function CreatePostPage() {
 
         <div className={styles.section}>
           <p className={styles.sectionLabel}>
-            Picha ({images.length}/5) <span className={styles.hint}>gusa kuchagua, gusa tena kuondoa</span>
+            Picha ({usedSlots}/{MAX_IMAGES}) <span className={styles.hint}>zimebanwa kiotomatiki hadi 20KB kila moja</span>
           </p>
           <div className={styles.imageGrid}>
-            {IMAGE_PRESETS.map((preset, i) => {
-              const idx = images.indexOf(preset);
-              const selected = idx !== -1;
-              return (
+            {photos.map((p) => (
+              <div key={p.localId} className={styles.imageSwatch}>
+                {p.uploading ? (
+                  <div className={styles.photoStatus}>
+                    <i className="ri-loader-4-line" style={{ animation: 'spin 0.8s linear infinite' }} />
+                  </div>
+                ) : p.error ? (
+                  <div className={styles.photoStatus}>
+                    <i className="ri-error-warning-line" />
+                  </div>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.url} alt="" className={styles.photoThumb} />
+                )}
                 <button
                   type="button"
-                  key={i}
-                  className={`${styles.imageSwatch} texture`}
-                  style={{ background: preset }}
-                  onClick={() => toggleImage(preset)}
+                  className={styles.photoRemove}
+                  onClick={() => removePhoto(p.localId)}
+                  aria-label="Ondoa picha"
                 >
-                  {selected && <span className={styles.imageOrder}>{idx + 1}</span>}
+                  <i className="ri-close-line" />
                 </button>
-              );
-            })}
+              </div>
+            ))}
+
+            {usedSlots < MAX_IMAGES && presetImages.length === 0 && (
+              <button
+                type="button"
+                className={`${styles.imageSwatch} ${styles.addPhotoTile}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <i className="ri-image-add-line" />
+                <span>Ongeza Picha</span>
+              </button>
+            )}
           </div>
-          {images.length > 1 && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFilesSelected}
+            style={{ display: 'none' }}
+          />
+
+          {photos.length === 0 && (
+            <>
+              <p className={styles.hint} style={{ marginTop: 10 }}>Au chagua rangi badala ya picha:</p>
+              <div className={styles.imageGrid}>
+                {IMAGE_PRESETS.map((preset, i) => {
+                  const idx = presetImages.indexOf(preset);
+                  const selected = idx !== -1;
+                  return (
+                    <button
+                      type="button"
+                      key={i}
+                      className={`${styles.imageSwatch} texture`}
+                      style={{ background: preset }}
+                      onClick={() => toggleImage(preset)}
+                    >
+                      {selected && <span className={styles.imageOrder}>{idx + 1}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {(photos.length > 1 || presetImages.length > 1) && (
             <p className={styles.previewNote}>
-              <i className="ri-information-line" /> Zitaonekana kama picha {images.length} zinazopita kwenye chapisho
+              <i className="ri-information-line" /> Zitaonekana kama picha {usedSlots} zinazopita kwenye chapisho
             </p>
           )}
         </div>
@@ -157,6 +279,8 @@ export default function CreatePostPage() {
             </div>
           )}
         </div>
+
+        {submitError && <p className={styles.formError}>{submitError}</p>}
 
         <button type="submit" className={`btnAccent ${styles.submit}`} disabled={!text.trim() || posting}>
           {posting ? <i className={`ri-loader-4-line ${styles.spin}`} /> : 'Chapisha'}

@@ -6,8 +6,12 @@ import UserBadge from './UserBadge'
 import { userById } from '../lib/mockData'
 import styles from './PostCard.module.css'
 
+function isImageUrl(src) {
+  return typeof src === 'string' && /^https?:\/\//.test(src);
+}
+
 export default function PostCard({ post, liked, likeCount, onLike }) {
-  const user = userById(post.uid);
+  const user = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
@@ -37,12 +41,20 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       {images.length > 1 ? (
         <div className={styles.carouselWrap} onClick={viewPost}>
           <div className={styles.carousel} onScroll={handleScroll}>
-            {images.map((bg, i) => (
-              <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
-                {i === 0 && <span className={styles.mediaTag}>{post.tag}</span>}
-                <i className="ri-image-line" />
-              </div>
-            ))}
+            {images.map((bg, i) =>
+              isImageUrl(bg) ? (
+                <div key={i} className={`${styles.media} ${styles.mediaSlide}`}>
+                  {i === 0 && <span className={styles.mediaTag}>{post.tag}</span>}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={bg} alt="" className={styles.mediaImg} />
+                </div>
+              ) : (
+                <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
+                  {i === 0 && <span className={styles.mediaTag}>{post.tag}</span>}
+                  <i className="ri-image-line" />
+                </div>
+              )
+            )}
           </div>
           <span className={styles.count}>
             {active + 1}/{images.length}
@@ -54,16 +66,24 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         </div>
       ) : images.length === 1 ? (
-        <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
-          <span className={styles.mediaTag}>{post.tag}</span>
-          <i className="ri-image-line" />
-        </div>
+        isImageUrl(images[0]) ? (
+          <div className={styles.media} onClick={viewPost}>
+            <span className={styles.mediaTag}>{post.tag}</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={images[0]} alt="" className={styles.mediaImg} />
+          </div>
+        ) : (
+          <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
+            <span className={styles.mediaTag}>{post.tag}</span>
+            <i className="ri-image-line" />
+          </div>
+        )
       ) : null}
 
       <div className={styles.body}>
         <div className={styles.header}>
           <div className={styles.who}>
-            <Avatar emoji={user.avatar} />
+            <Avatar emoji={user.avatar} src={user.avatarUrl} alt={user.name} />
             <div>
               <div className={styles.nameRow}>
                 <span className={styles.name}>{user.name}</span>

@@ -4,16 +4,21 @@ import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
 import { usePosts } from '../../../components/PostsProvider'
+import { useAuth } from '../../../components/AuthProvider'
 import { userById, commentsForPost } from '../../../lib/mockData'
 import styles from './page.module.css'
+
+function isImageUrl(src) {
+  return typeof src === 'string' && /^https?:\/\//.test(src);
+}
 
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { posts, likes, toggleLike } = usePosts();
+  const { profile } = useAuth();
 
-  const postId = Number(params.id);
-  const post = posts.find((p) => p.id === postId && p.kind !== 'ad');
+  const post = posts.find((p) => String(p.id) === String(params.id) && p.kind !== 'ad');
 
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
@@ -45,7 +50,7 @@ export default function PostDetailPage() {
     );
   }
 
-  const user = userById(post.uid);
+  const user = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const liked = !!likes[post.id];
   const likeCount = post.likes + (liked ? 1 : 0);
@@ -100,7 +105,7 @@ export default function PostDetailPage() {
           <i className="ri-arrow-left-line" />
         </button>
         <div className={styles.who}>
-          <Avatar emoji={user.avatar} />
+          <Avatar emoji={user.avatar} src={user.avatarUrl} alt={user.name} />
           <div>
             <div className={styles.nameRow}>
               <span className={styles.name}>{user.name}</span>
@@ -116,11 +121,18 @@ export default function PostDetailPage() {
           {images.length > 1 ? (
             <div className={styles.carouselWrap}>
               <div className={styles.carousel} onScroll={handleScroll}>
-                {images.map((bg, i) => (
-                  <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
-                    <i className="ri-image-line" />
-                  </div>
-                ))}
+                {images.map((bg, i) =>
+                  isImageUrl(bg) ? (
+                    <div key={i} className={styles.media}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={bg} alt="" className={styles.mediaImg} />
+                    </div>
+                  ) : (
+                    <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
+                      <i className="ri-image-line" />
+                    </div>
+                  )
+                )}
               </div>
               <span className={styles.count}>{active + 1}/{images.length}</span>
               <div className={styles.dots}>
@@ -130,9 +142,16 @@ export default function PostDetailPage() {
               </div>
             </div>
           ) : images.length === 1 ? (
-            <div className={`${styles.media} texture`} style={{ background: images[0] }}>
-              <i className="ri-image-line" />
-            </div>
+            isImageUrl(images[0]) ? (
+              <div className={styles.media}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={images[0]} alt="" className={styles.mediaImg} />
+              </div>
+            ) : (
+              <div className={`${styles.media} texture`} style={{ background: images[0] }}>
+                <i className="ri-image-line" />
+              </div>
+            )
           ) : null}
         </div>
 
@@ -236,7 +255,7 @@ export default function PostDetailPage() {
       </div>
 
       <div className={styles.composer}>
-        <Avatar emoji={userById(0).avatar} size={32} />
+        <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
         <input
           className={styles.input}
           placeholder="Andika maoni..."

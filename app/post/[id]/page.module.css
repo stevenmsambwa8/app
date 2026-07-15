@@ -99,6 +99,13 @@
   flex-shrink: 0;
 }
 .carouselWrap { position: relative; }
+.mediaImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .carousel {
   display: flex;
   overflow-x: auto;
