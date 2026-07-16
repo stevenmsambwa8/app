@@ -57,7 +57,7 @@ async function ensureProfileRow(authUser) {
 }
 
 export default function PostsProvider({ children }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [realPosts, setRealPosts] = useState([]);
   const [likes, setLikes] = useState({}); // { [postId]: liked-by-me }
   const [loading, setLoading] = useState(true);
@@ -263,7 +263,7 @@ export default function PostsProvider({ children }) {
         'id, post_id, parent_id, user_id, text, audio_url, audio_duration, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
       )
       .eq('post_id', postId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.warn('Failed to load comments:', error.message);
@@ -345,16 +345,16 @@ export default function PostsProvider({ children }) {
         audioDuration: data.audio_duration || null,
         time: relativeTime(data.created_at),
         author: {
-          name: user.user_metadata?.username || user.email?.split('@')[0] || 'Wewe',
-          avatar: '🐧',
-          avatarUrl: null,
+          name: profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'Wewe',
+          avatar: profile?.avatar || '🐧',
+          avatarUrl: profile?.avatar_url || null,
         },
         replies: [],
       };
 
       return { error: null, comment };
     },
-    [user]
+    [user, profile]
   );
 
   const deleteComment = useCallback(

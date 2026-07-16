@@ -6,6 +6,7 @@ import UserBadge from '../../../components/UserBadge'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
 import { userById } from '../../../lib/mockData'
+import { getBlobDuration } from '../../../lib/audioDuration'
 import VoiceNote from '../../../components/VoiceNote'
 import styles from './page.module.css'
 
@@ -32,6 +33,14 @@ function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// Bolds every "@name" token in a comment/reply's text — mostly relevant for
+// the "@Name " a reply starts with, but applies anywhere in the text.
+function renderWithMentions(text) {
+  if (!text) return text;
+  const parts = text.split(/(@[a-zA-Z0-9_]+)/g);
+  return parts.map((part, i) => (part.startsWith('@') ? <strong key={i}>{part}</strong> : part));
 }
 
 // Voice notes auto-stop (and send) at this length, same idea as WhatsApp's cap.
@@ -253,7 +262,7 @@ export default function PostDetailPage() {
   function sendRecording() {
     const recorder = mediaRecorderRef.current;
     if (!recorder || recorder.state === 'inactive') return;
-    const seconds = recordSeconds;
+    const elapsedSeconds = recordSeconds;
     recorder.onstop = async () => {
       stopRecordingTracks();
       const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
@@ -261,6 +270,13 @@ export default function PostDetailPage() {
       if (blob.size === 0) return;
 
       setSendingVoice(true);
+
+      // Prefer the real duration read off the recorded file's own metadata;
+      // the elapsed-seconds timer is just a fallback (e.g. under 1s clips,
+      // where the interval hasn't ticked yet, would otherwise show 0:00).
+      const measured = await getBlobDuration(blob);
+      const duration = measured ? Math.round(measured) : Math.max(1, elapsedSeconds);
+
       const { error: uploadError, url } = await uploadVoiceNote(blob);
       if (uploadError || !url) {
         setSendingVoice(false);
@@ -271,18 +287,18 @@ export default function PostDetailPage() {
       const parentId = replyTarget ? replyTarget.rootId : null;
       const { error, comment: newComment } = await addComment(post.id, '', parentId, {
         url,
-        duration: seconds,
+        duration,
       });
       setSendingVoice(false);
       if (error || !newComment) return;
 
       if (parentId) {
         setComments((list) =>
-          list.map((c) => (c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c))
+          list.map((c) => (c.id === parentId ? { ...c, replies: [newComment, ...(c.replies || [])] } : c))
         );
         setOpenReplies((r) => ({ ...r, [parentId]: true }));
       } else {
-        setComments((list) => [...list, newComment]);
+        setComments((list) => [newComment, ...list]);
       }
       setReplyTarget(null);
     };
@@ -300,11 +316,11 @@ export default function PostDetailPage() {
 
     if (parentId) {
       setComments((list) =>
-        list.map((c) => (c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c))
+        list.map((c) => (c.id === parentId ? { ...c, replies: [newComment, ...(c.replies || [])] } : c))
       );
       setOpenReplies((r) => ({ ...r, [parentId]: true }));
     } else {
-      setComments((list) => [...list, newComment]);
+      setComments((list) => [newComment, ...list]);
     }
     setComment('');
     setReplyTarget(null);
@@ -479,7 +495,7 @@ export default function PostDetailPage() {
                         {c.audioUrl ? (
                           <VoiceNote src={c.audioUrl} duration={c.audioDuration} />
                         ) : (
-                          <p className={styles.commentText}>{c.text}</p>
+                          <p className={styles.commentText}>{renderWithMentions(c.text)}</p>
                         )}
                       </div>
                       <div className={styles.commentMeta}>
@@ -529,7 +545,7 @@ export default function PostDetailPage() {
                                         {r.audioUrl ? (
                                           <VoiceNote src={r.audioUrl} duration={r.audioDuration} />
                                         ) : (
-                                          <p className={styles.commentText}>{r.text}</p>
+                                          <p className={styles.commentText}>{renderWithMentions(r.text)}</p>
                                         )}
                                       </div>
                                       <div className={styles.commentMeta}>
