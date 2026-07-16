@@ -201,7 +201,20 @@ export default function PostDetailPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recordStreamRef.current = stream;
       recordedChunksRef.current = [];
-      const recorder = new MediaRecorder(stream);
+
+      // The default Opus bitrate (~128kbps) is built for music, not a voice
+      // note — 24kbps mono is still clearly intelligible speech at roughly
+      // 1/5th the size. Fall back to no options if the browser rejects them.
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus',
+          audioBitsPerSecond: 24000,
+        });
+      } catch {
+        recorder = new MediaRecorder(stream);
+      }
+
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           recordedChunksRef.current.push(e.data);
