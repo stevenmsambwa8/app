@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
@@ -10,6 +10,15 @@ import styles from './page.module.css'
 
 function isImageUrl(src) {
   return typeof src === 'string' && /^https?:\/\//.test(src);
+}
+
+// Matches an in-progress "@word" right at the cursor, e.g. typing "...hi @za"
+// while the caret sits right after the "za" — used to drive the mention
+// suggestion dropdown.
+function mentionQueryAt(value, caret) {
+  const upToCaret = value.slice(0, caret);
+  const match = upToCaret.match(/(?:^|\s)@([a-zA-Z0-9_]*)$/);
+  return match ? match[1] : null;
 }
 
 export default function PostDetailPage() {
@@ -27,49 +36,13 @@ export default function PostDetailPage() {
   const [posting, setPosting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [imageHidden, setImageHidden] = useState(false);
   const [openReplies, setOpenReplies] = useState({});
-  const [replyDrafts, setReplyDrafts] = useState({});
-  const [postingReply, setPostingReply] = useState({});
-  const lastScrollTop = useRef(0);
+  // { rootId, label } — rootId is the top-level comment this reply attaches
+  // to (replies are one level deep), label is who's shown in "Unajibu @Name".
+  const [replyTarget, setReplyTarget] = useState(null);
+  const [mentionQuery, setMentionQuery] = useState(null);
   const menuRef = useRef(null);
-  const commentsRef = useRef(null);
-  const commentsContentRef = useRef(null);
-  // Two numbers, kept live instead of frozen:
-  // - contentHeight: the comments content's natural (unclipped) height. Comes
-  //   from a ResizeObserver on the content div itself, so it stays correct as
-  //   comments load, replies open/close, fonts swap in, images finish, etc.
-  //   That div's height is unaffected by media-collapse toggling.
-  // - expandedClientHeight: the scroll container's visible height, but only
-  //   captured while media is NOT collapsed. Collapsing the media grows this
-  //   container's clientHeight, and re-reading it while collapsed would feed
-  //   that change back into the overflow calc — the flap loop this used to
-  //   have. Only trusting it in the expanded state avoids that loop while
-  //   still staying current (unlike a single frozen snapshot, which used to
-  //   go stale — most visibly with ~5 or fewer comments, where total height
-  //   sits right at the overflow threshold and any later content change
-  //   flips the decision).
-  const contentHeight = useRef(0);
-  const expandedClientHeight = useRef(0);
-
-  useLayoutEffect(() => {
-    const scrollEl = commentsRef.current;
-    const contentEl = commentsContentRef.current;
-    if (!scrollEl || !contentEl) return;
-
-    function measure() {
-      contentHeight.current = contentEl.scrollHeight;
-      if (!imageHidden) {
-        expandedClientHeight.current = scrollEl.clientHeight;
-      }
-    }
-
-    measure();
-
-    const ro = new ResizeObserver(measure);
-    ro.observe(contentEl);
-    return () => ro.disconnect();
-  }, [imageHidden, commentsLoading, comments]);
+  const commentInputRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,6 +72,30 @@ export default function PostDetailPage() {
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [menuOpen]);
 
+  // Names available for @mention — the post author plus everyone who has
+  // commented or replied so far.
+  const mentionCandidates = useMemo(() => {
+    const names = new Set();
+    const postAuthorName = post ? (post.author || userById(post.uid))?.name : null;
+    if (postAuthorName) names.add(postAuthorName);
+    function walk(list) {
+      list.forEach((c) => {
+        const n = (c.author || userById(c.uid))?.name;
+        if (n) names.add(n);
+        if (c.replies) walk(c.replies);
+      });
+    }
+    walk(comments);
+    return Array.from(names);
+  }, [comments, post]);
+
+  const mentionMatches =
+    mentionQuery !== null
+      ? mentionCandidates
+          .filter((n) => n.toLowerCase().startsWith(mentionQuery.toLowerCase()))
+          .slice(0, 5)
+      : [];
+
   if (!post) {
     return (
       <div className={styles.notFound}>
@@ -126,16 +123,61 @@ export default function PostDetailPage() {
     if (!error) router.push('/feed');
   }
 
+  function handleCommentChange(e) {
+    const value = e.target.value;
+    const caret = e.target.selectionStart ?? value.length;
+    setComment(value);
+    setMentionQuery(mentionQueryAt(value, caret));
+  }
+
+  function selectMention(name) {
+    const input = commentInputRef.current;
+    const caret = input ? input.selectionStart ?? comment.length : comment.length;
+    const before = comment.slice(0, caret);
+    const after = comment.slice(caret);
+    const replacedBefore = before.replace(/(?:^|\s)@([a-zA-Z0-9_]*)$/, (m) =>
+      (m.startsWith(' ') ? ' ' : '') + `@${name} `
+    );
+    setComment(replacedBefore + after);
+    setMentionQuery(null);
+    requestAnimationFrame(() => input?.focus());
+  }
+
+  // Tapping "Jibu" on any comment (top-level or reply) reuses this one
+  // composer instead of opening a duplicate reply box — it just tags the
+  // reply target and drops an @mention into the shared input.
+  function startReply(target, rootId) {
+    const name = (target.author || userById(target.uid))?.name || 'Mtumiaji';
+    setReplyTarget({ rootId, label: name });
+    setComment(`@${name} `);
+    setMentionQuery(null);
+    requestAnimationFrame(() => commentInputRef.current?.focus());
+  }
+
+  function cancelReply() {
+    setReplyTarget(null);
+  }
+
   async function handleSendComment() {
     const text = comment.trim();
     if (!text || posting) return;
     setPosting(true);
-    const { error, comment: newComment } = await addComment(post.id, text);
+    const parentId = replyTarget ? replyTarget.rootId : null;
+    const { error, comment: newComment } = await addComment(post.id, text, parentId);
     setPosting(false);
-    if (!error && newComment) {
-      setComments((c) => [...c, newComment]);
-      setComment('');
+    if (error || !newComment) return;
+
+    if (parentId) {
+      setComments((list) =>
+        list.map((c) => (c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c))
+      );
+      setOpenReplies((r) => ({ ...r, [parentId]: true }));
+    } else {
+      setComments((list) => [...list, newComment]);
     }
+    setComment('');
+    setReplyTarget(null);
+    setMentionQuery(null);
   }
 
   async function handleDeleteComment(target, isReply) {
@@ -160,21 +202,6 @@ export default function PostDetailPage() {
     setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
   }
 
-  async function handleSendReply(parent) {
-    const text = (replyDrafts[parent.id] || '').trim();
-    if (!text || postingReply[parent.id]) return;
-    setPostingReply((p) => ({ ...p, [parent.id]: true }));
-    const { error, comment: newReply } = await addComment(post.id, text, parent.id);
-    setPostingReply((p) => ({ ...p, [parent.id]: false }));
-    if (!error && newReply) {
-      setComments((list) =>
-        list.map((c) => (c.id === parent.id ? { ...c, replies: [...(c.replies || []), newReply] } : c))
-      );
-      setReplyDrafts((d) => ({ ...d, [parent.id]: '' }));
-      setOpenReplies((r) => ({ ...r, [parent.id]: true }));
-    }
-  }
-
   function countAllComments(list) {
     return list.reduce((sum, c) => sum + 1 + (c.replies ? countAllComments(c.replies) : 0), 0);
   }
@@ -183,39 +210,6 @@ export default function PostDetailPage() {
     const el = e.currentTarget;
     const idx = Math.round(el.scrollLeft / el.clientWidth);
     if (idx !== active) setActive(idx);
-  }
-
-  function handleCommentsScroll(e) {
-    const el = e.currentTarget;
-    // Live content height minus the container's height while expanded — see
-    // the ResizeObserver setup above for why these are tracked this way
-    // instead of a single frozen snapshot.
-    const overflow = contentHeight.current - expandedClientHeight.current;
-
-    // Not enough content to actually scroll — keep media visible, don't react to bounce/noise.
-    if (overflow < 24) {
-      lastScrollTop.current = 0;
-      setImageHidden(false);
-      return;
-    }
-
-    const top = Math.max(0, el.scrollTop);
-    const prev = lastScrollTop.current;
-    const delta = top - prev;
-    lastScrollTop.current = top;
-
-    if (top <= 0) {
-      setImageHidden(false);
-      return;
-    }
-    // Ignore tiny jitters (momentum/rubber-band noise) so it doesn't flicker.
-    if (Math.abs(delta) < 6) return;
-
-    if (delta > 0) {
-      setImageHidden(true);
-    } else {
-      setImageHidden(false);
-    }
   }
 
   return (
@@ -256,8 +250,17 @@ export default function PostDetailPage() {
         )}
       </div>
 
-      <div className={styles.top}>
-        <div className={`${styles.mediaCollapse} ${imageHidden ? styles.mediaCollapsed : ''}`}>
+      {/*
+        Everything below the header scrolls together as one natural page —
+        post media, text, actions, and the full comments list all in one
+        flow. The old approach hid the image on scroll to "make room," which
+        needed a scroll listener guessing at direction/overflow and kept
+        producing race conditions on short comment lists. This way there's
+        nothing to guess: scrolling down naturally moves the image out of
+        view and comments get the full viewport, with no listener at all.
+      */}
+      <div className={styles.scrollArea}>
+        <div className={styles.top}>
           {images.length > 1 ? (
             <div className={styles.carouselWrap}>
               <div className={styles.carousel} onScroll={handleScroll}>
@@ -293,39 +296,37 @@ export default function PostDetailPage() {
               </div>
             )
           ) : null}
-        </div>
 
-        <div className={styles.topBody}>
-          <p className={styles.text}>{post.text}</p>
+          <div className={styles.topBody}>
+            <p className={styles.text}>{post.text}</p>
 
-          {post.cta && (
-            <button className={`btnAccent ${styles.cta}`}>
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </button>
-          )}
+            {post.cta && (
+              <button className={`btnAccent ${styles.cta}`}>
+                <i className={post.cta.icon || 'ri-arrow-right-line'} />
+                {post.cta.label}
+              </button>
+            )}
 
-          <div className={styles.actions}>
-            <button
-              className={`${styles.action} ${liked ? styles.liked : ''}`}
-              onClick={() => toggleLike(post.id)}
-            >
-              <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-              {likeCount}
-            </button>
-            <span className={styles.action}>
-              <i className="ri-chat-3-line" />
-              {countAllComments(comments)}
-            </span>
-            <button className={`${styles.action} ${styles.spacer}`}>
-              <i className="ri-share-forward-line" />
-            </button>
+            <div className={styles.actions}>
+              <button
+                className={`${styles.action} ${liked ? styles.liked : ''}`}
+                onClick={() => toggleLike(post.id)}
+              >
+                <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+                {likeCount}
+              </button>
+              <span className={styles.action}>
+                <i className="ri-chat-3-line" />
+                {countAllComments(comments)}
+              </span>
+              <button className={`${styles.action} ${styles.spacer}`}>
+                <i className="ri-share-forward-line" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className={styles.commentsScroll} ref={commentsRef} onScroll={handleCommentsScroll}>
-        <div className={styles.commentsSection} ref={commentsContentRef}>
+        <div className={styles.commentsSection}>
           <p className={styles.commentsTitle}>Maoni</p>
           <div className={styles.commentsList}>
             {commentsLoading ? (
@@ -351,7 +352,7 @@ export default function PostDetailPage() {
                         <button
                           type="button"
                           className={styles.commentLike}
-                          onClick={() => setOpenReplies((r) => ({ ...r, [`reply-${c.id}`]: !r[`reply-${c.id}`] }))}
+                          onClick={() => startReply(c, c.id)}
                         >
                           <i className="ri-reply-line" />
                           Jibu
@@ -367,30 +368,6 @@ export default function PostDetailPage() {
                           </button>
                         )}
                       </div>
-
-                      {openReplies[`reply-${c.id}`] && (
-                        <div className={styles.replyComposer}>
-                          <input
-                            className={styles.replyInput}
-                            placeholder={user ? 'Jibu maoni haya...' : 'Ingia ili kujibu'}
-                            value={replyDrafts[c.id] || ''}
-                            onChange={(e) => setReplyDrafts((d) => ({ ...d, [c.id]: e.target.value }))}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSendReply(c);
-                            }}
-                            disabled={!user || postingReply[c.id]}
-                          />
-                          <button
-                            type="button"
-                            className={styles.send}
-                            disabled={!user || !(replyDrafts[c.id] || '').trim() || postingReply[c.id]}
-                            onClick={() => handleSendReply(c)}
-                            aria-label="Tuma jibu"
-                          >
-                            <i className={postingReply[c.id] ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
-                          </button>
-                        </div>
-                      )}
 
                       {hasReplies && (
                         <>
@@ -418,6 +395,14 @@ export default function PostDetailPage() {
                                       </div>
                                       <div className={styles.commentMeta}>
                                         <span>{r.time}</span>
+                                        <button
+                                          type="button"
+                                          className={styles.commentLike}
+                                          onClick={() => startReply(r, c.id)}
+                                        >
+                                          <i className="ri-reply-line" />
+                                          Jibu
+                                        </button>
                                         {canDeleteReply && (
                                           <button
                                             type="button"
@@ -446,26 +431,55 @@ export default function PostDetailPage() {
         </div>
       </div>
 
-      <div className={styles.composer}>
-        <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
-        <input
-          className={styles.input}
-          placeholder={user ? 'Andika maoni...' : 'Ingia ili kutoa maoni'}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') handleSendComment();
-          }}
-          disabled={!user || posting}
-        />
-        <button
-          className={styles.send}
-          disabled={!comment.trim() || !user || posting}
-          aria-label="Tuma"
-          onClick={handleSendComment}
-        >
-          <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
-        </button>
+      <div className={styles.composerWrap}>
+        {mentionQuery !== null && mentionMatches.length > 0 && (
+          <div className={styles.mentionList}>
+            {mentionMatches.map((name) => (
+              <button
+                key={name}
+                type="button"
+                className={styles.mentionItem}
+                onClick={() => selectMention(name)}
+              >
+                @{name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {replyTarget && (
+          <div className={styles.replyBanner}>
+            <span>
+              Unajibu <b>@{replyTarget.label}</b>
+            </span>
+            <button type="button" onClick={cancelReply} aria-label="Ghairi jibu">
+              <i className="ri-close-line" />
+            </button>
+          </div>
+        )}
+
+        <div className={styles.composer}>
+          <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
+          <input
+            ref={commentInputRef}
+            className={styles.input}
+            placeholder={user ? 'Andika maoni...' : 'Ingia ili kutoa maoni'}
+            value={comment}
+            onChange={handleCommentChange}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSendComment();
+            }}
+            disabled={!user || posting}
+          />
+          <button
+            className={styles.send}
+            disabled={!comment.trim() || !user || posting}
+            aria-label="Tuma"
+            onClick={handleSendComment}
+          >
+            <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
+          </button>
+        </div>
       </div>
     </div>
   );
