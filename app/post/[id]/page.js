@@ -540,14 +540,14 @@ export default function PostDetailPage() {
                           <i className="ri-reply-line" />
                           Jibu
                         </button>
-                        {!!user && c.uid !== user.id && (
+                        {!!user && c.uid !== user.id && !isFollowing(c.uid) && (
                           <button
                             type="button"
                             className={styles.commentFollow}
                             disabled={!!pending[c.uid]}
                             onClick={() => handleFollowClick(c.uid)}
                           >
-                            {isFollowing(c.uid) ? 'Unamfuata' : 'Fuata'}
+                            Fuata
                           </button>
                         )}
                         {canDelete && (
@@ -610,14 +610,14 @@ export default function PostDetailPage() {
                                           <i className="ri-reply-line" />
                                           Jibu
                                         </button>
-                                        {!!user && r.uid !== user.id && (
+                                        {!!user && r.uid !== user.id && !isFollowing(r.uid) && (
                                           <button
                                             type="button"
                                             className={styles.commentFollow}
                                             disabled={!!pending[r.uid]}
                                             onClick={() => handleFollowClick(r.uid)}
                                           >
-                                            {isFollowing(r.uid) ? 'Unamfuata' : 'Fuata'}
+                                            Fuata
                                           </button>
                                         )}
                                         {canDeleteReply && (

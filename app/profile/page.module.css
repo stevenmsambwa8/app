@@ -14,6 +14,18 @@
   justify-content: space-between;
   margin-top: -44px;
 }
+.headActions { display: flex; align-items: center; gap: 8px; }
+.messageBtn {
+  width: 38px; height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: var(--chip-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
 .avatarBigRing {
   display: inline-flex;
   padding: 3px;

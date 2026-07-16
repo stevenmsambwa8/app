@@ -104,7 +104,17 @@ export default function UserProfilePage() {
               <div className={styles.avatarBig}>{avatarEmoji}</div>
             )}
           </div>
-          <FollowBtn following={following} pending={!!pending[uid]} onClick={handleFollowClick} />
+          <div className={styles.headActions}>
+            <button
+              type="button"
+              className={styles.messageBtn}
+              onClick={() => (user ? router.push(`/dm?with=${uid}`) : openAuth('signin'))}
+              aria-label="Tuma ujumbe"
+            >
+              <i className="ri-chat-3-line" />
+            </button>
+            <FollowBtn following={following} pending={!!pending[uid]} onClick={handleFollowClick} />
+          </div>
         </div>
 
         <div className={styles.nameRow}>
