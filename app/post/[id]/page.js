@@ -6,6 +6,7 @@ import UserBadge from '../../../components/UserBadge'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
 import { userById } from '../../../lib/mockData'
+import VoiceNote from '../../../components/VoiceNote'
 import styles from './page.module.css'
 
 function isImageUrl(src) {
@@ -21,10 +22,17 @@ function mentionQueryAt(value, caret) {
   return match ? match[1] : null;
 }
 
+function formatRecordTime(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { posts, likes, toggleLike, deletePost, fetchComments, addComment, deleteComment } = usePosts();
+  const { posts, likes, toggleLike, deletePost, fetchComments, addComment, deleteComment, uploadVoiceNote } =
+    usePosts();
   const { user, profile } = useAuth();
 
   const post = posts.find((p) => String(p.id) === String(params.id) && p.kind !== 'ad');
@@ -41,8 +49,15 @@ export default function PostDetailPage() {
   // to (replies are one level deep), label is who's shown in "Unajibu @Name".
   const [replyTarget, setReplyTarget] = useState(null);
   const [mentionQuery, setMentionQuery] = useState(null);
+  const [recording, setRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const [sendingVoice, setSendingVoice] = useState(false);
   const menuRef = useRef(null);
   const commentInputRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const recordStreamRef = useRef(null);
+  const recordTimerRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +77,13 @@ export default function PostDetailPage() {
       cancelled = true;
     };
   }, [post?.id, fetchComments]);
+
+  useEffect(() => {
+    return () => {
+      clearInterval(recordTimerRef.current);
+      recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -156,6 +178,81 @@ export default function PostDetailPage() {
 
   function cancelReply() {
     setReplyTarget(null);
+  }
+
+  async function startRecording() {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordStreamRef.current = stream;
+      recordedChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setRecordSeconds(0);
+      setRecording(true);
+      recordTimerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
+    } catch (err) {
+      console.warn('Haiwezi kufikia maikrofoni:', err.message);
+    }
+  }
+
+  function stopRecordingTracks() {
+    clearInterval(recordTimerRef.current);
+    recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    recordStreamRef.current = null;
+    setRecording(false);
+  }
+
+  function cancelRecording() {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.ondataavailable = null;
+      mediaRecorderRef.current.stop();
+    }
+    recordedChunksRef.current = [];
+    stopRecordingTracks();
+  }
+
+  function sendRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    const seconds = recordSeconds;
+    recorder.onstop = async () => {
+      stopRecordingTracks();
+      const blob = new Blob(recordedChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
+      recordedChunksRef.current = [];
+      if (blob.size === 0) return;
+
+      setSendingVoice(true);
+      const { error: uploadError, url } = await uploadVoiceNote(blob);
+      if (uploadError || !url) {
+        setSendingVoice(false);
+        console.warn('Imeshindwa kupakia sauti:', uploadError?.message);
+        return;
+      }
+
+      const parentId = replyTarget ? replyTarget.rootId : null;
+      const { error, comment: newComment } = await addComment(post.id, '', parentId, {
+        url,
+        duration: seconds,
+      });
+      setSendingVoice(false);
+      if (error || !newComment) return;
+
+      if (parentId) {
+        setComments((list) =>
+          list.map((c) => (c.id === parentId ? { ...c, replies: [...(c.replies || []), newComment] } : c))
+        );
+        setOpenReplies((r) => ({ ...r, [parentId]: true }));
+      } else {
+        setComments((list) => [...list, newComment]);
+      }
+      setReplyTarget(null);
+    };
+    recorder.stop();
   }
 
   async function handleSendComment() {
@@ -345,7 +442,11 @@ export default function PostDetailPage() {
                     <div className={styles.commentBody}>
                       <div className={styles.commentBubble}>
                         <span className={styles.commentName}>{cu.name}</span>
-                        <p className={styles.commentText}>{c.text}</p>
+                        {c.audioUrl ? (
+                          <VoiceNote src={c.audioUrl} duration={c.audioDuration} />
+                        ) : (
+                          <p className={styles.commentText}>{c.text}</p>
+                        )}
                       </div>
                       <div className={styles.commentMeta}>
                         <span>{c.time}</span>
@@ -391,7 +492,11 @@ export default function PostDetailPage() {
                                     <div className={styles.commentBody}>
                                       <div className={styles.commentBubble}>
                                         <span className={styles.commentName}>{ru.name}</span>
-                                        <p className={styles.commentText}>{r.text}</p>
+                                        {r.audioUrl ? (
+                                          <VoiceNote src={r.audioUrl} duration={r.audioDuration} />
+                                        ) : (
+                                          <p className={styles.commentText}>{r.text}</p>
+                                        )}
                                       </div>
                                       <div className={styles.commentMeta}>
                                         <span>{r.time}</span>
@@ -458,28 +563,67 @@ export default function PostDetailPage() {
           </div>
         )}
 
-        <div className={styles.composer}>
-          <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
-          <input
-            ref={commentInputRef}
-            className={styles.input}
-            placeholder={user ? 'Andika maoni...' : 'Ingia ili kutoa maoni'}
-            value={comment}
-            onChange={handleCommentChange}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleSendComment();
-            }}
-            disabled={!user || posting}
-          />
-          <button
-            className={styles.send}
-            disabled={!comment.trim() || !user || posting}
-            aria-label="Tuma"
-            onClick={handleSendComment}
-          >
-            <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
-          </button>
-        </div>
+        {recording ? (
+          <div className={styles.composer}>
+            <button
+              type="button"
+              className={styles.recordCancel}
+              onClick={cancelRecording}
+              disabled={sendingVoice}
+              aria-label="Ghairi sauti"
+            >
+              <i className="ri-delete-bin-line" />
+            </button>
+            <div className={styles.recordingIndicator}>
+              <span className={styles.recordDot} />
+              {sendingVoice ? 'Inatuma…' : `Inarekodi… ${formatRecordTime(recordSeconds)}`}
+            </div>
+            <button
+              type="button"
+              className={styles.send}
+              onClick={sendRecording}
+              disabled={sendingVoice}
+              aria-label="Tuma sauti"
+            >
+              <i className={sendingVoice ? 'ri-loader-4-line' : 'ri-check-line'} />
+            </button>
+          </div>
+        ) : (
+          <div className={styles.composer}>
+            <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
+            <input
+              ref={commentInputRef}
+              className={styles.input}
+              placeholder={user ? 'Andika maoni...' : 'Ingia ili kutoa maoni'}
+              value={comment}
+              onChange={handleCommentChange}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSendComment();
+              }}
+              disabled={!user || posting}
+            />
+            {comment.trim() ? (
+              <button
+                className={styles.send}
+                disabled={!user || posting}
+                aria-label="Tuma"
+                onClick={handleSendComment}
+              >
+                <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.send}
+                disabled={!user}
+                aria-label="Rekodi ujumbe wa sauti"
+                onClick={startRecording}
+              >
+                <i className="ri-mic-line" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

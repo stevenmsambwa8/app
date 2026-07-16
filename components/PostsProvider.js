@@ -13,6 +13,7 @@ const PostsContext = createContext({
   addPost: async () => ({ error: null }),
   deletePost: async () => ({ error: null }),
   uploadPostImage: async () => ({ error: null }),
+  uploadVoiceNote: async () => ({ error: null }),
   refreshPosts: async () => {},
   fetchComments: async () => ({ error: null, comments: [] }),
   addComment: async () => ({ error: null }),
@@ -176,6 +177,23 @@ export default function PostsProvider({ children }) {
     return { error: null, url: data.publicUrl };
   }
 
+  async function uploadVoiceNote(blob) {
+    if (!user) return { error: new Error('Ingia kwanza kupakia ujumbe wa sauti.') };
+
+    const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.webm`;
+    const { error: uploadError } = await supabase.storage
+      .from('voice-notes')
+      .upload(path, blob, {
+        upsert: false,
+        cacheControl: '3600',
+        contentType: blob.type || 'audio/webm',
+      });
+    if (uploadError) return { error: uploadError };
+
+    const { data } = supabase.storage.from('voice-notes').getPublicUrl(path);
+    return { error: null, url: data.publicUrl };
+  }
+
   async function addPost(draft) {
     if (!user) return { error: new Error('Ingia kwanza kuchapisha.') };
 
@@ -230,7 +248,7 @@ export default function PostsProvider({ children }) {
     const { data, error } = await supabase
       .from('comments')
       .select(
-        'id, post_id, parent_id, user_id, text, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
+        'id, post_id, parent_id, user_id, text, audio_url, audio_duration, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
       )
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
@@ -245,6 +263,8 @@ export default function PostsProvider({ children }) {
       uid: c.user_id,
       parentId: c.parent_id,
       text: c.text,
+      audioUrl: c.audio_url || null,
+      audioDuration: c.audio_duration || null,
       time: relativeTime(c.created_at),
       author: c.profiles
         ? {
@@ -274,12 +294,19 @@ export default function PostsProvider({ children }) {
     return { error: null, comments: roots };
   }
 
-  async function addComment(postId, text, parentId = null) {
+  async function addComment(postId, text, parentId = null, audio = null) {
     if (!user) return { error: new Error('Ingia kwanza kutoa maoni.') };
     const trimmed = (text || '').trim();
-    if (!trimmed) return { error: new Error('Andika maoni kwanza.') };
+    if (!trimmed && !audio) return { error: new Error('Andika maoni kwanza.') };
 
-    const payload = { post_id: postId, user_id: user.id, text: trimmed, parent_id: parentId || null };
+    const payload = {
+      post_id: postId,
+      user_id: user.id,
+      text: trimmed || null,
+      parent_id: parentId || null,
+      audio_url: audio?.url || null,
+      audio_duration: audio?.duration || null,
+    };
     let { data, error } = await supabase.from('comments').insert(payload).select().single();
 
     if (error && (error.code === '23503' || /foreign key/i.test(error.message || ''))) {
@@ -301,6 +328,8 @@ export default function PostsProvider({ children }) {
       uid: user.id,
       parentId: data.parent_id,
       text: data.text,
+      audioUrl: data.audio_url || null,
+      audioDuration: data.audio_duration || null,
       time: relativeTime(data.created_at),
       author: {
         name: user.user_metadata?.username || user.email?.split('@')[0] || 'Wewe',
@@ -360,6 +389,7 @@ export default function PostsProvider({ children }) {
         addPost,
         deletePost,
         uploadPostImage,
+        uploadVoiceNote,
         refreshPosts: loadPosts,
         fetchComments,
         addComment,
