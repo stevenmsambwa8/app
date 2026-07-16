@@ -10,6 +10,15 @@ import styles from './page.module.css'
 
 const MAX_IMAGES = 5;
 
+// Adds https:// to bare domains like "shop.com" so the CTA always produces
+// a valid, clickable link rather than a relative/broken href.
+function normalizeUrl(raw) {
+  const v = raw.trim();
+  if (!v) return undefined;
+  if (/^https?:\/\//i.test(v)) return v;
+  return `https://${v}`;
+}
+
 export default function CreatePostPage() {
   const router = useRouter();
   const { addPost, uploadPostImage } = usePosts();
@@ -23,6 +32,7 @@ export default function CreatePostPage() {
   const [ctaOn, setCtaOn] = useState(false);
   const [ctaLabel, setCtaLabel] = useState('');
   const [ctaIcon, setCtaIcon] = useState(CTA_ICON_PRESETS[0].icon);
+  const [ctaUrl, setCtaUrl] = useState('');
   const [posting, setPosting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef(null);
@@ -97,7 +107,10 @@ export default function CreatePostPage() {
       text: text.trim(),
       tag,
       images: finalImages.length ? finalImages : undefined,
-      cta: ctaOn && ctaLabel.trim() ? { label: ctaLabel.trim(), icon: ctaIcon } : undefined,
+      cta:
+        ctaOn && ctaLabel.trim()
+          ? { label: ctaLabel.trim(), icon: ctaIcon, url: normalizeUrl(ctaUrl) }
+          : undefined,
     });
 
     setPosting(false);
@@ -267,10 +280,26 @@ export default function CreatePostPage() {
                 ))}
               </div>
               {ctaLabel.trim() && (
-                <button type="button" className={`btnAccent ${styles.ctaPreview}`}>
-                  <i className={ctaIcon} />
-                  {ctaLabel}
-                </button>
+                <>
+                  <input
+                    type="url"
+                    inputMode="url"
+                    className={styles.ctaUrlInput}
+                    placeholder="Kiungo (mfano: shop.com/item)"
+                    value={ctaUrl}
+                    onChange={(e) => setCtaUrl(e.target.value)}
+                  />
+                  <a
+                    href={normalizeUrl(ctaUrl) || undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`btnAccent ${styles.ctaPreview}`}
+                    onClick={(e) => !ctaUrl.trim() && e.preventDefault()}
+                  >
+                    <i className={ctaIcon} />
+                    {ctaLabel}
+                  </a>
+                </>
               )}
             </div>
           )}
@@ -278,7 +307,11 @@ export default function CreatePostPage() {
 
         {submitError && <p className={styles.formError}>{submitError}</p>}
 
-        <button type="submit" className={`btnAccent ${styles.submit}`} disabled={!text.trim() || posting}>
+        <button
+          type="submit"
+          className={`btnAccent ${styles.submit}`}
+          disabled={!text.trim() || posting || (ctaOn && !!ctaLabel.trim() && !ctaUrl.trim())}
+        >
           {posting ? <i className={`ri-loader-4-line ${styles.spin}`} /> : 'Chapisha'}
         </button>
       </form>

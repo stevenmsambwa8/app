@@ -6,12 +6,12 @@ import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { useAuth } from './AuthProvider'
-import { NOTIFS } from '../lib/mockData'
+import { useNotifications } from './NotificationsProvider'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
   const pathname = usePathname();
-  const unread = NOTIFS.filter((n) => n.unread).length;
+  const { unreadCount } = useNotifications();
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
   const { user, profile, signOut } = useAuth();
@@ -49,7 +49,7 @@ export default function TopBar() {
         </button>
         <Link href="/notifications" className={styles.bell}>
           <i className="ri-notification-3-line" />
-          {unread > 0 && <span className={styles.badge}>{unread}</span>}
+          {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
         </Link>
         <Link href="/profile" title={displayName}>
           <Avatar emoji={avatarEmoji} src={avatarUrl} alt={displayName} size={28} ring />

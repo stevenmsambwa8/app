@@ -3,20 +3,16 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import Avatar from '../../components/Avatar'
+import VoiceNote from '../../components/VoiceNote'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
+import { usePosts } from '../../components/PostsProvider'
+import { getBlobDuration } from '../../lib/audioDuration'
 import styles from './page.module.css'
 
-function timeAgo(iso) {
-  const diff = Math.max(0, Date.now() - new Date(iso).getTime());
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'sasa hivi';
-  if (mins < 60) return `dakika ${mins}`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `saa ${hrs}`;
-  const days = Math.floor(hrs / 24);
-  return `siku ${days}`;
-}
+const MAX_RECORD_SECONDS = 60;
+const TYPING_BROADCAST_MS = 2000;
+const TYPING_STALE_MS = 3000;
 
 function mapProfile(id, p) {
   return {
@@ -27,9 +23,14 @@ function mapProfile(id, p) {
   };
 }
 
+function threadChannelName(a, b) {
+  return `dm-typing-${[a, b].sort().join(':')}`;
+}
+
 function DMPageInner() {
   const { user, loading: authLoading } = useAuth();
   const { openAuth } = useAuthModal();
+  const { uploadPostImage, uploadVoiceNote } = usePosts();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -41,7 +42,29 @@ function DMPageInner() {
   const [threadLoading, setThreadLoading] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [theirTyping, setTheirTyping] = useState(false);
+
+  // New-conversation search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+
+  // Attachments
+  const [pendingImage, setPendingImage] = useState(null); // { file, previewUrl }
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+
   const bottomRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const typingChannelRef = useRef(null);
+  const lastTypingSentRef = useRef(0);
+  const typingStaleTimerRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const recordStreamRef = useRef(null);
+  const recordTimerRef = useRef(null);
 
   const fetchProfiles = useCallback(async (ids) => {
     const missing = ids.filter((id) => id && !profiles[id]);
@@ -67,7 +90,7 @@ function DMPageInner() {
     setConvosLoading(true);
     const { data, error } = await supabase
       .from('dm_messages')
-      .select('id, sender_id, recipient_id, text, read, created_at')
+      .select('id, sender_id, recipient_id, text, image_url, audio_url, read, created_at')
       .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
       .order('created_at', { ascending: false });
 
@@ -79,8 +102,9 @@ function DMPageInner() {
     const byOther = new Map();
     for (const m of data) {
       const otherId = m.sender_id === user.id ? m.recipient_id : m.sender_id;
+      const preview = m.text || (m.image_url ? '📷 Picha' : m.audio_url ? '🎤 Ujumbe wa sauti' : '');
       if (!byOther.has(otherId)) {
-        byOther.set(otherId, { uid: otherId, lastText: m.text, lastTime: m.created_at, unread: 0 });
+        byOther.set(otherId, { uid: otherId, lastText: preview, lastTime: m.created_at, unread: 0 });
       }
       if (m.recipient_id === user.id && !m.read) {
         byOther.get(otherId).unread += 1;
@@ -117,7 +141,7 @@ function DMPageInner() {
     setThreadLoading(true);
     supabase
       .from('dm_messages')
-      .select('id, sender_id, recipient_id, text, read, created_at')
+      .select('id, sender_id, recipient_id, text, image_url, audio_url, audio_duration, read, created_at')
       .or(
         `and(sender_id.eq.${user.id},recipient_id.eq.${activeId}),and(sender_id.eq.${activeId},recipient_id.eq.${user.id})`
       )
@@ -146,7 +170,7 @@ function DMPageInner() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [messages.length, activeId]);
+  }, [messages.length, activeId, theirTyping]);
 
   // Realtime: any message where I'm the recipient lands here live, whether
   // the thread is open (append to it) or not (bump the conversation list).
@@ -165,20 +189,40 @@ function DMPageInner() {
               setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
               supabase.from('dm_messages').update({ read: true }).eq('id', m.id).then(() => {});
             } else {
+              const preview = m.text || (m.image_url ? '📷 Picha' : m.audio_url ? '🎤 Ujumbe wa sauti' : '');
               setConvos((cs) => {
                 const exists = cs.find((c) => c.uid === m.sender_id);
                 if (exists) {
                   return cs.map((c) =>
                     c.uid === m.sender_id
-                      ? { ...c, lastText: m.text, lastTime: m.created_at, unread: c.unread + 1 }
+                      ? { ...c, lastText: preview, lastTime: m.created_at, unread: c.unread + 1 }
                       : c
                   );
                 }
-                return [{ uid: m.sender_id, lastText: m.text, lastTime: m.created_at, unread: 1 }, ...cs];
+                return [{ uid: m.sender_id, lastText: preview, lastTime: m.created_at, unread: 1 }, ...cs];
               });
             }
             return current;
           });
+        }
+      )
+      // Catches my own sent messages flipping to read=true (seen state) and
+      // any remote unsends of messages I received.
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'dm_messages', filter: `sender_id=eq.${user.id}` },
+        (payload) => {
+          const m = payload.new;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'dm_messages' },
+        (payload) => {
+          const oldId = payload.old?.id;
+          if (!oldId) return;
+          setMessages((prev) => prev.filter((x) => x.id !== oldId));
         }
       )
       .subscribe();
@@ -187,17 +231,56 @@ function DMPageInner() {
     };
   }, [user, fetchProfiles]);
 
-  async function send() {
-    const text = draft.trim();
-    if (!text || !activeId || !user || sending) return;
-    setSending(true);
-    setDraft('');
+  // Typing indicator: a lightweight broadcast channel per thread pair, not
+  // backed by a table — nothing to persist, it just fades after a few
+  // seconds of silence.
+  useEffect(() => {
+    if (!user || !activeId) return;
+    const channel = supabase.channel(threadChannelName(user.id, activeId));
+    channel
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload?.uid !== activeId) return;
+        setTheirTyping(true);
+        clearTimeout(typingStaleTimerRef.current);
+        typingStaleTimerRef.current = setTimeout(() => setTheirTyping(false), TYPING_STALE_MS);
+      })
+      .subscribe();
+    typingChannelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      typingChannelRef.current = null;
+      clearTimeout(typingStaleTimerRef.current);
+      setTheirTyping(false);
+    };
+  }, [user, activeId]);
 
+  function handleDraftChange(e) {
+    setDraft(e.target.value);
+    const now = Date.now();
+    if (typingChannelRef.current && now - lastTypingSentRef.current > TYPING_BROADCAST_MS) {
+      lastTypingSentRef.current = now;
+      typingChannelRef.current.send({ type: 'broadcast', event: 'typing', payload: { uid: user.id } });
+    }
+  }
+
+  // Cleanup any in-flight recording if the component unmounts mid-record.
+  useEffect(() => {
+    return () => {
+      clearInterval(recordTimerRef.current);
+      recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  async function sendMessage({ text, imageUrl, audioUrl, audioDuration }) {
+    if (!activeId || !user) return;
     const optimistic = {
       id: `local-${Date.now()}`,
       sender_id: user.id,
       recipient_id: activeId,
-      text,
+      text: text || null,
+      image_url: imageUrl || null,
+      audio_url: audioUrl || null,
+      audio_duration: audioDuration || null,
       read: false,
       created_at: new Date().toISOString(),
     };
@@ -205,30 +288,63 @@ function DMPageInner() {
 
     const { data, error } = await supabase
       .from('dm_messages')
-      .insert({ sender_id: user.id, recipient_id: activeId, text })
+      .insert({
+        sender_id: user.id,
+        recipient_id: activeId,
+        text: text || null,
+        image_url: imageUrl || null,
+        audio_url: audioUrl || null,
+        audio_duration: audioDuration || null,
+      })
       .select()
       .single();
 
-    setSending(false);
     if (error || !data) {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-      setDraft(text);
-      return;
+      return { error };
     }
     setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data : m)));
+    const preview = data.text || (data.image_url ? '📷 Picha' : data.audio_url ? '🎤 Ujumbe wa sauti' : '');
     setConvos((cs) => {
       const exists = cs.find((c) => c.uid === activeId);
       if (exists) {
-        return cs.map((c) =>
-          c.uid === activeId ? { ...c, lastText: data.text, lastTime: data.created_at } : c
-        );
+        return cs.map((c) => (c.uid === activeId ? { ...c, lastText: preview, lastTime: data.created_at } : c));
       }
-      return [{ uid: activeId, lastText: data.text, lastTime: data.created_at, unread: 0 }, ...cs];
+      return [{ uid: activeId, lastText: preview, lastTime: data.created_at, unread: 0 }, ...cs];
     });
+    return { error: null };
+  }
+
+  async function send() {
+    const text = draft.trim();
+    if (sending) return;
+
+    if (pendingImage) {
+      setSending(true);
+      setUploadingImage(true);
+      const { error, url } = await uploadPostImage(pendingImage.file);
+      setUploadingImage(false);
+      if (!error && url) {
+        await sendMessage({ text, imageUrl: url });
+        setDraft('');
+        clearPendingImage();
+      }
+      setSending(false);
+      return;
+    }
+
+    if (!text) return;
+    setSending(true);
+    setDraft('');
+    await sendMessage({ text });
+    setSending(false);
   }
 
   function openThread(uid) {
     setActiveId(uid);
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
     router.replace(`/dm?with=${uid}`);
   }
 
@@ -236,6 +352,117 @@ function DMPageInner() {
     setActiveId(null);
     router.replace('/dm');
   }
+
+  async function deleteMessage(id) {
+    setMessages((prev) => prev.filter((m) => m.id !== id));
+    await supabase.from('dm_messages').delete().eq('id', id);
+    loadConvos();
+  }
+
+  // Search people to start a brand-new conversation.
+  useEffect(() => {
+    if (!searchOpen) return;
+    const q = searchQuery.trim();
+    if (!q) {
+      setSearchResults([]);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const t = setTimeout(() => {
+      supabase
+        .from('profiles')
+        .select('id, username, avatar, avatar_url')
+        .ilike('username', `%${q}%`)
+        .neq('id', user?.id || '')
+        .limit(15)
+        .then(({ data }) => {
+          if (cancelled) return;
+          setSearchResults((data || []).map((p) => mapProfile(p.id, p)));
+          setSearching(false);
+        });
+    }, 250);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [searchQuery, searchOpen, user]);
+
+  function pickImage(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPendingImage({ file, previewUrl: URL.createObjectURL(file) });
+  }
+
+  function clearPendingImage() {
+    if (pendingImage) URL.revokeObjectURL(pendingImage.previewUrl);
+    setPendingImage(null);
+  }
+
+  async function startRecording() {
+    if (recording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordStreamRef.current = stream;
+      recordedChunksRef.current = [];
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      } catch {
+        recorder = new MediaRecorder(stream);
+      }
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start(1000);
+      setRecordSeconds(0);
+      recordTimerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
+      setRecording(true);
+    } catch {
+      // mic permission denied or unavailable — silently no-op
+    }
+  }
+
+  function stopRecordingTracks() {
+    clearInterval(recordTimerRef.current);
+    recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    recordStreamRef.current = null;
+    setRecording(false);
+  }
+
+  function cancelRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== 'inactive') recorder.stop();
+    recordedChunksRef.current = [];
+    stopRecordingTracks();
+  }
+
+  function finishRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    recorder.onstop = async () => {
+      const blob = new Blob(recordedChunksRef.current, { type: 'audio/webm' });
+      recordedChunksRef.current = [];
+      if (blob.size > 0) {
+        const duration = (await getBlobDuration(blob)) || recordSeconds;
+        setSending(true);
+        const { error, url } = await uploadVoiceNote(blob);
+        if (!error && url) {
+          await sendMessage({ audioUrl: url, audioDuration: Math.round(duration) });
+        }
+        setSending(false);
+      }
+    };
+    recorder.stop();
+    stopRecordingTracks();
+  }
+
+  useEffect(() => {
+    if (recording && recordSeconds >= MAX_RECORD_SECONDS) finishRecording();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recording, recordSeconds]);
 
   if (authLoading) return null;
 
@@ -257,13 +484,48 @@ function DMPageInner() {
           <button className={styles.back} onClick={() => router.back()} aria-label="Rudi nyuma">
             <i className="ri-arrow-left-line" />
           </button>
-          <span className={styles.threadName}>Ujumbe</span>
+          <span className={styles.threadName}>{searchOpen ? 'Mtumiaji Mpya' : 'Ujumbe'}</span>
+          <button
+            className={styles.searchToggle}
+            onClick={() => setSearchOpen((v) => !v)}
+            aria-label="Tafuta mtumiaji"
+          >
+            <i className={searchOpen ? 'ri-close-line' : 'ri-search-line'} />
+          </button>
         </div>
+
+        {searchOpen && (
+          <div className={styles.searchBox}>
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tafuta jina la mtumiaji..."
+              className={styles.searchInput}
+            />
+          </div>
+        )}
+
         <div className={styles.list}>
-          {convosLoading ? (
+          {searchOpen ? (
+            searching ? (
+              <p className={styles.last}>Inatafuta…</p>
+            ) : searchQuery.trim() && searchResults.length === 0 ? (
+              <p className={styles.last}>Hakuna mtumiaji aliyepatikana.</p>
+            ) : (
+              searchResults.map((p) => (
+                <button key={p.id} className={`card ${styles.row}`} onClick={() => openThread(p.id)}>
+                  <Avatar emoji={p.avatar} src={p.avatarUrl} size={44} />
+                  <div className={styles.who}>
+                    <div className={styles.name}>{p.name}</div>
+                  </div>
+                </button>
+              ))
+            )
+          ) : convosLoading ? (
             <p className={styles.last}>Inapakia ujumbe…</p>
           ) : convos.length === 0 ? (
-            <p className={styles.last}>Bado huna mazungumzo. Fungua profaili ya mtu na umtumie ujumbe.</p>
+            <p className={styles.last}>Bado huna mazungumzo. Bofya <i className="ri-search-line" /> kutafuta mtu.</p>
           ) : (
             convos
               .slice()
@@ -288,6 +550,7 @@ function DMPageInner() {
   }
 
   const activeProfile = profiles[activeId] || mapProfile(activeId, null);
+  const myLastMessage = [...messages].reverse().find((m) => m.sender_id === user.id);
 
   return (
     <div className={styles.thread}>
@@ -296,7 +559,10 @@ function DMPageInner() {
           <i className="ri-arrow-left-line" />
         </button>
         <Avatar emoji={activeProfile.avatar} src={activeProfile.avatarUrl} size={32} />
-        <span className={styles.threadName}>{activeProfile.name}</span>
+        <div className={styles.who}>
+          <span className={styles.threadName}>{activeProfile.name}</span>
+          {theirTyping && <span className={styles.typingLabel}>anaandika…</span>}
+        </div>
       </div>
 
       <div className={styles.messages}>
@@ -305,29 +571,102 @@ function DMPageInner() {
         ) : messages.length === 0 ? (
           <p className={styles.last}>Andika ujumbe wa kwanza.</p>
         ) : (
-          messages.map((m) => (
-            <div
-              key={m.id}
-              className={`${styles.bubble} ${m.sender_id === user.id ? styles.me : styles.them}`}
-            >
-              {m.text}
-            </div>
-          ))
+          messages.map((m) => {
+            const mine = m.sender_id === user.id;
+            return (
+              <div key={m.id} className={`${styles.bubbleRow} ${mine ? styles.me : styles.them}`}>
+                <div className={`${styles.bubble} ${mine ? styles.me : styles.them}`}>
+                  {m.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={m.image_url} alt="" className={styles.bubbleImage} />
+                  )}
+                  {m.audio_url && <VoiceNote src={m.audio_url} duration={m.audio_duration} />}
+                  {m.text && <p className={styles.bubbleText}>{m.text}</p>}
+                </div>
+                {mine && (
+                  <button
+                    type="button"
+                    className={styles.deleteBtn}
+                    onClick={() => deleteMessage(m.id)}
+                    aria-label="Futa ujumbe"
+                  >
+                    <i className="ri-delete-bin-line" />
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
+        {theirTyping && (
+          <div className={`${styles.bubble} ${styles.them} ${styles.typingBubble}`}>
+            <span className={styles.typingDot} />
+            <span className={styles.typingDot} />
+            <span className={styles.typingDot} />
+          </div>
+        )}
+        {myLastMessage && (
+          <span className={styles.seenLabel}>{myLastMessage.read ? 'Imeonekana' : 'Imetumwa'}</span>
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div className={styles.composer}>
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder="Andika ujumbe..."
-        />
-        <button className={styles.send} onClick={send} disabled={sending}>
-          <i className="ri-send-plane-fill" />
-        </button>
-      </div>
+      {pendingImage && (
+        <div className={styles.attachPreview}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={pendingImage.previewUrl} alt="" />
+          <button type="button" onClick={clearPendingImage} aria-label="Ondoa picha">
+            <i className="ri-close-line" />
+          </button>
+        </div>
+      )}
+
+      {recording ? (
+        <div className={styles.composer}>
+          <button className={styles.cancelRecord} onClick={cancelRecording} aria-label="Ghairi">
+            <i className="ri-close-line" />
+          </button>
+          <span className={styles.recordingIndicator}>
+            <span className={styles.recDot} />
+            Inarekodi… {recordSeconds}s
+          </span>
+          <button className={styles.send} onClick={finishRecording}>
+            <i className="ri-send-plane-fill" />
+          </button>
+        </div>
+      ) : (
+        <div className={styles.composer}>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={pickImage}
+          />
+          <button
+            className={styles.attachBtn}
+            onClick={() => imageInputRef.current?.click()}
+            aria-label="Tuma picha"
+            disabled={uploadingImage}
+          >
+            <i className="ri-image-add-line" />
+          </button>
+          <input
+            value={draft}
+            onChange={handleDraftChange}
+            onKeyDown={(e) => e.key === 'Enter' && send()}
+            placeholder="Andika ujumbe..."
+          />
+          {draft.trim() || pendingImage ? (
+            <button className={styles.send} onClick={send} disabled={sending}>
+              <i className="ri-send-plane-fill" />
+            </button>
+          ) : (
+            <button className={styles.send} onClick={startRecording} aria-label="Rekodi ujumbe wa sauti">
+              <i className="ri-mic-line" />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

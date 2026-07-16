@@ -253,6 +253,18 @@
   border-color: var(--accent);
   color: var(--accent-text);
 }
+.ctaUrlInput {
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--text);
+}
+.ctaUrlInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
 .ctaPreview {
   padding: 11px;
   font-size: 13px;

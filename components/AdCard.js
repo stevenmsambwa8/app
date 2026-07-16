@@ -13,7 +13,9 @@ export default function AdCard({ ad }) {
         </div>
         <p className={styles.headline}>{ad.headline}</p>
         <p className={styles.copy}>{ad.body}</p>
-        <button className={`btnAccent ${styles.cta}`}>{ad.cta}</button>
+        <a href={ad.url} target="_blank" rel="noopener noreferrer" className={`btnAccent ${styles.cta}`}>
+          {ad.cta}
+        </a>
       </div>
     </div>
   );

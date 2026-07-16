@@ -7,6 +7,7 @@ import ThemeProvider from '../components/ThemeProvider'
 import AuthProvider from '../components/AuthProvider'
 import AuthModalProvider from '../components/AuthModalProvider'
 import FollowProvider from '../components/FollowProvider'
+import NotificationsProvider from '../components/NotificationsProvider'
 import PostsProvider from '../components/PostsProvider'
 import PageMain from '../components/PageMain'
 import ThemeScript from '../components/ThemeScript'
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
           <AuthProvider>
             <AuthModalProvider>
               <FollowProvider>
+                <NotificationsProvider>
                 <PostsProvider>
                   <div className="app-shell">
                     <Sidebar />
@@ -49,6 +51,7 @@ export default function RootLayout({ children }) {
                   </div>
                   <BottomNav />
                 </PostsProvider>
+                </NotificationsProvider>
               </FollowProvider>
             </AuthModalProvider>
           </AuthProvider>

@@ -204,10 +204,23 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         )}
 
         {post.cta && (
-          <button className={`btnAccent ${styles.cta}`}>
-            <i className={post.cta.icon || 'ri-arrow-right-line'} />
-            {post.cta.label}
-          </button>
+          post.cta.url ? (
+            <a
+              href={post.cta.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`btnAccent ${styles.cta}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </a>
+          ) : (
+            <button className={`btnAccent ${styles.cta}`} disabled>
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </button>
+          )
         )}
 
         <div className={styles.actions}>
