@@ -286,7 +286,8 @@ export default function PostDetailPage() {
       }
 
       const parentId = replyTarget ? replyTarget.rootId : null;
-      const { error, comment: newComment } = await addComment(post.id, '', parentId, {
+      const mentionText = replyTarget ? `@${replyTarget.label} ` : '';
+      const { error, comment: newComment } = await addComment(post.id, mentionText, parentId, {
         url,
         duration,
       });
@@ -494,7 +495,10 @@ export default function PostDetailPage() {
                       <div className={styles.commentBubble}>
                         <span className={styles.commentName}>{cu.name}</span>
                         {c.audioUrl ? (
-                          <VoiceNote src={c.audioUrl} duration={c.audioDuration} />
+                          <>
+                            {c.text && <p className={styles.commentText}>{renderWithMentions(c.text)}</p>}
+                            <VoiceNote src={c.audioUrl} duration={c.audioDuration} />
+                          </>
                         ) : (
                           <p className={styles.commentText}>{renderWithMentions(c.text)}</p>
                         )}
@@ -544,7 +548,12 @@ export default function PostDetailPage() {
                                       <div className={styles.commentBubble}>
                                         <span className={styles.commentName}>{ru.name}</span>
                                         {r.audioUrl ? (
-                                          <VoiceNote src={r.audioUrl} duration={r.audioDuration} />
+                                          <>
+                                            {r.text && (
+                                              <p className={styles.commentText}>{renderWithMentions(r.text)}</p>
+                                            )}
+                                            <VoiceNote src={r.audioUrl} duration={r.audioDuration} />
+                                          </>
                                         ) : (
                                           <p className={styles.commentText}>{renderWithMentions(r.text)}</p>
                                         )}
