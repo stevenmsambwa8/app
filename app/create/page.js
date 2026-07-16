@@ -5,10 +5,11 @@ import Avatar from '../../components/Avatar'
 import { usePosts } from '../../components/PostsProvider'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
-import { ME, VIBES, IMAGE_PRESETS, CTA_ICON_PRESETS } from '../../lib/mockData'
+import { ME, VIBES, IMAGE_PRESETS, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
 import styles from './page.module.css'
 
 const MAX_IMAGES = 5;
+const MAX_CHARS = 500;
 
 // Adds https:// to bare domains like "shop.com" so the CTA always produces
 // a valid, clickable link rather than a relative/broken href.
@@ -28,16 +29,26 @@ export default function CreatePostPage() {
   const [text, setText] = useState('');
   const [tag, setTag] = useState(VIBES[0]);
   const [presetImages, setPresetImages] = useState([]);
-  const [photos, setPhotos] = useState([]); // [{ localId, url, uploading, error }]
+  const [photos, setPhotos] = useState([]); // [{ localId, url, uploading, error, progress }]
   const [ctaOn, setCtaOn] = useState(false);
   const [ctaLabel, setCtaLabel] = useState('');
   const [ctaIcon, setCtaIcon] = useState(CTA_ICON_PRESETS[0].icon);
   const [ctaUrl, setCtaUrl] = useState('');
+  const [feeling, setFeeling] = useState(null); // { emoji, label }
+  const [feelingSheetOpen, setFeelingSheetOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const [posting, setPosting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const usedSlots = photos.length + presetImages.length;
+  const uploadingPhotos = photos.filter((p) => p.uploading);
+  const isUploading = uploadingPhotos.length > 0;
+  const overallProgress = isUploading
+    ? Math.round(uploadingPhotos.reduce((sum, p) => sum + p.progress, 0) / uploadingPhotos.length)
+    : 0;
+  const charsLeft = MAX_CHARS - text.length;
 
   if (authLoading) return null;
 
@@ -58,6 +69,11 @@ export default function CreatePostPage() {
     setPresetImages((imgs) => (imgs[0] === preset ? [] : [preset]));
   }
 
+  function insertEmoji(emoji) {
+    setText((t) => (t.length + emoji.length <= MAX_CHARS ? t + emoji : t));
+    textareaRef.current?.focus();
+  }
+
   async function handleFilesSelected(e) {
     const files = Array.from(e.target.files || []);
     e.target.value = '';
@@ -69,14 +85,28 @@ export default function CreatePostPage() {
     for (const file of toUpload) {
       if (!file.type.startsWith('image/')) continue;
       const localId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      setPhotos((p) => [...p, { localId, url: null, uploading: true, error: '' }]);
+      setPhotos((p) => [...p, { localId, url: null, uploading: true, error: '', progress: 4 }]);
+
+      // Supabase's storage client doesn't expose real upload progress, so we
+      // simulate a smooth climb (capped short of 100) while the compress +
+      // upload work happens, then snap to 100% the moment it actually resolves.
+      const tick = setInterval(() => {
+        setPhotos((p) =>
+          p.map((ph) =>
+            ph.localId === localId && ph.uploading
+              ? { ...ph, progress: Math.min(ph.progress + Math.random() * 16 + 5, 92) }
+              : ph
+          )
+        );
+      }, 200);
 
       const { url, error } = await uploadPostImage(file);
+      clearInterval(tick);
 
       setPhotos((p) =>
         p.map((ph) =>
           ph.localId === localId
-            ? { ...ph, uploading: false, url: url || null, error: error ? error.message : '' }
+            ? { ...ph, uploading: false, url: url || null, error: error ? error.message : '', progress: 100 }
             : ph
         )
       );
@@ -85,6 +115,11 @@ export default function CreatePostPage() {
 
   function removePhoto(localId) {
     setPhotos((p) => p.filter((ph) => ph.localId !== localId));
+  }
+
+  function clearAllPhotos() {
+    setPhotos([]);
+    setPresetImages([]);
   }
 
   async function handleSubmit(e) {
@@ -102,9 +137,10 @@ export default function CreatePostPage() {
 
     const uploadedUrls = photos.filter((p) => p.url).map((p) => p.url);
     const finalImages = uploadedUrls.length ? uploadedUrls : presetImages;
+    const finalText = feeling ? `${text.trim()}\n\n${feeling.emoji} Anasikia ${feeling.label}` : text.trim();
 
     const { error } = await addPost({
-      text: text.trim(),
+      text: finalText,
       tag,
       images: finalImages.length ? finalImages : undefined,
       cta:
@@ -123,6 +159,7 @@ export default function CreatePostPage() {
   }
 
   const displayName = profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || ME.name;
+  const canSubmit = !!text.trim() && !posting && !isUploading && !(ctaOn && !!ctaLabel.trim() && !ctaUrl.trim());
 
   return (
     <div className={styles.wrap}>
@@ -137,20 +174,78 @@ export default function CreatePostPage() {
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.who}>
           <Avatar emoji={profile?.avatar || ME.avatar} src={profile?.avatar_url} size={40} ring />
-          <div>
+          <div className={styles.whoText}>
             <div className={styles.name}>{displayName}</div>
-            <div className={styles.handle}>@{displayName}</div>
+            {feeling ? (
+              <span className={styles.feelingChip}>
+                anasikia {feeling.emoji} {feeling.label}
+                <button type="button" onClick={() => setFeeling(null)} aria-label="Ondoa hisia">
+                  <i className="ri-close-line" />
+                </button>
+              </span>
+            ) : (
+              <div className={styles.handle}>@{displayName}</div>
+            )}
           </div>
         </div>
 
-        <textarea
-          className={styles.textarea}
-          placeholder="Flex kitu leo..."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={4}
-          autoFocus
-        />
+        <div className={styles.textareaWrap}>
+          <textarea
+            ref={textareaRef}
+            className={styles.textarea}
+            placeholder="Flex kitu leo..."
+            value={text}
+            onChange={(e) => setText(e.target.value.slice(0, MAX_CHARS))}
+            rows={4}
+            autoFocus
+            maxLength={MAX_CHARS}
+          />
+          <span className={`${styles.charCount} ${charsLeft <= 20 ? styles.charCountLow : ''}`}>
+            {text.length}/{MAX_CHARS}
+          </span>
+        </div>
+
+        {emojiOpen && (
+          <div className={styles.emojiStrip}>
+            {QUICK_EMOJIS.map((em) => (
+              <button type="button" key={em} className={styles.emojiBtn} onClick={() => insertEmoji(em)}>
+                {em}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.toolsRow}>
+          <button
+            type="button"
+            className={styles.toolBtn}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={usedSlots >= MAX_IMAGES}
+          >
+            <i className="ri-image-add-line" />
+            <span>Picha</span>
+          </button>
+          <button type="button" className={styles.toolBtn} onClick={() => setFeelingSheetOpen(true)}>
+            <i className="ri-emotion-line" />
+            <span>Hisia</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${emojiOpen ? styles.toolBtnActive : ''}`}
+            onClick={() => setEmojiOpen((v) => !v)}
+          >
+            <i className="ri-sticky-note-add-line" />
+            <span>Emoji</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${ctaOn ? styles.toolBtnActive : ''}`}
+            onClick={() => setCtaOn((v) => !v)}
+          >
+            <i className="ri-link-m" />
+            <span>Kiungo</span>
+          </button>
+        </div>
 
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Kategoria</p>
@@ -169,15 +264,25 @@ export default function CreatePostPage() {
         </div>
 
         <div className={styles.section}>
-          <p className={styles.sectionLabel}>
-            Picha ({usedSlots}/{MAX_IMAGES}) <span className={styles.hint}>zimebanwa kiotomatiki hadi 20KB kila moja</span>
-          </p>
+          <div className={styles.sectionHeadRow}>
+            <p className={styles.sectionLabel} style={{ marginBottom: 0 }}>
+              Picha ({usedSlots}/{MAX_IMAGES}) <span className={styles.hint}>zimebanwa kiotomatiki hadi 20KB kila moja</span>
+            </p>
+            {usedSlots > 0 && (
+              <button type="button" className={styles.clearAllBtn} onClick={clearAllPhotos}>
+                Futa zote
+              </button>
+            )}
+          </div>
           <div className={styles.imageGrid}>
             {photos.map((p) => (
               <div key={p.localId} className={styles.imageSwatch}>
                 {p.uploading ? (
                   <div className={styles.photoStatus}>
-                    <i className="ri-loader-4-line" style={{ animation: 'spin 0.8s linear infinite' }} />
+                    <span className={styles.progressPct}>{Math.round(p.progress)}%</span>
+                    <div className={styles.progressTrack}>
+                      <div className={styles.progressFill} style={{ width: `${p.progress}%` }} />
+                    </div>
                   </div>
                 ) : p.error ? (
                   <div className={styles.photoStatus}>
@@ -218,6 +323,13 @@ export default function CreatePostPage() {
             style={{ display: 'none' }}
           />
 
+          {isUploading && (
+            <p className={styles.uploadSummary}>
+              <i className="ri-loader-4-line" style={{ animation: 'spin 0.8s linear infinite' }} />
+              Inapakia picha {uploadingPhotos.length}... {overallProgress}%
+            </p>
+          )}
+
           {photos.length === 0 && (
             <>
               <p className={styles.hint} style={{ marginTop: 10 }}>Au chagua template badala ya picha:</p>
@@ -252,17 +364,9 @@ export default function CreatePostPage() {
           )}
         </div>
 
-        <div className={styles.section}>
-          <label className={styles.switchRow}>
-            <span className={styles.sectionLabel} style={{ marginBottom: 0 }}>
-              Ongeza kitufe cha hatua (CTA)
-            </span>
-            <span className={`${styles.switch} ${ctaOn ? styles.switchOn : ''}`} onClick={() => setCtaOn((v) => !v)}>
-              <span className={styles.switchKnob} />
-            </span>
-          </label>
-
-          {ctaOn && (
+        {ctaOn && (
+          <div className={styles.section}>
+            <p className={styles.sectionLabel}>Kitufe cha hatua (CTA)</p>
             <div className={styles.ctaFields}>
               <div className={styles.ctaTemplateGrid}>
                 {CTA_ICON_PRESETS.map((p) => (
@@ -303,19 +407,49 @@ export default function CreatePostPage() {
                 </>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {submitError && <p className={styles.formError}>{submitError}</p>}
 
-        <button
-          type="submit"
-          className={`btnAccent ${styles.submit}`}
-          disabled={!text.trim() || posting || (ctaOn && !!ctaLabel.trim() && !ctaUrl.trim())}
-        >
-          {posting ? <i className={`ri-loader-4-line ${styles.spin}`} /> : 'Chapisha'}
-        </button>
+        <div className={styles.footerSpacer} />
+        <div className={styles.footerBar}>
+          <button type="submit" className={`btnAccent ${styles.submit}`} disabled={!canSubmit}>
+            {posting ? (
+              <i className={`ri-loader-4-line ${styles.spin}`} />
+            ) : isUploading ? (
+              `Inapakia... ${overallProgress}%`
+            ) : (
+              'Chapisha'
+            )}
+          </button>
+        </div>
       </form>
+
+      {feelingSheetOpen && (
+        <div className={styles.sheetOverlay} onClick={() => setFeelingSheetOpen(false)}>
+          <div className={styles.sheetContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.sheetHandle} />
+            <p className={styles.sheetTitle}>Unasikiaje?</p>
+            <div className={styles.feelingGrid}>
+              {FEELINGS.map((f) => (
+                <button
+                  type="button"
+                  key={f.label}
+                  className={`${styles.feelingOption} ${feeling?.label === f.label ? styles.feelingOptionActive : ''}`}
+                  onClick={() => {
+                    setFeeling(feeling?.label === f.label ? null : f);
+                    setFeelingSheetOpen(false);
+                  }}
+                >
+                  <span className={styles.feelingEmoji}>{f.emoji}</span>
+                  <span>{f.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
