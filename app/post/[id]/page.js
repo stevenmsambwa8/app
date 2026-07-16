@@ -28,6 +28,15 @@ function formatRecordTime(totalSeconds) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// Voice notes auto-stop (and send) at this length, same idea as WhatsApp's cap.
+const MAX_RECORD_SECONDS = 120;
+
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -51,6 +60,7 @@ export default function PostDetailPage() {
   const [mentionQuery, setMentionQuery] = useState(null);
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
+  const [recordedBytes, setRecordedBytes] = useState(0);
   const [sendingVoice, setSendingVoice] = useState(false);
   const menuRef = useRef(null);
   const commentInputRef = useRef(null);
@@ -84,6 +94,11 @@ export default function PostDetailPage() {
       recordStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
+
+  useEffect(() => {
+    if (recording && recordSeconds >= MAX_RECORD_SECONDS) sendRecording();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recording, recordSeconds]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -188,11 +203,17 @@ export default function PostDetailPage() {
       recordedChunksRef.current = [];
       const recorder = new MediaRecorder(stream);
       recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+        if (e.data.size > 0) {
+          recordedChunksRef.current.push(e.data);
+          setRecordedBytes((b) => b + e.data.size);
+        }
       };
       mediaRecorderRef.current = recorder;
-      recorder.start();
+      // timeslice of 1s so we get a running byte count while recording, not
+      // just one chunk at the very end.
+      recorder.start(1000);
       setRecordSeconds(0);
+      setRecordedBytes(0);
       setRecording(true);
       recordTimerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
     } catch (err) {
@@ -564,29 +585,44 @@ export default function PostDetailPage() {
         )}
 
         {recording ? (
-          <div className={styles.composer}>
-            <button
-              type="button"
-              className={styles.recordCancel}
-              onClick={cancelRecording}
-              disabled={sendingVoice}
-              aria-label="Ghairi sauti"
-            >
-              <i className="ri-delete-bin-line" />
-            </button>
-            <div className={styles.recordingIndicator}>
-              <span className={styles.recordDot} />
-              {sendingVoice ? 'Inatuma…' : `Inarekodi… ${formatRecordTime(recordSeconds)}`}
+          <div className={styles.recordingWrap}>
+            <div className={styles.recordProgress}>
+              <div
+                className={styles.recordProgressFill}
+                style={{ width: `${Math.min(1, recordSeconds / MAX_RECORD_SECONDS) * 100}%` }}
+              />
             </div>
-            <button
-              type="button"
-              className={styles.send}
-              onClick={sendRecording}
-              disabled={sendingVoice}
-              aria-label="Tuma sauti"
-            >
-              <i className={sendingVoice ? 'ri-loader-4-line' : 'ri-check-line'} />
-            </button>
+            <div className={styles.composer}>
+              <button
+                type="button"
+                className={styles.recordCancel}
+                onClick={cancelRecording}
+                disabled={sendingVoice}
+                aria-label="Ghairi sauti"
+              >
+                <i className="ri-delete-bin-line" />
+              </button>
+              <div className={styles.recordingIndicator}>
+                <span className={styles.recordDot} />
+                {sendingVoice ? (
+                  'Inatuma…'
+                ) : (
+                  <>
+                    <span>{formatRecordTime(recordSeconds)}</span>
+                    <span className={styles.recordSize}>{formatBytes(recordedBytes)}</span>
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className={styles.send}
+                onClick={sendRecording}
+                disabled={sendingVoice}
+                aria-label="Tuma sauti"
+              >
+                <i className={sendingVoice ? 'ri-loader-4-line' : 'ri-check-line'} />
+              </button>
+            </div>
           </div>
         ) : (
           <div className={styles.composer}>
@@ -602,26 +638,23 @@ export default function PostDetailPage() {
               }}
               disabled={!user || posting}
             />
-            {comment.trim() ? (
-              <button
-                className={styles.send}
-                disabled={!user || posting}
-                aria-label="Tuma"
-                onClick={handleSendComment}
-              >
-                <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={styles.send}
-                disabled={!user}
-                aria-label="Rekodi ujumbe wa sauti"
-                onClick={startRecording}
-              >
-                <i className="ri-mic-line" />
-              </button>
-            )}
+            <button
+              type="button"
+              className={styles.micBtn}
+              disabled={!user || posting}
+              aria-label="Rekodi ujumbe wa sauti"
+              onClick={startRecording}
+            >
+              <i className="ri-mic-line" />
+            </button>
+            <button
+              className={styles.send}
+              disabled={!comment.trim() || !user || posting}
+              aria-label="Tuma"
+              onClick={handleSendComment}
+            >
+              <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
+            </button>
           </div>
         )}
       </div>
