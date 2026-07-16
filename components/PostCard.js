@@ -1,8 +1,10 @@
 'use client'
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
+import { useAuth } from './AuthProvider'
+import { usePosts } from './PostsProvider'
 import { userById } from '../lib/mockData'
 import styles from './PostCard.module.css'
 
@@ -11,13 +13,28 @@ function isImageUrl(src) {
 }
 
 export default function PostCard({ post, liked, likeCount, onLike }) {
-  const user = post.author || userById(post.uid);
+  const author = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const textRef = useRef(null);
+  const menuRef = useRef(null);
   const router = useRouter();
+  const { user: authUser } = useAuth();
+  const { deletePost } = usePosts();
+  const isOwner = !!authUser && post.uid === authUser.id;
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [menuOpen]);
 
   useLayoutEffect(() => {
     const el = textRef.current;
@@ -34,6 +51,15 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
   function viewPost() {
     router.push(`/post/${post.id}`);
+  }
+
+  async function handleDelete(e) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    if (!window.confirm('Una uhakika unataka kufuta chapisho hili?')) return;
+    setDeleting(true);
+    await deletePost(post.id);
+    setDeleting(false);
   }
 
   return (
@@ -83,16 +109,40 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       <div className={styles.body}>
         <div className={styles.header}>
           <div className={styles.who}>
-            <Avatar emoji={user.avatar} src={user.avatarUrl} alt={user.name} />
+            <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
             <div>
               <div className={styles.nameRow}>
-                <span className={styles.name}>{user.name}</span>
-                <UserBadge badge={user.badge} />
+                <span className={styles.name}>{author.name}</span>
+                <UserBadge badge={author.badge} />
               </div>
               <span className={styles.meta}>{post.time} · {post.tag}</span>
             </div>
           </div>
-          <i className={`ri-more-fill ${styles.more}`} />
+          {isOwner ? (
+            <div className={styles.menuWrap} ref={menuRef}>
+              <button
+                type="button"
+                className={styles.moreBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen((v) => !v);
+                }}
+                aria-label="Chaguo za chapisho"
+              >
+                <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
+              </button>
+              {menuOpen && (
+                <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
+                    <i className="ri-delete-bin-line" />
+                    Futa Chapisho
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <i className={`ri-more-fill ${styles.more}`} />
+          )}
         </div>
 
         <div className={styles.textWrap}>

@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
 import Avatar from '../../components/Avatar'
+import PostCard from '../../components/PostCard'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
 import { usePosts } from '../../components/PostsProvider'
@@ -20,7 +21,7 @@ export default function ProfilePage() {
 
   const { user, profile, loading, updateUsername, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
-  const { posts } = usePosts();
+  const { posts, likes, toggleLike } = usePosts();
   const myPosts = posts.filter((p) => p.uid === user?.id);
 
   if (loading) return null;
@@ -184,13 +185,13 @@ export default function ProfilePage() {
               </p>
             ) : (
               myPosts.map((p) => (
-                <div key={p.id} className={`card ${styles.postCard}`}>
-                  <p className={styles.postText}>{p.text}</p>
-                  <div className={styles.postMeta}>
-                    <span><i className="ri-thumb-up-line" />{p.likes}</span>
-                    <span><i className="ri-chat-3-line" />{p.comments}</span>
-                  </div>
-                </div>
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  liked={!!likes[p.id]}
+                  likeCount={p.likes + (likes[p.id] ? 1 : 0)}
+                  onLike={() => toggleLike(p.id)}
+                />
               ))
             )}
           </div>

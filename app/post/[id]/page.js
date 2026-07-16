@@ -1,11 +1,11 @@
 'use client'
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
-import { userById, commentsForPost } from '../../../lib/mockData'
+import { userById } from '../../../lib/mockData'
 import styles from './page.module.css'
 
 function isImageUrl(src) {
@@ -15,16 +15,21 @@ function isImageUrl(src) {
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { posts, likes, toggleLike } = usePosts();
-  const { profile } = useAuth();
+  const { posts, likes, toggleLike, deletePost, fetchComments, addComment, deleteComment } = usePosts();
+  const { user, profile } = useAuth();
 
   const post = posts.find((p) => String(p.id) === String(params.id) && p.kind !== 'ad');
 
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [posting, setPosting] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [imageHidden, setImageHidden] = useState(false);
-  const [openReplies, setOpenReplies] = useState({});
   const lastScrollTop = useRef(0);
+  const menuRef = useRef(null);
   const commentsRef = useRef(null);
   // Overflow is measured once, before any media-collapse toggling has had a
   // chance to resize this container. Collapsing the media changes commentsScroll's
@@ -38,6 +43,34 @@ export default function PostDetailPage() {
     if (el) baselineOverflow.current = el.scrollHeight - el.clientHeight;
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!post || typeof post.id !== 'string') {
+      setComments([]);
+      setCommentsLoading(false);
+      return;
+    }
+    setCommentsLoading(true);
+    fetchComments(post.id).then(({ comments: loaded }) => {
+      if (!cancelled) {
+        setComments(loaded);
+        setCommentsLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [post?.id, fetchComments]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [menuOpen]);
+
   if (!post) {
     return (
       <div className={styles.notFound}>
@@ -50,11 +83,38 @@ export default function PostDetailPage() {
     );
   }
 
-  const user = post.author || userById(post.uid);
+  const author = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const liked = !!likes[post.id];
   const likeCount = post.likes + (liked ? 1 : 0);
-  const comments = commentsForPost(post);
+  const isOwner = !!user && post.uid === user.id;
+
+  async function handleDeletePost() {
+    setMenuOpen(false);
+    if (!window.confirm('Una uhakika unataka kufuta chapisho hili?')) return;
+    setDeleting(true);
+    const { error } = await deletePost(post.id);
+    setDeleting(false);
+    if (!error) router.push('/feed');
+  }
+
+  async function handleSendComment() {
+    const text = comment.trim();
+    if (!text || posting) return;
+    setPosting(true);
+    const { error, comment: newComment } = await addComment(post.id, text);
+    setPosting(false);
+    if (!error && newComment) {
+      setComments((c) => [...c, newComment]);
+      setComment('');
+    }
+  }
+
+  async function handleDeleteComment(id) {
+    if (!window.confirm('Futa maoni haya?')) return;
+    const { error } = await deleteComment(id, post.id);
+    if (!error) setComments((c) => c.filter((cm) => cm.id !== id));
+  }
 
   function handleScroll(e) {
     const el = e.currentTarget;
@@ -94,10 +154,6 @@ export default function PostDetailPage() {
     }
   }
 
-  function toggleReplies(id) {
-    setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
-  }
-
   return (
     <div className={styles.page}>
       <div className={styles.head}>
@@ -105,15 +161,35 @@ export default function PostDetailPage() {
           <i className="ri-arrow-left-line" />
         </button>
         <div className={styles.who}>
-          <Avatar emoji={user.avatar} src={user.avatarUrl} alt={user.name} />
+          <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
           <div>
             <div className={styles.nameRow}>
-              <span className={styles.name}>{user.name}</span>
-              <UserBadge badge={user.badge} />
+              <span className={styles.name}>{author.name}</span>
+              <UserBadge badge={author.badge} />
             </div>
             <span className={styles.meta}>{post.time} · {post.tag}</span>
           </div>
         </div>
+        {isOwner && (
+          <div className={styles.headMenuWrap} ref={menuRef}>
+            <button
+              type="button"
+              className={styles.headMoreBtn}
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Chaguo za chapisho"
+            >
+              <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
+            </button>
+            {menuOpen && (
+              <div className={styles.headMenu}>
+                <button type="button" className={styles.headMenuItemDanger} onClick={handleDeletePost}>
+                  <i className="ri-delete-bin-line" />
+                  Futa Chapisho
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={styles.top}>
@@ -188,68 +264,40 @@ export default function PostDetailPage() {
         <div className={styles.commentsSection}>
           <p className={styles.commentsTitle}>Maoni</p>
           <div className={styles.commentsList}>
-            {comments.map((c) => {
-              const cu = userById(c.uid);
-              const hasReplies = c.replies && c.replies.length > 0;
-              const repliesOpen = !!openReplies[c.id];
-              return (
-                <div key={c.id} className={styles.comment}>
-                  <Avatar emoji={cu.avatar} size={32} />
-                  <div className={styles.commentBody}>
-                    <div className={styles.commentBubble}>
-                      <span className={styles.commentName}>{cu.name}</span>
-                      <p className={styles.commentText}>{c.text}</p>
-                    </div>
-                    <div className={styles.commentMeta}>
-                      <span>{c.time}</span>
-                      <button className={styles.commentLike}>
-                        <i className="ri-heart-line" />
-                        {c.likes > 0 ? c.likes : ''}
-                      </button>
-                    </div>
-
-                    {hasReplies && (
-                      <>
-                        <button
-                          type="button"
-                          className={styles.viewReplies}
-                          onClick={() => toggleReplies(c.id)}
-                        >
-                          <i className="ri-corner-down-right-line" />
-                          {repliesOpen ? 'Ficha majibu' : `Ona majibu (${c.replies.length})`}
-                        </button>
-
-                        {repliesOpen && (
-                          <div className={styles.repliesList}>
-                            {c.replies.map((r) => {
-                              const ru = userById(r.uid);
-                              return (
-                                <div key={r.id} className={styles.comment}>
-                                  <Avatar emoji={ru.avatar} size={26} />
-                                  <div className={styles.commentBody}>
-                                    <div className={styles.commentBubble}>
-                                      <span className={styles.commentName}>{ru.name}</span>
-                                      <p className={styles.commentText}>{r.text}</p>
-                                    </div>
-                                    <div className={styles.commentMeta}>
-                                      <span>{r.time}</span>
-                                      <button className={styles.commentLike}>
-                                        <i className="ri-heart-line" />
-                                        {r.likes > 0 ? r.likes : ''}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
+            {commentsLoading ? (
+              <p className={styles.meta}>Inapakia maoni…</p>
+            ) : comments.length === 0 ? (
+              <p className={styles.meta}>Hakuna maoni bado. Kuwa wa kwanza kutoa maoni.</p>
+            ) : (
+              comments.map((c) => {
+                const cu = c.author || userById(c.uid);
+                const canDelete = !!user && c.uid === user.id;
+                return (
+                  <div key={c.id} className={styles.comment}>
+                    <Avatar emoji={cu.avatar} src={cu.avatarUrl} size={32} />
+                    <div className={styles.commentBody}>
+                      <div className={styles.commentBubble}>
+                        <span className={styles.commentName}>{cu.name}</span>
+                        <p className={styles.commentText}>{c.text}</p>
+                      </div>
+                      <div className={styles.commentMeta}>
+                        <span>{c.time}</span>
+                        {canDelete && (
+                          <button
+                            type="button"
+                            className={styles.commentLike}
+                            onClick={() => handleDeleteComment(c.id)}
+                          >
+                            <i className="ri-delete-bin-line" />
+                            Futa
+                          </button>
                         )}
-                      </>
-                    )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -258,12 +306,21 @@ export default function PostDetailPage() {
         <Avatar emoji={profile?.avatar || '🐧'} src={profile?.avatar_url} size={32} />
         <input
           className={styles.input}
-          placeholder="Andika maoni..."
+          placeholder={user ? 'Andika maoni...' : 'Ingia ili kutoa maoni'}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSendComment();
+          }}
+          disabled={!user || posting}
         />
-        <button className={styles.send} disabled={!comment.trim()} aria-label="Tuma">
-          <i className="ri-send-plane-fill" />
+        <button
+          className={styles.send}
+          disabled={!comment.trim() || !user || posting}
+          aria-label="Tuma"
+          onClick={handleSendComment}
+        >
+          <i className={posting ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
         </button>
       </div>
     </div>

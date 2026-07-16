@@ -14,6 +14,9 @@ const PostsContext = createContext({
   deletePost: async () => ({ error: null }),
   uploadPostImage: async () => ({ error: null }),
   refreshPosts: async () => {},
+  fetchComments: async () => ({ error: null, comments: [] }),
+  addComment: async () => ({ error: null }),
+  deleteComment: async () => ({ error: null }),
 });
 
 function relativeTime(iso) {
@@ -81,6 +84,7 @@ export default function PostsProvider({ children }) {
     const ids = rows.map((r) => r.id);
     const likeCounts = {};
     const likedByMe = {};
+    const commentCounts = {};
 
     if (ids.length > 0) {
       const { data: likeRows } = await supabase
@@ -91,6 +95,15 @@ export default function PostsProvider({ children }) {
       (likeRows || []).forEach((l) => {
         likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1;
         if (user && l.user_id === user.id) likedByMe[l.post_id] = true;
+      });
+
+      const { data: commentRows } = await supabase
+        .from('comments')
+        .select('post_id')
+        .in('post_id', ids);
+
+      (commentRows || []).forEach((c) => {
+        commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
       });
     }
 
@@ -110,7 +123,7 @@ export default function PostsProvider({ children }) {
         // base count excludes my own like — the shared `likes[id]` toggle adds
         // it back in, same display convention used everywhere else.
         likes: total - (myLike ? 1 : 0),
-        comments: 0,
+        comments: commentCounts[r.id] || 0,
         time: relativeTime(r.created_at),
         author: r.profiles
           ? {
@@ -213,6 +226,92 @@ export default function PostsProvider({ children }) {
     return { error: null };
   }
 
+  async function fetchComments(postId) {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('id, post_id, user_id, text, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.warn('Failed to load comments:', error.message);
+      return { error, comments: [] };
+    }
+
+    const comments = (data || []).map((c) => ({
+      id: c.id,
+      uid: c.user_id,
+      text: c.text,
+      time: relativeTime(c.created_at),
+      author: c.profiles
+        ? {
+            name: c.profiles.username || 'Mtumiaji',
+            avatar: c.profiles.avatar || '🐧',
+            avatarUrl: c.profiles.avatar_url || null,
+          }
+        : null,
+    }));
+
+    return { error: null, comments };
+  }
+
+  async function addComment(postId, text) {
+    if (!user) return { error: new Error('Ingia kwanza kutoa maoni.') };
+    const trimmed = (text || '').trim();
+    if (!trimmed) return { error: new Error('Andika maoni kwanza.') };
+
+    const payload = { post_id: postId, user_id: user.id, text: trimmed };
+    let { data, error } = await supabase.from('comments').insert(payload).select().single();
+
+    if (error && (error.code === '23503' || /foreign key/i.test(error.message || ''))) {
+      await ensureProfileRow(user);
+      ({ data, error } = await supabase.from('comments').insert(payload).select().single());
+    }
+
+    if (error) {
+      console.warn('Failed to add comment:', error.message);
+      return { error };
+    }
+
+    setRealPosts((p) =>
+      p.map((post) => (post.id === postId ? { ...post, comments: (post.comments || 0) + 1 } : post))
+    );
+
+    const comment = {
+      id: data.id,
+      uid: user.id,
+      text: data.text,
+      time: relativeTime(data.created_at),
+      author: {
+        name: user.user_metadata?.username || user.email?.split('@')[0] || 'Wewe',
+        avatar: '🐧',
+        avatarUrl: null,
+      },
+    };
+
+    return { error: null, comment };
+  }
+
+  async function deleteComment(commentId, postId) {
+    if (!user) return { error: new Error('Haiwezekani kufuta hii.') };
+
+    const { error } = await supabase
+      .from('comments')
+      .delete()
+      .eq('id', commentId)
+      .eq('user_id', user.id);
+
+    if (error) return { error };
+
+    setRealPosts((p) =>
+      p.map((post) =>
+        post.id === postId ? { ...post, comments: Math.max(0, (post.comments || 0) - 1) } : post
+      )
+    );
+
+    return { error: null };
+  }
+
   async function toggleLike(id) {
     const wasLiked = !!likes[id];
     setLikes((l) => ({ ...l, [id]: !wasLiked }));
@@ -239,6 +338,9 @@ export default function PostsProvider({ children }) {
         deletePost,
         uploadPostImage,
         refreshPosts: loadPosts,
+        fetchComments,
+        addComment,
+        deleteComment,
       }}
     >
       {children}
