@@ -13,7 +13,7 @@ import { userById } from '../lib/mockData'
 import styles from './PostCard.module.css'
 
 function isImageUrl(src) {
-  return typeof src === 'string' && /^https?:\/\//.test(src);
+  return typeof src === 'string' && /^(https?:\/\/|\/)/.test(src);
 }
 
 export default function PostCard({ post, liked, likeCount, onLike }) {

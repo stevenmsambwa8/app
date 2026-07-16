@@ -6,7 +6,7 @@ import { userById, commentsForPost } from '../lib/mockData'
 import styles from './PostViewer.module.css'
 
 function isImageUrl(src) {
-  return typeof src === 'string' && /^https?:\/\//.test(src);
+  return typeof src === 'string' && /^(https?:\/\/|\/)/.test(src);
 }
 
 export default function PostViewer({ post, liked, likeCount, onLike, onClose }) {

@@ -53,7 +53,7 @@ export default function CreatePostPage() {
   }
 
   function toggleImage(preset) {
-    // Color backgrounds are single-select — picking one replaces whatever
+    // Templates are single-select — picking one replaces whatever
     // was picked before (clicking the current pick clears it).
     setPresetImages((imgs) => (imgs[0] === preset ? [] : [preset]));
   }
@@ -220,7 +220,7 @@ export default function CreatePostPage() {
 
           {photos.length === 0 && (
             <>
-              <p className={styles.hint} style={{ marginTop: 10 }}>Au chagua rangi badala ya picha:</p>
+              <p className={styles.hint} style={{ marginTop: 10 }}>Au chagua template badala ya picha:</p>
               <div className={styles.imageGrid}>
                 {IMAGE_PRESETS.map((preset, i) => {
                   const selected = presetImages[0] === preset;
@@ -228,10 +228,11 @@ export default function CreatePostPage() {
                     <button
                       type="button"
                       key={i}
-                      className={`${styles.imageSwatch} texture`}
-                      style={{ background: preset }}
+                      className={styles.imageSwatch}
                       onClick={() => toggleImage(preset)}
                     >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={preset} alt="" className={styles.photoThumb} />
                       {selected && (
                         <span className={styles.imageOrder}>
                           <i className="ri-check-line" />

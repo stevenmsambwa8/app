@@ -15,7 +15,7 @@ import VoiceNote from '../../../components/VoiceNote'
 import styles from './page.module.css'
 
 function isImageUrl(src) {
-  return typeof src === 'string' && /^https?:\/\//.test(src);
+  return typeof src === 'string' && /^(https?:\/\/|\/)/.test(src);
 }
 
 // Matches an in-progress "@word" right at the cursor, e.g. typing "...hi @za"
