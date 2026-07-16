@@ -34,17 +34,42 @@ export default function PostDetailPage() {
   const lastScrollTop = useRef(0);
   const menuRef = useRef(null);
   const commentsRef = useRef(null);
-  // Overflow is measured once, before any media-collapse toggling has had a
-  // chance to resize this container. Collapsing the media changes commentsScroll's
-  // own height, and re-measuring scrollHeight/clientHeight on every scroll tick
-  // fed that resize back into the overflow calc — a loop that made the media
-  // flap open/closed. Freezing the baseline here breaks the loop.
-  const baselineOverflow = useRef(null);
+  const commentsContentRef = useRef(null);
+  // Two numbers, kept live instead of frozen:
+  // - contentHeight: the comments content's natural (unclipped) height. Comes
+  //   from a ResizeObserver on the content div itself, so it stays correct as
+  //   comments load, replies open/close, fonts swap in, images finish, etc.
+  //   That div's height is unaffected by media-collapse toggling.
+  // - expandedClientHeight: the scroll container's visible height, but only
+  //   captured while media is NOT collapsed. Collapsing the media grows this
+  //   container's clientHeight, and re-reading it while collapsed would feed
+  //   that change back into the overflow calc — the flap loop this used to
+  //   have. Only trusting it in the expanded state avoids that loop while
+  //   still staying current (unlike a single frozen snapshot, which used to
+  //   go stale — most visibly with ~5 or fewer comments, where total height
+  //   sits right at the overflow threshold and any later content change
+  //   flips the decision).
+  const contentHeight = useRef(0);
+  const expandedClientHeight = useRef(0);
 
   useLayoutEffect(() => {
-    const el = commentsRef.current;
-    if (el) baselineOverflow.current = el.scrollHeight - el.clientHeight;
-  }, [commentsLoading, comments]);
+    const scrollEl = commentsRef.current;
+    const contentEl = commentsContentRef.current;
+    if (!scrollEl || !contentEl) return;
+
+    function measure() {
+      contentHeight.current = contentEl.scrollHeight;
+      if (!imageHidden) {
+        expandedClientHeight.current = scrollEl.clientHeight;
+      }
+    }
+
+    measure();
+
+    const ro = new ResizeObserver(measure);
+    ro.observe(contentEl);
+    return () => ro.disconnect();
+  }, [imageHidden, commentsLoading, comments]);
 
   useEffect(() => {
     let cancelled = false;
@@ -162,9 +187,10 @@ export default function PostDetailPage() {
 
   function handleCommentsScroll(e) {
     const el = e.currentTarget;
-    // Use the height captured before the first collapse, not a live
-    // recomputation — see baselineOverflow above for why.
-    const overflow = baselineOverflow.current ?? (el.scrollHeight - el.clientHeight);
+    // Live content height minus the container's height while expanded — see
+    // the ResizeObserver setup above for why these are tracked this way
+    // instead of a single frozen snapshot.
+    const overflow = contentHeight.current - expandedClientHeight.current;
 
     // Not enough content to actually scroll — keep media visible, don't react to bounce/noise.
     if (overflow < 24) {
@@ -299,7 +325,7 @@ export default function PostDetailPage() {
       </div>
 
       <div className={styles.commentsScroll} ref={commentsRef} onScroll={handleCommentsScroll}>
-        <div className={styles.commentsSection}>
+        <div className={styles.commentsSection} ref={commentsContentRef}>
           <p className={styles.commentsTitle}>Maoni</p>
           <div className={styles.commentsList}>
             {commentsLoading ? (
