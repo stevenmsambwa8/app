@@ -229,7 +229,9 @@ export default function PostsProvider({ children }) {
   async function fetchComments(postId) {
     const { data, error } = await supabase
       .from('comments')
-      .select('id, post_id, user_id, text, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)')
+      .select(
+        'id, post_id, parent_id, user_id, text, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
+      )
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
 
@@ -238,9 +240,10 @@ export default function PostsProvider({ children }) {
       return { error, comments: [] };
     }
 
-    const comments = (data || []).map((c) => ({
+    const mapRow = (c) => ({
       id: c.id,
       uid: c.user_id,
+      parentId: c.parent_id,
       text: c.text,
       time: relativeTime(c.created_at),
       author: c.profiles
@@ -250,17 +253,33 @@ export default function PostsProvider({ children }) {
             avatarUrl: c.profiles.avatar_url || null,
           }
         : null,
-    }));
+      replies: [],
+    });
 
-    return { error: null, comments };
+    const byId = {};
+    (data || []).forEach((c) => {
+      byId[c.id] = mapRow(c);
+    });
+
+    const roots = [];
+    (data || []).forEach((c) => {
+      const node = byId[c.id];
+      if (c.parent_id && byId[c.parent_id]) {
+        byId[c.parent_id].replies.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    return { error: null, comments: roots };
   }
 
-  async function addComment(postId, text) {
+  async function addComment(postId, text, parentId = null) {
     if (!user) return { error: new Error('Ingia kwanza kutoa maoni.') };
     const trimmed = (text || '').trim();
     if (!trimmed) return { error: new Error('Andika maoni kwanza.') };
 
-    const payload = { post_id: postId, user_id: user.id, text: trimmed };
+    const payload = { post_id: postId, user_id: user.id, text: trimmed, parent_id: parentId || null };
     let { data, error } = await supabase.from('comments').insert(payload).select().single();
 
     if (error && (error.code === '23503' || /foreign key/i.test(error.message || ''))) {
@@ -280,6 +299,7 @@ export default function PostsProvider({ children }) {
     const comment = {
       id: data.id,
       uid: user.id,
+      parentId: data.parent_id,
       text: data.text,
       time: relativeTime(data.created_at),
       author: {
@@ -287,12 +307,13 @@ export default function PostsProvider({ children }) {
         avatar: '🐧',
         avatarUrl: null,
       },
+      replies: [],
     };
 
     return { error: null, comment };
   }
 
-  async function deleteComment(commentId, postId) {
+  async function deleteComment(commentId, postId, removedCount = 1) {
     if (!user) return { error: new Error('Haiwezekani kufuta hii.') };
 
     const { error } = await supabase
@@ -305,7 +326,9 @@ export default function PostsProvider({ children }) {
 
     setRealPosts((p) =>
       p.map((post) =>
-        post.id === postId ? { ...post, comments: Math.max(0, (post.comments || 0) - 1) } : post
+        post.id === postId
+          ? { ...post, comments: Math.max(0, (post.comments || 0) - removedCount) }
+          : post
       )
     );
 

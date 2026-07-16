@@ -28,6 +28,9 @@ export default function PostDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [imageHidden, setImageHidden] = useState(false);
+  const [openReplies, setOpenReplies] = useState({});
+  const [replyDrafts, setReplyDrafts] = useState({});
+  const [postingReply, setPostingReply] = useState({});
   const lastScrollTop = useRef(0);
   const menuRef = useRef(null);
   const commentsRef = useRef(null);
@@ -41,7 +44,7 @@ export default function PostDetailPage() {
   useLayoutEffect(() => {
     const el = commentsRef.current;
     if (el) baselineOverflow.current = el.scrollHeight - el.clientHeight;
-  }, []);
+  }, [commentsLoading, comments]);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,10 +113,45 @@ export default function PostDetailPage() {
     }
   }
 
-  async function handleDeleteComment(id) {
+  async function handleDeleteComment(target, isReply) {
     if (!window.confirm('Futa maoni haya?')) return;
-    const { error } = await deleteComment(id, post.id);
-    if (!error) setComments((c) => c.filter((cm) => cm.id !== id));
+    const removedCount = isReply ? 1 : 1 + (target.replies ? target.replies.length : 0);
+    const { error } = await deleteComment(target.id, post.id, removedCount);
+    if (error) return;
+
+    setComments((list) => {
+      if (isReply) {
+        return list.map((c) =>
+          c.replies && c.replies.some((r) => r.id === target.id)
+            ? { ...c, replies: c.replies.filter((r) => r.id !== target.id) }
+            : c
+        );
+      }
+      return list.filter((c) => c.id !== target.id);
+    });
+  }
+
+  function toggleReplies(id) {
+    setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
+  }
+
+  async function handleSendReply(parent) {
+    const text = (replyDrafts[parent.id] || '').trim();
+    if (!text || postingReply[parent.id]) return;
+    setPostingReply((p) => ({ ...p, [parent.id]: true }));
+    const { error, comment: newReply } = await addComment(post.id, text, parent.id);
+    setPostingReply((p) => ({ ...p, [parent.id]: false }));
+    if (!error && newReply) {
+      setComments((list) =>
+        list.map((c) => (c.id === parent.id ? { ...c, replies: [...(c.replies || []), newReply] } : c))
+      );
+      setReplyDrafts((d) => ({ ...d, [parent.id]: '' }));
+      setOpenReplies((r) => ({ ...r, [parent.id]: true }));
+    }
+  }
+
+  function countAllComments(list) {
+    return list.reduce((sum, c) => sum + 1 + (c.replies ? countAllComments(c.replies) : 0), 0);
   }
 
   function handleScroll(e) {
@@ -251,7 +289,7 @@ export default function PostDetailPage() {
             </button>
             <span className={styles.action}>
               <i className="ri-chat-3-line" />
-              {comments.length}
+              {countAllComments(comments)}
             </span>
             <button className={`${styles.action} ${styles.spacer}`}>
               <i className="ri-share-forward-line" />
@@ -272,6 +310,8 @@ export default function PostDetailPage() {
               comments.map((c) => {
                 const cu = c.author || userById(c.uid);
                 const canDelete = !!user && c.uid === user.id;
+                const hasReplies = c.replies && c.replies.length > 0;
+                const repliesOpen = !!openReplies[c.id];
                 return (
                   <div key={c.id} className={styles.comment}>
                     <Avatar emoji={cu.avatar} src={cu.avatarUrl} size={32} />
@@ -282,17 +322,95 @@ export default function PostDetailPage() {
                       </div>
                       <div className={styles.commentMeta}>
                         <span>{c.time}</span>
+                        <button
+                          type="button"
+                          className={styles.commentLike}
+                          onClick={() => setOpenReplies((r) => ({ ...r, [`reply-${c.id}`]: !r[`reply-${c.id}`] }))}
+                        >
+                          <i className="ri-reply-line" />
+                          Jibu
+                        </button>
                         {canDelete && (
                           <button
                             type="button"
                             className={styles.commentLike}
-                            onClick={() => handleDeleteComment(c.id)}
+                            onClick={() => handleDeleteComment(c, false)}
                           >
                             <i className="ri-delete-bin-line" />
                             Futa
                           </button>
                         )}
                       </div>
+
+                      {openReplies[`reply-${c.id}`] && (
+                        <div className={styles.replyComposer}>
+                          <input
+                            className={styles.replyInput}
+                            placeholder={user ? 'Jibu maoni haya...' : 'Ingia ili kujibu'}
+                            value={replyDrafts[c.id] || ''}
+                            onChange={(e) => setReplyDrafts((d) => ({ ...d, [c.id]: e.target.value }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSendReply(c);
+                            }}
+                            disabled={!user || postingReply[c.id]}
+                          />
+                          <button
+                            type="button"
+                            className={styles.send}
+                            disabled={!user || !(replyDrafts[c.id] || '').trim() || postingReply[c.id]}
+                            onClick={() => handleSendReply(c)}
+                            aria-label="Tuma jibu"
+                          >
+                            <i className={postingReply[c.id] ? 'ri-loader-4-line' : 'ri-send-plane-fill'} />
+                          </button>
+                        </div>
+                      )}
+
+                      {hasReplies && (
+                        <>
+                          <button
+                            type="button"
+                            className={styles.viewReplies}
+                            onClick={() => toggleReplies(c.id)}
+                          >
+                            <i className="ri-corner-down-right-line" />
+                            {repliesOpen ? 'Ficha majibu' : `Ona majibu (${c.replies.length})`}
+                          </button>
+
+                          {repliesOpen && (
+                            <div className={styles.repliesList}>
+                              {c.replies.map((r) => {
+                                const ru = r.author || userById(r.uid);
+                                const canDeleteReply = !!user && r.uid === user.id;
+                                return (
+                                  <div key={r.id} className={styles.comment}>
+                                    <Avatar emoji={ru.avatar} src={ru.avatarUrl} size={26} />
+                                    <div className={styles.commentBody}>
+                                      <div className={styles.commentBubble}>
+                                        <span className={styles.commentName}>{ru.name}</span>
+                                        <p className={styles.commentText}>{r.text}</p>
+                                      </div>
+                                      <div className={styles.commentMeta}>
+                                        <span>{r.time}</span>
+                                        {canDeleteReply && (
+                                          <button
+                                            type="button"
+                                            className={styles.commentLike}
+                                            onClick={() => handleDeleteComment(r, true)}
+                                          >
+                                            <i className="ri-delete-bin-line" />
+                                            Futa
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 );
