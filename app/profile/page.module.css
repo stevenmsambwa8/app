@@ -79,6 +79,9 @@
 .statsRow { display: flex; align-items: center; gap: 20px; margin-top: 12px; font-size: 13px; }
 .statsRow b { font-weight: 700; }
 .statsRow span { color: var(--text-muted); }
+.statBtn { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.statBtn b { font-weight: 700; }
+.statBtn span { color: var(--text-muted); }
 
 .tabs {
   display: flex;

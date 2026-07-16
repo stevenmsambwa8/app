@@ -1,13 +1,15 @@
 'use client'
 import styles from './FollowBtn.module.css'
 
-export default function FollowBtn({ following, onClick }) {
+export default function FollowBtn({ following, onClick, pending, small }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`${styles.btn} ${following ? 'btnGhost' : 'btnAccent'}`}
+      disabled={pending}
+      className={`${styles.btn} ${small ? styles.small : ''} ${following ? 'btnGhost' : 'btnAccent'}`}
     >
-      <i className={following ? 'ri-check-line' : 'ri-user-add-line'} />
+      <i className={pending ? 'ri-loader-4-line' : following ? 'ri-check-line' : 'ri-user-add-line'} />
       {following ? 'Unamfuata' : 'Fuata'}
     </button>
   );

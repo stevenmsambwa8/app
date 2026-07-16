@@ -1,10 +1,14 @@
 'use client'
 import { useState, useRef, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
+import FollowBtn from '../../../components/FollowBtn'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
+import { useAuthModal } from '../../../components/AuthModalProvider'
+import { useFollow } from '../../../components/FollowProvider'
 import { userById } from '../../../lib/mockData'
 import { getBlobDuration } from '../../../lib/audioDuration'
 import VoiceNote from '../../../components/VoiceNote'
@@ -52,6 +56,16 @@ export default function PostDetailPage() {
   const { posts, likes, toggleLike, deletePost, fetchComments, addComment, deleteComment, uploadVoiceNote } =
     usePosts();
   const { user, profile } = useAuth();
+  const { openAuth } = useAuthModal();
+  const { isFollowing, toggleFollow, pending } = useFollow();
+
+  function handleFollowClick(uid) {
+    if (!user) {
+      openAuth('signin');
+      return;
+    }
+    toggleFollow(uid);
+  }
 
   const post = posts.find((p) => String(p.id) === String(params.id) && p.kind !== 'ad');
 
@@ -367,7 +381,7 @@ export default function PostDetailPage() {
         <button className={styles.back} onClick={() => router.back()} aria-label="Rudi nyuma">
           <i className="ri-arrow-left-line" />
         </button>
-        <div className={styles.who}>
+        <Link href={isOwner ? '/profile' : `/u/${post.uid}`} className={styles.who}>
           <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
           <div>
             <div className={styles.nameRow}>
@@ -376,7 +390,15 @@ export default function PostDetailPage() {
             </div>
             <span className={styles.meta}>{post.time} · {post.tag}</span>
           </div>
-        </div>
+        </Link>
+        {!isOwner && user && (
+          <FollowBtn
+            following={isFollowing(post.uid)}
+            pending={!!pending[post.uid]}
+            small
+            onClick={() => handleFollowClick(post.uid)}
+          />
+        )}
         {isOwner && (
           <div className={styles.headMenuWrap} ref={menuRef}>
             <button
@@ -493,7 +515,12 @@ export default function PostDetailPage() {
                     <Avatar emoji={cu.avatar} src={cu.avatarUrl} size={32} />
                     <div className={styles.commentBody}>
                       <div className={styles.commentBubble}>
-                        <span className={styles.commentName}>{cu.name}</span>
+                        <Link
+                          href={c.uid === user?.id ? '/profile' : `/u/${c.uid}`}
+                          className={styles.commentNameLink}
+                        >
+                          <span className={styles.commentName}>{cu.name}</span>
+                        </Link>
                         {c.audioUrl ? (
                           <>
                             {c.text && <p className={styles.commentText}>{renderWithMentions(c.text)}</p>}
@@ -513,6 +540,16 @@ export default function PostDetailPage() {
                           <i className="ri-reply-line" />
                           Jibu
                         </button>
+                        {!!user && c.uid !== user.id && (
+                          <button
+                            type="button"
+                            className={styles.commentFollow}
+                            disabled={!!pending[c.uid]}
+                            onClick={() => handleFollowClick(c.uid)}
+                          >
+                            {isFollowing(c.uid) ? 'Unamfuata' : 'Fuata'}
+                          </button>
+                        )}
                         {canDelete && (
                           <button
                             type="button"
@@ -546,7 +583,12 @@ export default function PostDetailPage() {
                                     <Avatar emoji={ru.avatar} src={ru.avatarUrl} size={26} />
                                     <div className={styles.commentBody}>
                                       <div className={styles.commentBubble}>
-                                        <span className={styles.commentName}>{ru.name}</span>
+                                        <Link
+                                          href={r.uid === user?.id ? '/profile' : `/u/${r.uid}`}
+                                          className={styles.commentNameLink}
+                                        >
+                                          <span className={styles.commentName}>{ru.name}</span>
+                                        </Link>
                                         {r.audioUrl ? (
                                           <>
                                             {r.text && (
@@ -568,6 +610,16 @@ export default function PostDetailPage() {
                                           <i className="ri-reply-line" />
                                           Jibu
                                         </button>
+                                        {!!user && r.uid !== user.id && (
+                                          <button
+                                            type="button"
+                                            className={styles.commentFollow}
+                                            disabled={!!pending[r.uid]}
+                                            onClick={() => handleFollowClick(r.uid)}
+                                          >
+                                            {isFollowing(r.uid) ? 'Unamfuata' : 'Fuata'}
+                                          </button>
+                                        )}
                                         {canDeleteReply && (
                                           <button
                                             type="button"

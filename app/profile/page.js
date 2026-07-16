@@ -1,12 +1,14 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
 import Avatar from '../../components/Avatar'
 import PostCard from '../../components/PostCard'
+import FollowListModal from '../../components/FollowListModal'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
 import { usePosts } from '../../components/PostsProvider'
+import { useFollow } from '../../components/FollowProvider'
 import { ME, FLEX_CARDS } from '../../lib/mockData'
 import styles from './page.module.css'
 
@@ -17,12 +19,20 @@ export default function ProfilePage() {
   const [savingName, setSavingName] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [formError, setFormError] = useState('');
+  const [listModal, setListModal] = useState(null); // 'followers' | 'following' | null
+  const [counts, setCounts] = useState({ followers: 0, following: 0 });
   const fileInputRef = useRef(null);
 
   const { user, profile, loading, updateUsername, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
   const { posts, likes, toggleLike } = usePosts();
+  const { getCounts } = useFollow();
   const myPosts = posts.filter((p) => p.uid === user?.id);
+
+  useEffect(() => {
+    if (!user) return;
+    getCounts(user.id).then(setCounts);
+  }, [user, getCounts]);
 
   if (loading) return null;
 
@@ -158,8 +168,12 @@ export default function ProfilePage() {
 
         <div className={styles.statsRow}>
           <span><b>{myPosts.length}</b> <span>machapisho</span></span>
-          <span><b>1.2k</b> <span>wafuasi</span></span>
-          <span><b>318</b> <span>anaowafuata</span></span>
+          <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
+            <b>{counts.followers}</b> <span>wafuasi</span>
+          </button>
+          <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
+            <b>{counts.following}</b> <span>anaowafuata</span>
+          </button>
         </div>
 
         <div className={styles.tabs}>
@@ -207,6 +221,14 @@ export default function ProfilePage() {
           </div>
         )}
       </div>
+
+      {listModal && (
+        <FollowListModal
+          uid={user.id}
+          mode={listModal}
+          onClose={() => setListModal(null)}
+        />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import RightRail from '../components/RightRail'
 import ThemeProvider from '../components/ThemeProvider'
 import AuthProvider from '../components/AuthProvider'
 import AuthModalProvider from '../components/AuthModalProvider'
+import FollowProvider from '../components/FollowProvider'
 import PostsProvider from '../components/PostsProvider'
 import PageMain from '../components/PageMain'
 import ThemeScript from '../components/ThemeScript'
@@ -36,17 +37,19 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             <AuthModalProvider>
-              <PostsProvider>
-                <div className="app-shell">
-                  <Sidebar />
-                  <div className="app-content">
-                    <TopBar />
-                    <PageMain>{children}</PageMain>
+              <FollowProvider>
+                <PostsProvider>
+                  <div className="app-shell">
+                    <Sidebar />
+                    <div className="app-content">
+                      <TopBar />
+                      <PageMain>{children}</PageMain>
+                    </div>
+                    <RightRail />
                   </div>
-                  <RightRail />
-                </div>
-                <BottomNav />
-              </PostsProvider>
+                  <BottomNav />
+                </PostsProvider>
+              </FollowProvider>
             </AuthModalProvider>
           </AuthProvider>
         </ThemeProvider>

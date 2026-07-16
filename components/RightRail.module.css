@@ -98,6 +98,14 @@
   border-radius: 10px;
 }
 .suggestRow:hover { background: var(--chip-bg); }
+.suggestWhoLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+}
 .suggestWho {
   display: flex;
   flex-direction: column;

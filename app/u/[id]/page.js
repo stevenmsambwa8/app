@@ -1,0 +1,152 @@
+'use client'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { supabase } from '../../../lib/supabaseClient'
+import VibeTag from '../../../components/VibeTag'
+import Avatar from '../../../components/Avatar'
+import PostCard from '../../../components/PostCard'
+import FollowBtn from '../../../components/FollowBtn'
+import FollowListModal from '../../../components/FollowListModal'
+import { useAuth } from '../../../components/AuthProvider'
+import { useAuthModal } from '../../../components/AuthModalProvider'
+import { usePosts } from '../../../components/PostsProvider'
+import { useFollow } from '../../../components/FollowProvider'
+import styles from '../../profile/page.module.css'
+
+export default function UserProfilePage() {
+  const params = useParams();
+  const router = useRouter();
+  const uid = params.id;
+
+  const { user } = useAuth();
+  const { openAuth } = useAuthModal();
+  const { posts, likes, toggleLike } = usePosts();
+  const { isFollowing, toggleFollow, pending, getCounts } = useFollow();
+
+  const [profileRow, setProfileRow] = useState(null);
+  const [notFound, setNotFound] = useState(false);
+  const [counts, setCounts] = useState({ followers: 0, following: 0 });
+  const [listModal, setListModal] = useState(null);
+
+  // If someone lands on their own uid via this route, send them to /profile
+  // instead so they get the editable version.
+  useEffect(() => {
+    if (user && uid === user.id) router.replace('/profile');
+  }, [user, uid, router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setProfileRow(null);
+    setNotFound(false);
+    supabase
+      .from('profiles')
+      .select('id, username, avatar, avatar_url, bio, vibe')
+      .eq('id', uid)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data) {
+          setNotFound(true);
+          return;
+        }
+        setProfileRow(data);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [uid]);
+
+  useEffect(() => {
+    if (!uid) return;
+    getCounts(uid).then(setCounts);
+  }, [uid, getCounts]);
+
+  if (notFound) {
+    return (
+      <div className={styles.body} style={{ textAlign: 'center', paddingTop: 48 }}>
+        <p>Mtumiaji hakupatikana.</p>
+      </div>
+    );
+  }
+
+  if (!profileRow) return null;
+
+  const displayName = profileRow.username || 'Mtumiaji';
+  const displayHandle = `@${profileRow.username || 'mtumiaji'}`;
+  const avatarEmoji = profileRow.avatar || '🐧';
+  const avatarUrl = profileRow.avatar_url || null;
+  const bioText = profileRow.bio || 'Bado hajaandika kuhusu yeye.';
+  const vibeText = profileRow.vibe || 'Mwanachama Mpya';
+
+  const theirPosts = posts.filter((p) => p.uid === uid);
+  const following = isFollowing(uid);
+
+  function handleFollowClick() {
+    if (!user) {
+      openAuth('signin');
+      return;
+    }
+    toggleFollow(uid);
+    setCounts((c) => ({ ...c, followers: Math.max(0, c.followers + (following ? -1 : 1)) }));
+  }
+
+  return (
+    <div>
+      <div className={styles.cover} />
+      <div className={styles.body}>
+        <div className={styles.headRow}>
+          <div className={styles.avatarBigRing}>
+            {avatarUrl ? (
+              <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
+                <Avatar src={avatarUrl} alt={displayName} size={80} />
+              </div>
+            ) : (
+              <div className={styles.avatarBig}>{avatarEmoji}</div>
+            )}
+          </div>
+          <FollowBtn following={following} pending={!!pending[uid]} onClick={handleFollowClick} />
+        </div>
+
+        <div className={styles.nameRow}>
+          <span className={styles.name}>{displayName}</span>
+        </div>
+
+        <div className={styles.handleRow}>
+          <span className={styles.handle}>{displayHandle}</span>
+          <VibeTag vibe={vibeText} />
+        </div>
+        <p className={styles.bio}>{bioText}</p>
+
+        <div className={styles.statsRow}>
+          <span><b>{theirPosts.length}</b> <span>machapisho</span></span>
+          <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
+            <b>{counts.followers}</b> <span>wafuasi</span>
+          </button>
+          <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
+            <b>{counts.following}</b> <span>anaowafuata</span>
+          </button>
+        </div>
+
+        <div className={styles.posts} style={{ marginTop: 20 }}>
+          {theirPosts.length === 0 ? (
+            <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+              Bado hajachapisha chochote.
+            </p>
+          ) : (
+            theirPosts.map((p) => (
+              <PostCard
+                key={p.id}
+                post={p}
+                liked={!!likes[p.id]}
+                likeCount={p.likes + (likes[p.id] ? 1 : 0)}
+                onLike={() => toggleLike(p.id)}
+              />
+            ))
+          )}
+        </div>
+      </div>
+
+      {listModal && <FollowListModal uid={uid} mode={listModal} onClose={() => setListModal(null)} />}
+    </div>
+  );
+}

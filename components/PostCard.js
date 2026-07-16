@@ -1,10 +1,14 @@
 'use client'
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
+import FollowBtn from './FollowBtn'
 import { useAuth } from './AuthProvider'
+import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
+import { useFollow } from './FollowProvider'
 import { userById } from '../lib/mockData'
 import styles from './PostCard.module.css'
 
@@ -27,8 +31,20 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const menuRef = useRef(null);
   const router = useRouter();
   const { user: authUser } = useAuth();
+  const { openAuth } = useAuthModal();
   const { deletePost } = usePosts();
+  const { isFollowing, toggleFollow, pending } = useFollow();
   const isOwner = !!authUser && post.uid === authUser.id;
+  const authorHref = isOwner ? '/profile' : `/u/${post.uid}`;
+
+  function handleFollowClick(e) {
+    e.stopPropagation();
+    if (!authUser) {
+      openAuth('signin');
+      return;
+    }
+    toggleFollow(post.uid);
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -111,7 +127,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
       <div className={styles.body}>
         <div className={styles.header}>
-          <div className={styles.who}>
+          <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
             <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
             <div>
               <div className={styles.nameRow}>
@@ -120,32 +136,42 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               </div>
               <span className={styles.meta}>{post.time} · {post.tag}</span>
             </div>
+          </Link>
+          <div className={styles.headerActions}>
+            {!isOwner && (
+              <FollowBtn
+                following={isFollowing(post.uid)}
+                pending={!!pending[post.uid]}
+                small
+                onClick={handleFollowClick}
+              />
+            )}
+            {isOwner ? (
+              <div className={styles.menuWrap} ref={menuRef}>
+                <button
+                  type="button"
+                  className={styles.moreBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen((v) => !v);
+                  }}
+                  aria-label="Chaguo za chapisho"
+                >
+                  <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
+                </button>
+                {menuOpen && (
+                  <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
+                      <i className="ri-delete-bin-line" />
+                      Futa Chapisho
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <i className={`ri-more-fill ${styles.more}`} />
+            )}
           </div>
-          {isOwner ? (
-            <div className={styles.menuWrap} ref={menuRef}>
-              <button
-                type="button"
-                className={styles.moreBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMenuOpen((v) => !v);
-                }}
-                aria-label="Chaguo za chapisho"
-              >
-                <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
-              </button>
-              {menuOpen && (
-                <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
-                  <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
-                    <i className="ri-delete-bin-line" />
-                    Futa Chapisho
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <i className={`ri-more-fill ${styles.more}`} />
-          )}
         </div>
 
         {!isColorOnly && (

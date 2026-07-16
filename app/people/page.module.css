@@ -62,6 +62,14 @@
   gap: 12px;
   padding: 12px;
 }
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+}
 .who { flex: 1; min-width: 0; }
 .nameRow { display: flex; align-items: center; gap: 6px; }
 .name { font-weight: 600; font-size: 13px; }
