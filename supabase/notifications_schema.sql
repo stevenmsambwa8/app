@@ -1,4 +1,4 @@
--- Run after posts_schema.sql, comments_schema.sql and follows_schema.sql.
+-- Run after posts_schema.sql, comments_schema.sql and .sql.
 -- Real notifications, auto-populated by triggers whenever someone follows
 -- you, likes your post, or comments on your post.
 
