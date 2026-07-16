@@ -43,11 +43,9 @@ export default function CreatePostPage() {
   }
 
   function toggleImage(preset) {
-    setPresetImages((imgs) => {
-      if (imgs.includes(preset)) return imgs.filter((i) => i !== preset);
-      if (usedSlots >= MAX_IMAGES) return imgs;
-      return [...imgs, preset];
-    });
+    // Color backgrounds are single-select — picking one replaces whatever
+    // was picked before (clicking the current pick clears it).
+    setPresetImages((imgs) => (imgs[0] === preset ? [] : [preset]));
   }
 
   async function handleFilesSelected(e) {
@@ -212,8 +210,7 @@ export default function CreatePostPage() {
               <p className={styles.hint} style={{ marginTop: 10 }}>Au chagua rangi badala ya picha:</p>
               <div className={styles.imageGrid}>
                 {IMAGE_PRESETS.map((preset, i) => {
-                  const idx = presetImages.indexOf(preset);
-                  const selected = idx !== -1;
+                  const selected = presetImages[0] === preset;
                   return (
                     <button
                       type="button"
@@ -222,7 +219,11 @@ export default function CreatePostPage() {
                       style={{ background: preset }}
                       onClick={() => toggleImage(preset)}
                     >
-                      {selected && <span className={styles.imageOrder}>{idx + 1}</span>}
+                      {selected && (
+                        <span className={styles.imageOrder}>
+                          <i className="ri-check-line" />
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -230,7 +231,7 @@ export default function CreatePostPage() {
             </>
           )}
 
-          {(photos.length > 1 || presetImages.length > 1) && (
+          {photos.length > 1 && (
             <p className={styles.previewNote}>
               <i className="ri-information-line" /> Zitaonekana kama picha {usedSlots} zinazopita kwenye chapisho
             </p>

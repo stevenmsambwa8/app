@@ -15,6 +15,9 @@ function isImageUrl(src) {
 export default function PostCard({ post, liked, likeCount, onLike }) {
   const author = post.author || userById(post.uid);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
+  // Color-background posts (no real photo) show the post text centered
+  // inside the color block itself instead of as a caption underneath.
+  const isColorOnly = images.length === 1 && !isImageUrl(images[0]);
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
@@ -101,7 +104,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
             <span className={styles.mediaTag}>{post.tag}</span>
-            <i className="ri-image-line" />
+            <p className={styles.mediaText}>{post.text}</p>
           </div>
         )
       ) : null}
@@ -145,32 +148,34 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           )}
         </div>
 
-        <div className={styles.textWrap}>
-          <p
-            ref={textRef}
-            className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
-          >
-            {post.text}
-          </p>
-          {!expanded && clamped && (
-            <button
-              type="button"
-              className={styles.readMoreInline}
-              onClick={() => setExpanded(true)}
+        {!isColorOnly && (
+          <div className={styles.textWrap}>
+            <p
+              ref={textRef}
+              className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
             >
-              Soma Zaidi
-            </button>
-          )}
-          {expanded && (
-            <button
-              type="button"
-              className={styles.readMore}
-              onClick={() => setExpanded(false)}
-            >
-              Ficha
-            </button>
-          )}
-        </div>
+              {post.text}
+            </p>
+            {!expanded && clamped && (
+              <button
+                type="button"
+                className={styles.readMoreInline}
+                onClick={() => setExpanded(true)}
+              >
+                Soma Zaidi
+              </button>
+            )}
+            {expanded && (
+              <button
+                type="button"
+                className={styles.readMore}
+                onClick={() => setExpanded(false)}
+              >
+                Ficha
+              </button>
+            )}
+          </div>
+        )}
 
         {post.cta && (
           <button className={`btnAccent ${styles.cta}`}>
