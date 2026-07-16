@@ -16,7 +16,7 @@ export default function TopBar() {
   const { openAuth } = useAuthModal();
   const { user, profile, signOut } = useAuth();
 
-  if (pathname?.startsWith('/create') || pathname?.startsWith('/post/')) return null;
+  if (pathname?.startsWith('/create') || pathname?.startsWith('/post/') || pathname?.startsWith('/dm')) return null;
 
   const displayName = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
   const avatarEmoji = profile?.avatar || '🐧';

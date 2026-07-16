@@ -250,24 +250,19 @@ export default function CreatePostPage() {
 
           {ctaOn && (
             <div className={styles.ctaFields}>
-              <input
-                type="text"
-                className={styles.ctaInput}
-                placeholder="mfano: Sikiliza Playlist"
-                value={ctaLabel}
-                onChange={(e) => setCtaLabel(e.target.value)}
-                maxLength={30}
-              />
-              <div className={styles.iconRow}>
+              <div className={styles.ctaTemplateGrid}>
                 {CTA_ICON_PRESETS.map((p) => (
                   <button
                     type="button"
                     key={p.icon}
-                    className={`${styles.iconChip} ${ctaIcon === p.icon ? styles.iconChipActive : ''}`}
-                    onClick={() => setCtaIcon(p.icon)}
-                    aria-label={p.label}
+                    className={`${styles.ctaTemplate} ${ctaLabel === p.label && ctaIcon === p.icon ? styles.ctaTemplateActive : ''}`}
+                    onClick={() => {
+                      setCtaLabel(p.label);
+                      setCtaIcon(p.icon);
+                    }}
                   >
                     <i className={p.icon} />
+                    {p.label}
                   </button>
                 ))}
               </div>

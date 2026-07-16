@@ -228,35 +228,27 @@
   gap: 10px;
   margin-top: 4px;
 }
-.ctaInput {
-  padding: 11px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  font-size: 13.5px;
-  color: var(--text);
-}
-.ctaInput:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-.iconRow {
+.ctaTemplateGrid {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
-.iconChip {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+.ctaTemplate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
+  font-size: 12.5px;
+  font-weight: 600;
 }
-.iconChipActive {
+.ctaTemplate i {
+  font-size: 15px;
+}
+.ctaTemplateActive {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);

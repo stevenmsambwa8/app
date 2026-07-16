@@ -252,29 +252,37 @@ function DMPageInner() {
 
   if (!activeId) {
     return (
-      <div className={styles.list}>
-        {convosLoading ? (
-          <p className={styles.last}>Inapakia ujumbe…</p>
-        ) : convos.length === 0 ? (
-          <p className={styles.last}>Bado huna mazungumzo. Fungua profaili ya mtu na umtumie ujumbe.</p>
-        ) : (
-          convos
-            .slice()
-            .sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime))
-            .map((c) => {
-              const p = profiles[c.uid] || mapProfile(c.uid, null);
-              return (
-                <button key={c.uid} className={`card ${styles.row}`} onClick={() => openThread(c.uid)}>
-                  <Avatar emoji={p.avatar} src={p.avatarUrl} size={44} ring={c.unread > 0} />
-                  <div className={styles.who}>
-                    <div className={styles.name}>{p.name}</div>
-                    <span className={styles.last}>{c.lastText}</span>
-                  </div>
-                  {c.unread > 0 && <span className={styles.unread}>{c.unread}</span>}
-                </button>
-              );
-            })
-        )}
+      <div className={styles.thread}>
+        <div className={styles.threadHeader}>
+          <button className={styles.back} onClick={() => router.back()} aria-label="Rudi nyuma">
+            <i className="ri-arrow-left-line" />
+          </button>
+          <span className={styles.threadName}>Ujumbe</span>
+        </div>
+        <div className={styles.list}>
+          {convosLoading ? (
+            <p className={styles.last}>Inapakia ujumbe…</p>
+          ) : convos.length === 0 ? (
+            <p className={styles.last}>Bado huna mazungumzo. Fungua profaili ya mtu na umtumie ujumbe.</p>
+          ) : (
+            convos
+              .slice()
+              .sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime))
+              .map((c) => {
+                const p = profiles[c.uid] || mapProfile(c.uid, null);
+                return (
+                  <button key={c.uid} className={`card ${styles.row}`} onClick={() => openThread(c.uid)}>
+                    <Avatar emoji={p.avatar} src={p.avatarUrl} size={44} ring={c.unread > 0} />
+                    <div className={styles.who}>
+                      <div className={styles.name}>{p.name}</div>
+                      <span className={styles.last}>{c.lastText}</span>
+                    </div>
+                    {c.unread > 0 && <span className={styles.unread}>{c.unread}</span>}
+                  </button>
+                );
+              })
+          )}
+        </div>
       </div>
     );
   }
