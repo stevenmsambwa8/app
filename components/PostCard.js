@@ -367,6 +367,16 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                 onClick={handleFollowClick}
               />
             )}
+            {isOwner && images.length > 0 && (
+              <button
+                type="button"
+                className={styles.myProfileBtn}
+                onClick={handleViewProfile}
+              >
+                <i className="ri-user-line" />
+                Wasifu Wangu
+              </button>
+            )}
             {images.length === 0 && menuEl}
           </div>
         </div>
