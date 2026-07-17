@@ -168,25 +168,29 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       ) : images.length === 1 ? (
         isImageUrl(images[0]) ? (
           <div className={styles.media} onClick={viewPost}>
-            <span className={styles.mediaTag}>{post.tag}</span>
+            <div className={styles.topLeftRow}>
+              <span className={styles.mediaTag}>{post.tag}</span>
+              {feeling && (
+                <span className={styles.feelingBadge}>
+                  {feeling.emoji} Anasikia {feeling.label}
+                </span>
+              )}
+            </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[0]} alt="" className={styles.mediaImg} />
             {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
-            {feeling && (
-              <span className={styles.feelingBadge}>
-                {feeling.emoji} Anasikia {feeling.label}
-              </span>
-            )}
           </div>
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
-            <span className={styles.mediaTag}>{post.tag}</span>
+            <div className={styles.topLeftRow}>
+              <span className={styles.mediaTag}>{post.tag}</span>
+              {feeling && (
+                <span className={styles.feelingBadge}>
+                  {feeling.emoji} Anasikia {feeling.label}
+                </span>
+              )}
+            </div>
             <p className={styles.mediaText}>{postText}</p>
-            {feeling && (
-              <span className={styles.feelingBadge}>
-                {feeling.emoji} Anasikia {feeling.label}
-              </span>
-            )}
           </div>
         )
       ) : null}
@@ -212,15 +216,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         )}
 
-        {!isOwner && (
-          <FollowBtn
-            following={isFollowing(post.uid)}
-            pending={!!pending[post.uid]}
-            small
-            onClick={handleFollowClick}
-          />
-        )}
-
         <div className={styles.actionsPill}>
           <button
             className={`${styles.pillBtn} ${liked ? styles.liked : ''}`}
@@ -237,6 +232,15 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-share-forward-line" />
           </button>
         </div>
+
+        {!isOwner && (
+          <FollowBtn
+            following={isFollowing(post.uid)}
+            pending={!!pending[post.uid]}
+            small
+            onClick={handleFollowClick}
+          />
+        )}
       </div>
 
       {post.cta && (
