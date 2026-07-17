@@ -87,6 +87,32 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     setDeleting(false);
   }
 
+  const menuEl = isOwner ? (
+    <div className={styles.menuWrap} ref={menuRef}>
+      <button
+        type="button"
+        className={styles.moreBtn}
+        onClick={(e) => {
+          e.stopPropagation();
+          setMenuOpen((v) => !v);
+        }}
+        aria-label="Chaguo za chapisho"
+      >
+        <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
+      </button>
+      {menuOpen && (
+        <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
+          <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
+            <i className="ri-delete-bin-line" />
+            Futa Chapisho
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <i className={`ri-more-fill ${styles.more}`} />
+  );
+
   return (
     <div className={`card ${styles.card}`}>
       {images.length > 1 ? (
@@ -142,6 +168,12 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         )
       ) : null}
 
+      {images.length > 0 && (
+        <div className={styles.actionsFloat} onClick={(e) => e.stopPropagation()}>
+          {menuEl}
+        </div>
+      )}
+
       <div className={styles.body}>
         <div className={styles.header}>
           <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
@@ -163,31 +195,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                 onClick={handleFollowClick}
               />
             )}
-            {isOwner ? (
-              <div className={styles.menuWrap} ref={menuRef}>
-                <button
-                  type="button"
-                  className={styles.moreBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpen((v) => !v);
-                  }}
-                  aria-label="Chaguo za chapisho"
-                >
-                  <i className={deleting ? 'ri-loader-4-line' : 'ri-more-fill'} />
-                </button>
-                {menuOpen && (
-                  <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
-                    <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
-                      <i className="ri-delete-bin-line" />
-                      Futa Chapisho
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <i className={`ri-more-fill ${styles.more}`} />
-            )}
+            {images.length === 0 && menuEl}
           </div>
         </div>
 

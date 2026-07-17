@@ -5,7 +5,7 @@ import Avatar from '../../components/Avatar'
 import { usePosts } from '../../components/PostsProvider'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
-import { ME, VIBES, IMAGE_PRESETS, BACKGROUND_PRESETS, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
+import { ME, VIBES, IMAGE_PRESETS, BACKGROUND_PRESETS, randomBackground, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
 import { encodeFeeling } from '../../lib/postText'
 import styles from './page.module.css'
 
@@ -186,7 +186,7 @@ export default function CreatePostPage() {
     setPosting(true);
 
     const uploadedUrls = photos.filter((p) => p.url).map((p) => p.url);
-    const finalImages = uploadedUrls.length ? uploadedUrls : presetImages;
+    const finalImages = uploadedUrls.length ? uploadedUrls : presetImages.length ? presetImages : [randomBackground()];
     const finalText = encodeFeeling(text.trim(), feeling);
 
     const { error } = await addPost({

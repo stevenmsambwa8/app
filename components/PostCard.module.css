@@ -3,6 +3,25 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+.actionsFloat {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 999px;
+  padding: 5px 8px;
+}
+.actionsFloat .moreBtn {
+  padding: 0;
+}
+.actionsFloat .moreBtn,
+.actionsFloat .more {
+  color: #fff;
 }
 .body {
   padding: 14px 16px 16px;
