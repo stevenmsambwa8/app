@@ -46,8 +46,8 @@
   transform: translate(-50%, -50%);
 }
 .logoImg {
-  height: 30px;
-  width: 100px;
+  height: auto;
+  width: auto;
 }
 
 @media (min-width: 900px) {
