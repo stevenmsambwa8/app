@@ -171,18 +171,23 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       {images.length > 0 && (
         <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
           {menuEl}
+        </div>
+      )}
+
+      {images.length > 0 && (
+        <div className={styles.actionsPill} onClick={(e) => e.stopPropagation()}>
           <button
-            className={`${styles.railBtn} ${liked ? styles.liked : ''}`}
+            className={`${styles.pillBtn} ${liked ? styles.liked : ''}`}
             onClick={onLike}
           >
             <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
             <span>{likeCount}</span>
           </button>
-          <button className={styles.railBtn} onClick={viewPost}>
+          <button className={styles.pillBtn} onClick={viewPost}>
             <i className="ri-chat-3-line" />
             <span>{post.comments}</span>
           </button>
-          <button className={styles.railBtn}>
+          <button className={styles.pillBtn}>
             <i className="ri-share-forward-line" />
           </button>
         </div>
