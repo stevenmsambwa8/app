@@ -5,6 +5,9 @@
   flex-direction: column;
   position: relative;
 }
+.mediaWrap {
+  position: relative;
+}
 .actionsRail {
   position: absolute;
   top: 12px;
@@ -19,11 +22,17 @@
   font-size: 20px;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
-.actionsPill {
+.cornerStack {
   position: absolute;
   bottom: 12px;
   right: 10px;
   z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.actionsPill {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -32,6 +41,27 @@
   border-radius: 999px;
   padding: 6px 12px;
 }
+.ctaOverlayWrap {
+  position: absolute;
+  bottom: 12px;
+  left: 10px;
+  z-index: 8;
+}
+.ctaOverlay {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+}
+.ctaOverlay i { font-size: 15px; }
+.ctaOverlay:disabled { opacity: 0.7; }
 .pillBtn {
   display: flex;
   align-items: center;
@@ -49,27 +79,23 @@
   color: #ff4d6d;
 }
 .likersStack {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 8;
   display: flex;
   align-items: center;
 }
 .likerAvatar {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   border: 2px solid var(--surface);
-  margin-left: -9px;
+  margin-left: -8px;
   overflow: hidden;
   background: var(--surface-2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 11px;
   flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 .likerAvatar:first-child {
   margin-left: 0;

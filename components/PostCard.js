@@ -136,6 +136,8 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
   return (
     <div className={`card ${styles.card}`}>
+      {images.length > 0 && (
+      <div className={styles.mediaWrap}>
       {images.length > 1 ? (
         <div className={styles.carouselWrap} onClick={viewPost}>
           <div className={styles.carousel} onScroll={handleScroll}>
@@ -189,30 +191,37 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         )
       ) : null}
 
-      {images.length > 0 && displayLikers.length > 0 && (
-        <div className={styles.likersStack}>
-          {displayLikers.map((l) => (
-            <span key={l.uid} className={styles.likerAvatar}>
-              {l.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={l.avatarUrl} alt={l.name} />
-              ) : (
-                l.avatar
-              )}
-            </span>
-          ))}
-          {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-        </div>
-      )}
+      <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
+        {menuEl}
+      </div>
 
-      {images.length > 0 && (
-        <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
-          {menuEl}
-        </div>
-      )}
+      <div className={styles.cornerStack} onClick={(e) => e.stopPropagation()}>
+        {displayLikers.length > 0 && (
+          <div className={styles.likersStack}>
+            {displayLikers.map((l) => (
+              <span key={l.uid} className={styles.likerAvatar}>
+                {l.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={l.avatarUrl} alt={l.name} />
+                ) : (
+                  l.avatar
+                )}
+              </span>
+            ))}
+            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+          </div>
+        )}
 
-      {images.length > 0 && (
-        <div className={styles.actionsPill} onClick={(e) => e.stopPropagation()}>
+        {!isOwner && (
+          <FollowBtn
+            following={isFollowing(post.uid)}
+            pending={!!pending[post.uid]}
+            small
+            onClick={handleFollowClick}
+          />
+        )}
+
+        <div className={styles.actionsPill}>
           <button
             className={`${styles.pillBtn} ${liked ? styles.liked : ''}`}
             onClick={onLike}
@@ -228,6 +237,29 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-share-forward-line" />
           </button>
         </div>
+      </div>
+
+      {post.cta && (
+        <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
+          {post.cta.url ? (
+            <a
+              href={post.cta.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.ctaOverlay}
+            >
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </a>
+          ) : (
+            <button className={styles.ctaOverlay} disabled>
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </button>
+          )}
+        </div>
+      )}
+      </div>
       )}
 
       <div className={styles.body}>
@@ -243,7 +275,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             </div>
           </Link>
           <div className={styles.headerActions}>
-            {!isOwner && (
+            {images.length === 0 && !isOwner && (
               <FollowBtn
                 following={isFollowing(post.uid)}
                 pending={!!pending[post.uid]}
@@ -289,7 +321,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         )}
 
-        {post.cta && (
+        {images.length === 0 && post.cta && (
           post.cta.url ? (
             <a
               href={post.cta.url}
