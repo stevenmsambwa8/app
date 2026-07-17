@@ -1,14 +1,16 @@
 .bar {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   max-width: var(--shell);
   margin: 0 auto;
   height: 68px;
+  padding: 0 16px;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
-  background: var(--bg);
   z-index: 30;
 }
 
@@ -22,78 +24,41 @@
 .left {
   display: flex;
   align-items: center;
-  z-index: 1;
-}
-.addBtn {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: none;
-  color: var(--text-muted);
-  font-size: 20px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-.logoImg {
-  height: 24px;
-  width: auto;
+  text-decoration: none;
 }
 
-@media (min-width: 900px) {
-  .bar {
-    left: 240px;
-    right: auto;
-    width: var(--shell);
-    margin: 0;
-    justify-content: flex-end;
-    border-left: none;
-  }
-  .logo {
-    display: none;
-  }
-  .left {
-    display: none;
-  }
-  .menuBtn {
-    display: none;
-  }
+.logoImg {
+  width: auto;
+  height: 24px;
 }
+
 .right {
   display: flex;
   align-items: center;
   gap: 14px;
-  z-index: 1;
 }
-.themeBtn {
-  font-size: 17px;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-}
-.menuBtn {
-  font-size: 20px;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-}
+
 .bell {
   position: relative;
-  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text);
 }
+
 .badge {
   position: absolute;
-  top: -6px; right: -6px;
-  width: 16px; height: 16px;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-text);
@@ -102,4 +67,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.menuBtn {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.themeBtn {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .bar {
+    left: 240px;
+    right: auto;
+    width: var(--shell);
+    margin: 0;
+    border-left: none;
+  }
+
+  .menuBtn {
+    display: none;
+  }
 }
