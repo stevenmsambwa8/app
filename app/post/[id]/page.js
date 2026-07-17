@@ -83,6 +83,8 @@ export default function PostDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [openReplies, setOpenReplies] = useState({});
   // { rootId, label } — rootId is the top-level comment this reply attaches
   // to (replies are one level deep), label is who's shown in "Unajibu @Name".
@@ -179,6 +181,7 @@ export default function PostDetailPage() {
   const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
+  const photoImages = images.filter((img) => isImageUrl(img) && !isTemplateImage(img));
   const liked = !!likes[post.id];
   const likeCount = post.likes + (liked ? 1 : 0);
   const isOwner = !!user && post.uid === user.id;
@@ -200,6 +203,11 @@ export default function PostDetailPage() {
   function handleViewProfile() {
     setMenuOpen(false);
     router.push('/profile');
+  }
+
+  function openLightbox(photoIndex) {
+    setLightboxIndex(Math.max(0, photoIndex));
+    setLightboxOpen(true);
   }
 
   function handleCommentChange(e) {
@@ -418,6 +426,12 @@ export default function PostDetailPage() {
           />
         )}
         {isOwner && (
+          <button type="button" className={styles.myProfileBtn} onClick={handleViewProfile}>
+            <i className="ri-user-line" />
+            Wasifu Wangu
+          </button>
+        )}
+        {isOwner && (
           <div className={styles.headMenuWrap} ref={menuRef}>
             <button
               type="button"
@@ -429,10 +443,6 @@ export default function PostDetailPage() {
             </button>
             {menuOpen && (
               <div className={styles.headMenu}>
-                <button type="button" className={styles.headMenuItem} onClick={handleViewProfile}>
-                  <i className="ri-user-line" />
-                  Angalia Wasifu
-                </button>
                 <button type="button" className={styles.headMenuItem} onClick={handleEditPost}>
                   <i className="ri-edit-line" />
                   Hariri Chapisho
@@ -463,9 +473,17 @@ export default function PostDetailPage() {
               <div className={styles.carousel} onScroll={handleScroll}>
                 {images.map((bg, i) =>
                   isImageUrl(bg) ? (
-                    <div key={i} className={styles.media}>
+                    <div
+                      key={i}
+                      className={styles.media}
+                      onClick={() => openLightbox(photoImages.indexOf(bg))}
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Panua picha"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={bg} alt="" className={styles.mediaImg} />
+                      <i className={`ri-fullscreen-line ${styles.expandHint}`} />
                     </div>
                   ) : (
                     <div key={i} className={`${styles.media} texture`} style={{ background: bg }}>
@@ -488,10 +506,17 @@ export default function PostDetailPage() {
             </div>
           ) : images.length === 1 ? (
             isImageUrl(images[0]) ? (
-              <div className={styles.media}>
+              <div
+                className={styles.media}
+                onClick={() => !isTemplateImage(images[0]) && openLightbox(0)}
+                role={!isTemplateImage(images[0]) ? 'button' : undefined}
+                tabIndex={!isTemplateImage(images[0]) ? 0 : undefined}
+                aria-label={!isTemplateImage(images[0]) ? 'Panua picha' : undefined}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={images[0]} alt="" className={styles.mediaImg} />
                 {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
+                {!isTemplateImage(images[0]) && <i className={`ri-fullscreen-line ${styles.expandHint}`} />}
                 {feeling && (
                   <span className={styles.feelingBadge}>
                     {feeling.emoji} Anasikia {feeling.label}
@@ -519,10 +544,22 @@ export default function PostDetailPage() {
             {!isColorOnly && <p className={styles.text}>{postText}</p>}
 
             {post.cta && (
-              <button className={`btnAccent ${styles.cta}`}>
-                <i className={post.cta.icon || 'ri-arrow-right-line'} />
-                {post.cta.label}
-              </button>
+              post.cta.url ? (
+                <a
+                  href={post.cta.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`btnAccent ${styles.cta}`}
+                >
+                  <i className={post.cta.icon || 'ri-arrow-right-line'} />
+                  {post.cta.label}
+                </a>
+              ) : (
+                <button type="button" className={`btnAccent ${styles.cta}`} disabled>
+                  <i className={post.cta.icon || 'ri-arrow-right-line'} />
+                  {post.cta.label}
+                </button>
+              )
             )}
 
             <div className={styles.actions}>
@@ -803,6 +840,63 @@ export default function PostDetailPage() {
           onClose={() => setEditing(false)}
           onSave={(updates) => updatePost(post.id, updates)}
         />
+      )}
+
+      {lightboxOpen && photoImages.length > 0 && (
+        <div className={styles.lightbox} onClick={() => setLightboxOpen(false)}>
+          <button
+            type="button"
+            className={styles.lightboxClose}
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Funga"
+          >
+            <i className="ri-close-line" />
+          </button>
+
+          {photoImages.length > 1 && (
+            <span className={styles.lightboxCount}>{lightboxIndex + 1}/{photoImages.length}</span>
+          )}
+
+          <div className={styles.lightboxStage} onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoImages[lightboxIndex]} alt="" className={styles.lightboxImg} />
+          </div>
+
+          {photoImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex((i) => (i - 1 + photoImages.length) % photoImages.length);
+                }}
+                aria-label="Picha iliyopita"
+              >
+                <i className="ri-arrow-left-s-line" />
+              </button>
+              <button
+                type="button"
+                className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex((i) => (i + 1) % photoImages.length);
+                }}
+                aria-label="Picha inayofuata"
+              >
+                <i className="ri-arrow-right-s-line" />
+              </button>
+              <div className={styles.lightboxDots}>
+                {photoImages.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`${styles.lightboxDot} ${i === lightboxIndex ? styles.lightboxDotActive : ''}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
