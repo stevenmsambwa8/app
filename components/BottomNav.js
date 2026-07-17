@@ -34,9 +34,6 @@ export default function BottomNav() {
       {LEFT_TABS.map((t) => (
         <NavItem key={t.href} t={t} pathname={pathname} />
       ))}
-      <Link href="/create" className={styles.createBtn} aria-label="Unda chapisho">
-        <i className="ri-add-line" />
-      </Link>
       {RIGHT_TABS.map((t) => (
         <NavItem key={t.href} t={t} pathname={pathname} />
       ))}

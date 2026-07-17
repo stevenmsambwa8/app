@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
-import { useAuthModal } from './AuthModalProvider'
 import { useAuth } from './AuthProvider'
 import { useNotifications } from './NotificationsProvider'
 import MobileDrawer from './MobileDrawer'
@@ -14,9 +13,8 @@ import styles from './TopBar.module.css'
 export default function TopBar() {
   const pathname = usePathname();
   const { unreadCount } = useNotifications();
-  const { theme, toggleTheme } = useTheme();
-  const { openAuth } = useAuthModal();
-  const { user, profile, signOut } = useAuth();
+  const { theme } = useTheme();
+  const { user, profile } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (pathname?.startsWith('/create') || pathname?.startsWith('/post/') || pathname?.startsWith('/dm')) return null;
@@ -45,18 +43,6 @@ export default function TopBar() {
       </Link>
 
       <div className={styles.right}>
-        {user ? (
-          <button onClick={signOut} className={styles.themeBtn} aria-label="Toka">
-            <i className="ri-logout-box-line" />
-          </button>
-        ) : (
-          <button onClick={() => openAuth('signin')} className={styles.themeBtn} aria-label="Ingia au jisajili">
-            <i className="ri-login-box-line" />
-          </button>
-        )}
-        <button onClick={toggleTheme} className={styles.themeBtn} aria-label="Badilisha mandhari">
-          <i className={theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line'} />
-        </button>
         <Link href="/notifications" className={styles.bell}>
           <i className="ri-notification-3-line" />
           {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
