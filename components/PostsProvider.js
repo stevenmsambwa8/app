@@ -170,7 +170,7 @@ export default function PostsProvider({ children }) {
       let compressed;
       try {
         compressed = await compressToWebp(file, {
-          maxBytes: 20 * 1024,
+          maxBytes: 50 * 1024,
           startDimension: 720,
           minDimension: 240,
         });

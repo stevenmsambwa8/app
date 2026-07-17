@@ -35,6 +35,10 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const [deleting, setDeleting] = useState(false);
   const textRef = useRef(null);
   const menuRef = useRef(null);
+  const carouselRef = useRef(null);
+  const activeRef = useRef(0);
+  const scrollEndTimerRef = useRef(null);
+  const userInteractingRef = useRef(false);
   const router = useRouter();
   const { user: authUser, profile: authProfile } = useAuth();
   const { openAuth } = useAuthModal();
@@ -92,7 +96,44 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   function handleScroll(e) {
     const el = e.currentTarget;
     const idx = Math.round(el.scrollLeft / el.clientWidth);
-    if (idx !== active) setActive(idx);
+    if (idx !== activeRef.current) {
+      activeRef.current = idx;
+      setActive(idx);
+    }
+    // A scroll event firing means *something* is moving the carousel right
+    // now — either the user's finger/momentum or our own auto-scroll call.
+    // Treat it as "interacting" for a short debounce window so the two
+    // never race and fight over scrollLeft mid-gesture.
+    userInteractingRef.current = true;
+    scheduleResume();
+  }
+
+  // Auto-advance the carousel every few seconds, but only when the user
+  // isn't currently mid-scroll/touch — physical scrolling always wins.
+  useEffect(() => {
+    if (images.length <= 1) return undefined;
+    const timer = setInterval(() => {
+      if (userInteractingRef.current) return;
+      const el = carouselRef.current;
+      if (!el) return;
+      const next = (activeRef.current + 1) % images.length;
+      el.scrollTo({ left: next * el.clientWidth, behavior: 'smooth' });
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  useEffect(() => () => clearTimeout(scrollEndTimerRef.current), []);
+
+  function markInteracting() {
+    userInteractingRef.current = true;
+    clearTimeout(scrollEndTimerRef.current);
+  }
+
+  function scheduleResume() {
+    clearTimeout(scrollEndTimerRef.current);
+    scrollEndTimerRef.current = setTimeout(() => {
+      userInteractingRef.current = false;
+    }, 500);
   }
 
   function viewPost() {
@@ -140,17 +181,43 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       <div className={styles.mediaWrap}>
       {images.length > 1 ? (
         <div className={styles.carouselWrap} onClick={viewPost}>
-          <div className={styles.carousel} onScroll={handleScroll}>
+          <div
+            className={styles.carousel}
+            ref={carouselRef}
+            onScroll={handleScroll}
+            onTouchStart={markInteracting}
+            onTouchEnd={scheduleResume}
+            onPointerDown={markInteracting}
+            onPointerUp={scheduleResume}
+          >
             {images.map((bg, i) =>
               isImageUrl(bg) ? (
                 <div key={i} className={`${styles.media} ${styles.mediaSlide}`}>
-                  {i === 0 && <span className={styles.mediaTag}>{post.tag}</span>}
+                  {i === 0 && (
+                    <div className={styles.topLeftRow}>
+                      <span className={styles.mediaTag}>{post.tag}</span>
+                      {feeling && (
+                        <span className={styles.feelingBadge}>
+                          {feeling.emoji} Anasikia {feeling.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={bg} alt="" className={styles.mediaImg} />
                 </div>
               ) : (
                 <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
-                  {i === 0 && <span className={styles.mediaTag}>{post.tag}</span>}
+                  {i === 0 && (
+                    <div className={styles.topLeftRow}>
+                      <span className={styles.mediaTag}>{post.tag}</span>
+                      {feeling && (
+                        <span className={styles.feelingBadge}>
+                          {feeling.emoji} Anasikia {feeling.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <i className="ri-image-line" />
                 </div>
               )
