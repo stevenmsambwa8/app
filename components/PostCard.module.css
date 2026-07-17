@@ -42,13 +42,6 @@
   border-radius: 22px;
   padding: 12px 9px;
 }
-.ctaOverlayWrap {
-  position: absolute;
-  bottom: 34px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9;
-}
 .ctaOverlay {
   position: relative;
   display: flex;
@@ -57,12 +50,13 @@
   background: var(--bg);
   color: var(--text);
   font-weight: 700;
-  font-size: 12.5px;
-  padding: 7px 14px;
+  font-size: 12px;
+  padding: 7px 13px;
   border: none;
   border-radius: 999px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
   animation: ctaBreathe 2.4s ease-in-out infinite;
+  white-space: nowrap;
 }
 .ctaOverlay::before {
   content: '';
