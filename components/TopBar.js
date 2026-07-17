@@ -35,8 +35,8 @@ export default function TopBar() {
         <Image
           src={theme === 'dark' ? '/advat-black.png' : '/advat-white.png'}
           alt="Advat"
-          width={60}
-          height={20}
+          width={671}
+          height={315}
           priority
           className={styles.logoImg}
         />
