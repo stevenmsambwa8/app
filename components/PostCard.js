@@ -321,9 +321,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-share-forward-line" />
           </button>
         </div>
+      </div>
 
-        {post.cta && (
-          post.cta.url ? (
+      {post.cta && (
+        <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
+          {post.cta.url ? (
             <a
               href={post.cta.url}
               target="_blank"
@@ -338,9 +340,9 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <i className={post.cta.icon || 'ri-arrow-right-line'} />
               {post.cta.label}
             </button>
-          )
-        )}
-      </div>
+          )}
+        </div>
+      )}
       </div>
       )}
 
