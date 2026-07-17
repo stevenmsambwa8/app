@@ -25,11 +25,7 @@ export default function TopBar() {
 
   return (
     <div className={styles.bar}>
-      <div className={styles.left}>
-        <Link href="/create" className={styles.addBtn} aria-label="Chapisho jipya">
-          <i className="ri-add-line" />
-        </Link>
-      </div>
+      
 
       <Link href="/feed" className={styles.logo}>
         <Image
@@ -55,7 +51,7 @@ export default function TopBar() {
           className={styles.menuBtn}
           aria-label="Fungua menyu"
         >
-          <i className="ri-menu-line" />
+          <i className="ri-menu-2-line" />
         </button>
       </div>
 
