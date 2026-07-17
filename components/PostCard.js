@@ -169,8 +169,22 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       ) : null}
 
       {images.length > 0 && (
-        <div className={styles.actionsFloat} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
           {menuEl}
+          <button
+            className={`${styles.railBtn} ${liked ? styles.liked : ''}`}
+            onClick={onLike}
+          >
+            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+            <span>{likeCount}</span>
+          </button>
+          <button className={styles.railBtn} onClick={viewPost}>
+            <i className="ri-chat-3-line" />
+            <span>{post.comments}</span>
+          </button>
+          <button className={styles.railBtn}>
+            <i className="ri-share-forward-line" />
+          </button>
         </div>
       )}
 
@@ -253,22 +267,24 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           )
         )}
 
-        <div className={styles.actions}>
-          <button
-            className={`${styles.action} ${liked ? styles.liked : ''}`}
-            onClick={onLike}
-          >
-            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-            {likeCount}
-          </button>
-          <button className={styles.action} onClick={viewPost}>
-            <i className="ri-chat-3-line" />
-            {post.comments}
-          </button>
-          <button className={`${styles.action} ${styles.spacer}`}>
-            <i className="ri-share-forward-line" />
-          </button>
-        </div>
+        {images.length === 0 && (
+          <div className={styles.actions}>
+            <button
+              className={`${styles.action} ${liked ? styles.liked : ''}`}
+              onClick={onLike}
+            >
+              <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+              {likeCount}
+            </button>
+            <button className={styles.action} onClick={viewPost}>
+              <i className="ri-chat-3-line" />
+              {post.comments}
+            </button>
+            <button className={`${styles.action} ${styles.spacer}`}>
+              <i className="ri-share-forward-line" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

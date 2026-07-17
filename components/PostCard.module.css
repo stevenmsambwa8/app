@@ -5,23 +5,39 @@
   flex-direction: column;
   position: relative;
 }
-.actionsFloat {
+.actionsRail {
   position: absolute;
-  top: 10px;
+  top: 12px;
   right: 10px;
   z-index: 8;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  background: rgba(0, 0, 0, 0.32);
-  border-radius: 999px;
-  padding: 5px 8px;
+  gap: 16px;
 }
-.actionsFloat .moreBtn {
-  padding: 0;
-}
-.actionsFloat .moreBtn,
-.actionsFloat .more {
+.actionsRail .moreBtn,
+.actionsRail .more {
   color: #fff;
+  font-size: 20px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.railBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: #fff;
+  font-size: 21px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  background: none;
+  border: none;
+}
+.railBtn span {
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.railBtn.liked i {
+  color: #ff4d6d;
 }
 .body {
   padding: 14px 16px 16px;
