@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import FollowBtn from './FollowBtn'
+import EditPostModal from './EditPostModal'
 import { useAuth } from './AuthProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
@@ -33,6 +34,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const [clamped, setClamped] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const textRef = useRef(null);
   const menuRef = useRef(null);
   const carouselRef = useRef(null);
@@ -42,7 +44,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const router = useRouter();
   const { user: authUser, profile: authProfile } = useAuth();
   const { openAuth } = useAuthModal();
-  const { deletePost } = usePosts();
+  const { deletePost, updatePost } = usePosts();
   const { isFollowing, toggleFollow, pending } = useFollow();
   const isOwner = !!authUser && post.uid === authUser.id;
   const authorHref = isOwner ? '/profile' : `/u/${post.uid}`;
@@ -149,6 +151,18 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     setDeleting(false);
   }
 
+  function handleEdit(e) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setEditing(true);
+  }
+
+  function handleViewProfile(e) {
+    e.stopPropagation();
+    setMenuOpen(false);
+    router.push('/profile');
+  }
+
   const menuEl = isOwner ? (
     <div className={styles.menuWrap} ref={menuRef}>
       <button
@@ -164,6 +178,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       </button>
       {menuOpen && (
         <div className={styles.menu} onClick={(e) => e.stopPropagation()}>
+          <button type="button" className={styles.menuItem} onClick={handleViewProfile}>
+            <i className="ri-user-line" />
+            Angalia Wasifu
+          </button>
+          <button type="button" className={styles.menuItem} onClick={handleEdit}>
+            <i className="ri-edit-line" />
+            Hariri Chapisho
+          </button>
           <button type="button" className={styles.menuItemDanger} onClick={handleDelete}>
             <i className="ri-delete-bin-line" />
             Futa Chapisho
@@ -351,7 +373,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
         {!isColorOnly && (
           <div className={styles.textWrap}>
-            {feeling && (
+            {feeling && images.length === 0 && (
               <span className={styles.feelingChip}>
                 {feeling.emoji} Anasikia {feeling.label}
               </span>
@@ -422,6 +444,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         )}
       </div>
+
+      {editing && (
+        <EditPostModal
+          post={post}
+          onClose={() => setEditing(false)}
+          onSave={(updates) => updatePost(post.id, updates)}
+        />
+      )}
     </div>
   );
 }

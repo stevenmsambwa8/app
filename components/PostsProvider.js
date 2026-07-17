@@ -11,6 +11,7 @@ const PostsContext = createContext({
   likes: {},
   toggleLike: () => {},
   addPost: async () => ({ error: null }),
+  updatePost: async () => ({ error: null }),
   deletePost: async () => ({ error: null }),
   uploadPostImage: async () => ({ error: null }),
   uploadVoiceNote: async () => ({ error: null }),
@@ -246,6 +247,23 @@ export default function PostsProvider({ children }) {
     [user, loadPosts]
   );
 
+  const updatePost = useCallback(
+    async (id, updates) => {
+      if (typeof id !== 'string' || !user) return { error: new Error('Haiwezekani kuhariri hii.') };
+
+      const payload = {};
+      if (updates.text !== undefined) payload.text = updates.text;
+      if (updates.tag !== undefined) payload.tag = updates.tag;
+
+      const { error } = await supabase.from('posts').update(payload).eq('id', id).eq('user_id', user.id);
+      if (error) return { error };
+
+      setRealPosts((p) => p.map((post) => (post.id === id ? { ...post, ...updates } : post)));
+      return { error: null };
+    },
+    [user]
+  );
+
   const deletePost = useCallback(
     async (id) => {
       if (typeof id !== 'string' || !user) return { error: new Error('Haiwezekani kufuta hii.') };
@@ -421,6 +439,7 @@ export default function PostsProvider({ children }) {
       likes,
       toggleLike,
       addPost,
+      updatePost,
       deletePost,
       uploadPostImage,
       uploadVoiceNote,
@@ -436,6 +455,7 @@ export default function PostsProvider({ children }) {
       likes,
       toggleLike,
       addPost,
+      updatePost,
       deletePost,
       uploadPostImage,
       uploadVoiceNote,

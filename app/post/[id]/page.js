@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
 import UserBadge from '../../../components/UserBadge'
 import FollowBtn from '../../../components/FollowBtn'
+import EditPostModal from '../../../components/EditPostModal'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
 import { useAuthModal } from '../../../components/AuthModalProvider'
@@ -58,7 +59,7 @@ const MAX_RECORD_SECONDS = 120;
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { posts, likes, toggleLike, deletePost, fetchComments, addComment, deleteComment, uploadVoiceNote } =
+  const { posts, likes, toggleLike, deletePost, updatePost, fetchComments, addComment, deleteComment, uploadVoiceNote } =
     usePosts();
   const { user, profile } = useAuth();
   const { openAuth } = useAuthModal();
@@ -81,6 +82,7 @@ export default function PostDetailPage() {
   const [posting, setPosting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [openReplies, setOpenReplies] = useState({});
   // { rootId, label } — rootId is the top-level comment this reply attaches
   // to (replies are one level deep), label is who's shown in "Unajibu @Name".
@@ -188,6 +190,16 @@ export default function PostDetailPage() {
     const { error } = await deletePost(post.id);
     setDeleting(false);
     if (!error) router.push('/feed');
+  }
+
+  function handleEditPost() {
+    setMenuOpen(false);
+    setEditing(true);
+  }
+
+  function handleViewProfile() {
+    setMenuOpen(false);
+    router.push('/profile');
   }
 
   function handleCommentChange(e) {
@@ -417,6 +429,14 @@ export default function PostDetailPage() {
             </button>
             {menuOpen && (
               <div className={styles.headMenu}>
+                <button type="button" className={styles.headMenuItem} onClick={handleViewProfile}>
+                  <i className="ri-user-line" />
+                  Angalia Wasifu
+                </button>
+                <button type="button" className={styles.headMenuItem} onClick={handleEditPost}>
+                  <i className="ri-edit-line" />
+                  Hariri Chapisho
+                </button>
                 <button type="button" className={styles.headMenuItemDanger} onClick={handleDeletePost}>
                   <i className="ri-delete-bin-line" />
                   Futa Chapisho
@@ -454,6 +474,11 @@ export default function PostDetailPage() {
                   )
                 )}
               </div>
+              {feeling && (
+                <span className={styles.feelingBadge}>
+                  {feeling.emoji} Anasikia {feeling.label}
+                </span>
+              )}
               <span className={styles.count}>{active + 1}/{images.length}</span>
               <div className={styles.dots}>
                 {images.map((_, i) => (
@@ -486,7 +511,7 @@ export default function PostDetailPage() {
           ) : null}
 
           <div className={styles.topBody}>
-            {!isColorOnly && feeling && (
+            {!isColorOnly && feeling && images.length === 0 && (
               <span className={styles.feelingChip}>
                 {feeling.emoji} Anasikia {feeling.label}
               </span>
@@ -771,6 +796,14 @@ export default function PostDetailPage() {
           </div>
         )}
       </div>
+
+      {editing && (
+        <EditPostModal
+          post={post}
+          onClose={() => setEditing(false)}
+          onSave={(updates) => updatePost(post.id, updates)}
+        />
+      )}
     </div>
   );
 }
