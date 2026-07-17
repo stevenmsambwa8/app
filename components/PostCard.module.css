@@ -26,12 +26,11 @@
   z-index: 8;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 7px 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  padding: 6px 12px;
 }
 .pillBtn {
   display: flex;
@@ -48,6 +47,43 @@
 }
 .pillBtn.liked {
   color: #ff4d6d;
+}
+.likersStack {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+}
+.likerAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid var(--surface);
+  margin-left: -9px;
+  overflow: hidden;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.likerAvatar:first-child {
+  margin-left: 0;
+}
+.likerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.likerMore {
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 800;
 }
 .body {
   padding: 14px 16px 16px;

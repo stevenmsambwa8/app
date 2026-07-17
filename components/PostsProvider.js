@@ -86,16 +86,29 @@ export default function PostsProvider({ children }) {
     const likeCounts = {};
     const likedByMe = {};
     const commentCounts = {};
+    const likersByPost = {};
 
     if (ids.length > 0) {
       const { data: likeRows } = await supabase
         .from('post_likes')
-        .select('post_id, user_id')
-        .in('post_id', ids);
+        .select('post_id, user_id, created_at, profiles!post_likes_user_id_fkey(username, avatar, avatar_url)')
+        .in('post_id', ids)
+        .order('created_at', { ascending: false });
 
       (likeRows || []).forEach((l) => {
         likeCounts[l.post_id] = (likeCounts[l.post_id] || 0) + 1;
         if (user && l.user_id === user.id) likedByMe[l.post_id] = true;
+        // Most-recent-first (query is ordered), capped to 4 — that's all the
+        // avatar stack ever shows, so no point keeping more per post.
+        if (!likersByPost[l.post_id]) likersByPost[l.post_id] = [];
+        if (likersByPost[l.post_id].length < 4 && l.profiles) {
+          likersByPost[l.post_id].push({
+            uid: l.user_id,
+            name: l.profiles.username || 'Mtumiaji',
+            avatar: l.profiles.avatar || '🐧',
+            avatarUrl: l.profiles.avatar_url || null,
+          });
+        }
       });
 
       const { data: commentRows } = await supabase
@@ -124,6 +137,7 @@ export default function PostsProvider({ children }) {
         // base count excludes my own like — the shared `likes[id]` toggle adds
         // it back in, same display convention used everywhere else.
         likes: total - (myLike ? 1 : 0),
+        likers: likersByPost[r.id] || [],
         comments: commentCounts[r.id] || 0,
         time: relativeTime(r.created_at),
         author: r.profiles

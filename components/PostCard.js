@@ -36,12 +36,33 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const textRef = useRef(null);
   const menuRef = useRef(null);
   const router = useRouter();
-  const { user: authUser } = useAuth();
+  const { user: authUser, profile: authProfile } = useAuth();
   const { openAuth } = useAuthModal();
   const { deletePost } = usePosts();
   const { isFollowing, toggleFollow, pending } = useFollow();
   const isOwner = !!authUser && post.uid === authUser.id;
   const authorHref = isOwner ? '/profile' : `/u/${post.uid}`;
+
+  // The fetched likers list is a load-time snapshot, so if the viewer just
+  // liked this post themselves, fold their own avatar in at the front
+  // (and drop it back out on unlike) rather than waiting on a full reload.
+  const baseLikers = post.likers || [];
+  const iAmInList = authUser && baseLikers.some((l) => l.uid === authUser.id);
+  let displayLikers = baseLikers;
+  if (authUser && liked && !iAmInList) {
+    displayLikers = [
+      {
+        uid: authUser.id,
+        name: authProfile?.username || 'Wewe',
+        avatar: authProfile?.avatar || '🐧',
+        avatarUrl: authProfile?.avatar_url || null,
+      },
+      ...baseLikers,
+    ].slice(0, 4);
+  } else if (authUser && !liked && iAmInList) {
+    displayLikers = baseLikers.filter((l) => l.uid !== authUser.id);
+  }
+  const extraLikers = Math.max(0, likeCount - displayLikers.length);
 
   function handleFollowClick(e) {
     e.stopPropagation();
@@ -167,6 +188,22 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         )
       ) : null}
+
+      {images.length > 0 && displayLikers.length > 0 && (
+        <div className={styles.likersStack}>
+          {displayLikers.map((l) => (
+            <span key={l.uid} className={styles.likerAvatar}>
+              {l.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={l.avatarUrl} alt={l.name} />
+              ) : (
+                l.avatar
+              )}
+            </span>
+          ))}
+          {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+        </div>
+      )}
 
       {images.length > 0 && (
         <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
