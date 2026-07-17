@@ -10,6 +10,7 @@ import { useAuth } from '../../../components/AuthProvider'
 import { useAuthModal } from '../../../components/AuthModalProvider'
 import { useFollow } from '../../../components/FollowProvider'
 import { userById } from '../../../lib/mockData'
+import { parsePostText } from '../../../lib/postText'
 import { getBlobDuration } from '../../../lib/audioDuration'
 import VoiceNote from '../../../components/VoiceNote'
 import styles from './page.module.css'
@@ -173,6 +174,7 @@ export default function PostDetailPage() {
   }
 
   const author = post.author || userById(post.uid);
+  const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
   const liked = !!likes[post.id];
@@ -464,17 +466,32 @@ export default function PostDetailPage() {
               <div className={styles.media}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={images[0]} alt="" className={styles.mediaImg} />
-                {isTemplateImage(images[0]) && <p className={styles.mediaText}>{post.text}</p>}
+                {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
+                {feeling && (
+                  <span className={styles.feelingBadge}>
+                    {feeling.emoji} Anasikia {feeling.label}
+                  </span>
+                )}
               </div>
             ) : (
               <div className={`${styles.media} texture`} style={{ background: images[0] }}>
-                <p className={styles.mediaText}>{post.text}</p>
+                <p className={styles.mediaText}>{postText}</p>
+                {feeling && (
+                  <span className={styles.feelingBadge}>
+                    {feeling.emoji} Anasikia {feeling.label}
+                  </span>
+                )}
               </div>
             )
           ) : null}
 
           <div className={styles.topBody}>
-            {!isColorOnly && <p className={styles.text}>{post.text}</p>}
+            {!isColorOnly && feeling && (
+              <span className={styles.feelingChip}>
+                {feeling.emoji} Anasikia {feeling.label}
+              </span>
+            )}
+            {!isColorOnly && <p className={styles.text}>{postText}</p>}
 
             {post.cta && (
               <button className={`btnAccent ${styles.cta}`}>

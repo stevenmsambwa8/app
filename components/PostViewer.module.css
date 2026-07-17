@@ -97,6 +97,19 @@
   gap: 12px;
 }
 
+.feelingChip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: -4px;
+}
+
 .media {
   height: 240px;
   width: 100%;

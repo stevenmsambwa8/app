@@ -10,6 +10,7 @@ import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
 import { useFollow } from './FollowProvider'
 import { userById } from '../lib/mockData'
+import { parsePostText } from '../lib/postText'
 import styles from './PostCard.module.css'
 
 function isImageUrl(src) {
@@ -22,6 +23,7 @@ function isTemplateImage(src) {
 
 export default function PostCard({ post, liked, likeCount, onLike }) {
   const author = post.author || userById(post.uid);
+  const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   // Color-background posts (no real photo) show the post text centered
   // inside the color block itself instead of as a caption underneath.
@@ -64,7 +66,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     if (el && !expanded) {
       setClamped(el.scrollHeight > el.clientHeight + 1);
     }
-  }, [post.text, expanded]);
+  }, [postText, expanded]);
 
   function handleScroll(e) {
     const el = e.currentTarget;
@@ -120,12 +122,22 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <span className={styles.mediaTag}>{post.tag}</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[0]} alt="" className={styles.mediaImg} />
-            {isTemplateImage(images[0]) && <p className={styles.mediaText}>{post.text}</p>}
+            {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
+            {feeling && (
+              <span className={styles.feelingBadge}>
+                {feeling.emoji} Anasikia {feeling.label}
+              </span>
+            )}
           </div>
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
             <span className={styles.mediaTag}>{post.tag}</span>
-            <p className={styles.mediaText}>{post.text}</p>
+            <p className={styles.mediaText}>{postText}</p>
+            {feeling && (
+              <span className={styles.feelingBadge}>
+                {feeling.emoji} Anasikia {feeling.label}
+              </span>
+            )}
           </div>
         )
       ) : null}
@@ -181,11 +193,16 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
         {!isColorOnly && (
           <div className={styles.textWrap}>
+            {feeling && (
+              <span className={styles.feelingChip}>
+                {feeling.emoji} Anasikia {feeling.label}
+              </span>
+            )}
             <p
               ref={textRef}
               className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
             >
-              {post.text}
+              {postText}
             </p>
             {!expanded && clamped && (
               <button

@@ -1,15 +1,17 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Avatar from '../../components/Avatar'
 import { usePosts } from '../../components/PostsProvider'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
-import { ME, VIBES, IMAGE_PRESETS, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
+import { ME, VIBES, IMAGE_PRESETS, BACKGROUND_PRESETS, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
+import { encodeFeeling } from '../../lib/postText'
 import styles from './page.module.css'
 
 const MAX_IMAGES = 5;
 const MAX_CHARS = 500;
+const DRAFT_KEY = 'advat-create-draft';
 
 // Adds https:// to bare domains like "shop.com" so the CTA always produces
 // a valid, clickable link rather than a relative/broken href.
@@ -37,10 +39,57 @@ export default function CreatePostPage() {
   const [feeling, setFeeling] = useState(null); // { emoji, label }
   const [feelingSheetOpen, setFeelingSheetOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [bgOpen, setBgOpen] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
   const [posting, setPosting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
+
+  // Restore a saved draft once on mount (text/tag/feeling/preset background
+  // only — real photo uploads don't survive a reload, so those aren't saved).
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft.text) setText(draft.text.slice(0, MAX_CHARS));
+      if (draft.tag) setTag(draft.tag);
+      if (draft.feeling) setFeeling(draft.feeling);
+      if (draft.presetImages?.length) setPresetImages(draft.presetImages);
+      if (draft.text || draft.feeling || draft.presetImages?.length) setDraftRestored(true);
+    } catch {
+      // ignore corrupt/unavailable storage
+    }
+  }, []);
+
+  // Autosave the draft (debounced) whenever the composable fields change.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        if (!text.trim() && !feeling && !presetImages.length) {
+          window.localStorage.removeItem(DRAFT_KEY);
+          return;
+        }
+        window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ text, tag, feeling, presetImages }));
+      } catch {
+        // ignore storage errors (private mode, quota, etc.)
+      }
+    }, 400);
+    return () => clearTimeout(id);
+  }, [text, tag, feeling, presetImages]);
+
+  function discardDraft() {
+    setText('');
+    setFeeling(null);
+    setPresetImages([]);
+    setDraftRestored(false);
+    try {
+      window.localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
+    }
+  }
 
   const usedSlots = photos.length + presetImages.length;
   const uploadingPhotos = photos.filter((p) => p.uploading);
@@ -63,9 +112,10 @@ export default function CreatePostPage() {
     );
   }
 
-  function toggleImage(preset) {
-    // Templates are single-select — picking one replaces whatever
-    // was picked before (clicking the current pick clears it).
+  function togglePreset(preset) {
+    // Templates and gradient backgrounds share one slot and are single-select
+    // — picking one replaces whatever was picked before (tapping the current
+    // pick clears it).
     setPresetImages((imgs) => (imgs[0] === preset ? [] : [preset]));
   }
 
@@ -137,7 +187,7 @@ export default function CreatePostPage() {
 
     const uploadedUrls = photos.filter((p) => p.url).map((p) => p.url);
     const finalImages = uploadedUrls.length ? uploadedUrls : presetImages;
-    const finalText = feeling ? `${text.trim()}\n\n${feeling.emoji} Anasikia ${feeling.label}` : text.trim();
+    const finalText = encodeFeeling(text.trim(), feeling);
 
     const { error } = await addPost({
       text: finalText,
@@ -154,6 +204,11 @@ export default function CreatePostPage() {
     if (error) {
       setSubmitError(error.message || 'Imeshindwa kuchapisha. Jaribu tena.');
       return;
+    }
+    try {
+      window.localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // ignore
     }
     router.push('/feed');
   }
@@ -245,7 +300,46 @@ export default function CreatePostPage() {
             <i className="ri-link-m" />
             <span>Kiungo</span>
           </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${bgOpen ? styles.toolBtnActive : ''}`}
+            onClick={() => setBgOpen((v) => !v)}
+            disabled={photos.length > 0}
+          >
+            <i className="ri-palette-line" />
+            <span>Rangi</span>
+          </button>
         </div>
+
+        {draftRestored && (
+          <div className={styles.draftBanner}>
+            <i className="ri-draft-line" />
+            <span>Rasimu imerejeshwa</span>
+            <button type="button" onClick={discardDraft}>
+              Futa
+            </button>
+          </div>
+        )}
+
+        {bgOpen && (
+          <div className={styles.section}>
+            <p className={styles.sectionLabel}>Rangi ya Nyuma</p>
+            <div className={styles.bgRow}>
+              {BACKGROUND_PRESETS.map((bg, i) => (
+                <button
+                  type="button"
+                  key={i}
+                  className={`${styles.bgSwatch} ${presetImages[0] === bg ? styles.bgSwatchActive : ''}`}
+                  style={{ background: bg }}
+                  onClick={() => togglePreset(bg)}
+                  aria-label="Chagua rangi ya nyuma"
+                >
+                  {presetImages[0] === bg && <i className="ri-check-line" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className={styles.section}>
           <p className={styles.sectionLabel}>Kategoria</p>
@@ -341,7 +435,7 @@ export default function CreatePostPage() {
                       type="button"
                       key={i}
                       className={styles.imageSwatch}
-                      onClick={() => toggleImage(preset)}
+                      onClick={() => togglePreset(preset)}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={preset} alt="" className={styles.photoThumb} />

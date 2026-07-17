@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import { userById, commentsForPost } from '../lib/mockData'
+import { parsePostText } from '../lib/postText'
 import styles from './PostViewer.module.css'
 
 function isImageUrl(src) {
@@ -11,6 +12,7 @@ function isImageUrl(src) {
 
 export default function PostViewer({ post, liked, likeCount, onLike, onClose }) {
   const user = post.author || userById(post.uid);
+  const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
   const [active, setActive] = useState(0);
   const [comment, setComment] = useState('');
@@ -97,7 +99,12 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </div>
 
           <div className={styles.topBody}>
-            <p className={styles.text}>{post.text}</p>
+            {feeling && (
+              <span className={styles.feelingChip}>
+                {feeling.emoji} Anasikia {feeling.label}
+              </span>
+            )}
+            <p className={styles.text}>{postText}</p>
 
             {post.cta && (
               <button className={`btnAccent ${styles.cta}`}>
