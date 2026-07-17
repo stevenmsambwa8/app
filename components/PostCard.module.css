@@ -48,20 +48,40 @@
   z-index: 8;
 }
 .ctaOverlay {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: var(--bg);
   color: var(--text);
   font-weight: 700;
-  font-size: 11px;
-  padding: 5px 10px;
+  font-size: 12.5px;
+  padding: 7px 14px;
   border: none;
   border-radius: 999px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  animation: ctaBreathe 2.4s ease-in-out infinite;
 }
-.ctaOverlay i { font-size: 12px; }
-.ctaOverlay:disabled { opacity: 0.7; }
+.ctaOverlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--bg);
+  z-index: -1;
+  animation: ctaPulseRing 2.4s ease-out infinite;
+}
+.ctaOverlay i { font-size: 14px; }
+.ctaOverlay:disabled { opacity: 0.7; animation: none; }
+.ctaOverlay:disabled::before { display: none; }
+@keyframes ctaBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+@keyframes ctaPulseRing {
+  0% { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
 .pillBtn {
   display: flex;
   align-items: center;

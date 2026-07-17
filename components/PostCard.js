@@ -232,15 +232,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-share-forward-line" />
           </button>
         </div>
-
-        {!isOwner && (
-          <FollowBtn
-            following={isFollowing(post.uid)}
-            pending={!!pending[post.uid]}
-            small
-            onClick={handleFollowClick}
-          />
-        )}
       </div>
 
       {post.cta && (
@@ -279,7 +270,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             </div>
           </Link>
           <div className={styles.headerActions}>
-            {images.length === 0 && !isOwner && (
+            {!isOwner && (
               <FollowBtn
                 following={isFollowing(post.uid)}
                 pending={!!pending[post.uid]}
