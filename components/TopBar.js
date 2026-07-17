@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -7,6 +8,7 @@ import { useTheme } from './ThemeProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { useAuth } from './AuthProvider'
 import { useNotifications } from './NotificationsProvider'
+import MobileDrawer from './MobileDrawer'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
@@ -15,6 +17,7 @@ export default function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
   const { user, profile, signOut } = useAuth();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (pathname?.startsWith('/create') || pathname?.startsWith('/post/') || pathname?.startsWith('/dm')) return null;
 
@@ -24,6 +27,12 @@ export default function TopBar() {
 
   return (
     <div className={styles.bar}>
+      <div className={styles.left}>
+        <Link href="/create" className={styles.addBtn} aria-label="Chapisho jipya">
+          <i className="ri-add-line" />
+        </Link>
+      </div>
+
       <Link href="/feed" className={styles.logo}>
         <Image
           src={theme === 'dark' ? '/advat-black.png' : '/advat-white.png'}
@@ -34,6 +43,7 @@ export default function TopBar() {
           className={styles.logoImg}
         />
       </Link>
+
       <div className={styles.right}>
         {user ? (
           <button onClick={signOut} className={styles.themeBtn} aria-label="Toka">
@@ -54,7 +64,16 @@ export default function TopBar() {
         <Link href="/profile" title={displayName}>
           <Avatar emoji={avatarEmoji} src={avatarUrl} alt={displayName} size={28} ring />
         </Link>
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className={styles.menuBtn}
+          aria-label="Fungua menyu"
+        >
+          <i className="ri-menu-line" />
+        </button>
       </div>
+
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 }
