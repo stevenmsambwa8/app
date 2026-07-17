@@ -7,7 +7,7 @@ import styles from './BottomNav.module.css'
 const LEFT_TABS = [
   {
     href: '/feed',
-    label: 'Discover',
+    label: 'Mlisho',
     icon: 'ri-sparkling-2-line',
     activeIcon: 'ri-sparkling-2-fill',
   },
@@ -35,7 +35,8 @@ const RIGHT_TABS = [
 ]
 
 function NavItem({ t, pathname }) {
-  const isActive = pathname === t.href || pathname?.startsWith(`${t.href}/`)
+  const isActive =
+    pathname === t.href || pathname?.startsWith(`${t.href}/`)
 
   return (
     <Link
@@ -64,6 +65,14 @@ export default function BottomNav() {
       {LEFT_TABS.map((tab) => (
         <NavItem key={tab.href} t={tab} pathname={pathname} />
       ))}
+
+      <Link
+        href="/create"
+        className={styles.createBtn}
+        aria-label="Create post"
+      >
+        <i className="ri-add-line" />
+      </Link>
 
       {RIGHT_TABS.map((tab) => (
         <NavItem key={tab.href} t={tab} pathname={pathname} />
