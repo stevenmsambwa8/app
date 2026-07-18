@@ -220,7 +220,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                       <span className={styles.mediaTag}>{post.tag}</span>
                       {feeling && (
                         <span className={styles.feelingBadge}>
-                          {feeling.emoji} Anasikia {feeling.label}
+                          {feeling.emoji} feeling {feeling.label}
                         </span>
                       )}
                     </div>
@@ -235,7 +235,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                       <span className={styles.mediaTag}>{post.tag}</span>
                       {feeling && (
                         <span className={styles.feelingBadge}>
-                          {feeling.emoji} Anasikia {feeling.label}
+                          {feeling.emoji} feeling {feeling.label}
                         </span>
                       )}
                     </div>
@@ -261,7 +261,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <span className={styles.mediaTag}>{post.tag}</span>
               {feeling && (
                 <span className={styles.feelingBadge}>
-                  {feeling.emoji} Anasikia {feeling.label}
+                  {feeling.emoji} feeling {feeling.label}
                 </span>
               )}
             </div>
@@ -275,7 +275,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <span className={styles.mediaTag}>{post.tag}</span>
               {feeling && (
                 <span className={styles.feelingBadge}>
-                  {feeling.emoji} Anasikia {feeling.label}
+                  {feeling.emoji} feeling {feeling.label}
                 </span>
               )}
             </div>
@@ -385,7 +385,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           <div className={styles.textWrap}>
             {feeling && images.length === 0 && (
               <span className={styles.feelingChip}>
-                {feeling.emoji} Anasikia {feeling.label}
+                {feeling.emoji} feeling {feeling.label}
               </span>
             )}
             <p
@@ -449,7 +449,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               {post.comments}
             </button>
             <button className={`${styles.action} ${styles.spacer}`}>
-              <i className="ri-share-forward-line" />
+              <i className="ri-share-2-line" />
             </button>
           </div>
         )}
