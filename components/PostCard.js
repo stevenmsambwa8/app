@@ -6,6 +6,7 @@ import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import FollowBtn from './FollowBtn'
 import EditPostModal from './EditPostModal'
+import ShareCard from './ShareCard'
 import { useAuth } from './AuthProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
@@ -35,6 +36,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const textRef = useRef(null);
   const menuRef = useRef(null);
   const carouselRef = useRef(null);
@@ -317,7 +319,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-chat-3-line" />
             <span>{post.comments}</span>
           </button>
-          <button className={styles.pillBtn}>
+          <button className={styles.pillBtn} onClick={() => setSharing(true)} aria-label="Sambaza">
             <i className="ri-share-line" />
           </button>
         </div>
@@ -448,7 +450,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <i className="ri-chat-3-line" />
               {post.comments}
             </button>
-            <button className={`${styles.action} ${styles.spacer}`}>
+            <button
+              className={`${styles.action} ${styles.spacer}`}
+              onClick={() => setSharing(true)}
+              aria-label="Sambaza"
+            >
               <i className="ri-share-line" />
             </button>
           </div>
@@ -460,6 +466,16 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           post={post}
           onClose={() => setEditing(false)}
           onSave={(updates) => updatePost(post.id, updates)}
+        />
+      )}
+
+      {sharing && (
+        <ShareCard
+          post={post}
+          author={author}
+          previewImg={images[0]}
+          snippetText={postText}
+          onClose={() => setSharing(false)}
         />
       )}
     </div>

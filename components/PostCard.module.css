@@ -36,11 +36,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 26px;
-  padding: 8px 6px;
+  border-radius: 22px 22px 6px 6px;
+  padding: 8px 5px;
 }
 .ctaOverlayWrap {
   position: absolute;
@@ -86,26 +86,30 @@
   100% { opacity: 0; transform: scale(1.35); }
 }
 .pillBtn {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
   color: var(--text-dim);
-  font-size: 21px;
+  font-size: 18px;
   background: none;
   border: none;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 4px;
-  border-radius: 16px;
+  width: 34px;
+  height: 34px;
   -webkit-tap-highlight-color: transparent;
 }
+.pillBtn::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
 .pillBtn:active {
-  background: var(--surface-2);
+  color: var(--text);
 }
 .pillBtn span {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
 }
 .pillBtn.liked {
