@@ -290,41 +290,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         {menuEl}
       </div>
 
-      <div className={styles.cornerStack} onClick={(e) => e.stopPropagation()}>
-        {displayLikers.length > 0 && (
-          <div className={styles.likersStack}>
-            {displayLikers.map((l) => (
-              <span key={l.uid} className={styles.likerAvatar}>
-                {l.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.avatarUrl} alt={l.name} />
-                ) : (
-                  l.avatar
-                )}
-              </span>
-            ))}
-            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-          </div>
-        )}
-
-        <div className={styles.actionsPill}>
-          <button
-            className={`${styles.pillBtn} ${liked ? styles.liked : ''}`}
-            onClick={onLike}
-          >
-            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-            <span>{likeCount}</span>
-          </button>
-          <button className={styles.pillBtn} onClick={viewPost}>
-            <i className="ri-chat-3-line" />
-            <span>{post.comments}</span>
-          </button>
-          <button className={styles.pillBtn} onClick={() => setSharing(true)} aria-label="Sambaza">
-            <i className="ri-share-line" />
-          </button>
-        </div>
-      </div>
-
       {post.cta && (
         <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
           {post.cta.url ? (
@@ -437,28 +402,45 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           )
         )}
 
-        {images.length === 0 && (
-          <div className={styles.actions}>
-            <button
-              className={`${styles.action} ${liked ? styles.liked : ''}`}
-              onClick={onLike}
-            >
-              <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-              {likeCount}
-            </button>
-            <button className={styles.action} onClick={viewPost}>
-              <i className="ri-chat-3-line" />
-              {post.comments}
-            </button>
-            <button
-              className={`${styles.action} ${styles.spacer}`}
-              onClick={() => setSharing(true)}
-              aria-label="Sambaza"
-            >
-              <i className="ri-share-line" />
-            </button>
+        {displayLikers.length > 0 && (
+          <div className={styles.likersRow}>
+            <div className={styles.likersStack}>
+              {displayLikers.map((l) => (
+                <span key={l.uid} className={styles.likerAvatar}>
+                  {l.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={l.avatarUrl} alt={l.name} />
+                  ) : (
+                    l.avatar
+                  )}
+                </span>
+              ))}
+              {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+            </div>
+            <span className={styles.likersLabel}>{likeCount} wamependa</span>
           </div>
         )}
+
+        <div className={styles.actions}>
+          <button
+            className={`${styles.action} ${liked ? styles.liked : ''}`}
+            onClick={onLike}
+          >
+            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+            {likeCount}
+          </button>
+          <button className={styles.action} onClick={viewPost}>
+            <i className="ri-chat-3-line" />
+            {post.comments}
+          </button>
+          <button
+            className={`${styles.action} ${styles.spacer}`}
+            onClick={() => setSharing(true)}
+            aria-label="Sambaza"
+          >
+            <i className="ri-share-line" />
+          </button>
+        </div>
       </div>
 
       {editing && (

@@ -194,18 +194,27 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 8px;
   color: var(--text-dim);
+  margin: 0 -8px;
 }
 .action {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 10px 8px;
+  min-height: 44px;
+  border-radius: 10px;
+  -webkit-tap-highlight-color: transparent;
 }
-.action i { font-size: 16px; }
-.liked { color: var(--accent); }
+.action:active {
+  background: var(--chip-bg);
+}
+.action i { font-size: 18px; }
+.liked { color: #ff4d6d; }
 .spacer { margin-left: auto; }
 
 .commentsScroll {

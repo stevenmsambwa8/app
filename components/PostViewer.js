@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
+import ShareCard from './ShareCard'
 import { userById, commentsForPost } from '../lib/mockData'
 import { parsePostText } from '../lib/postText'
 import styles from './PostViewer.module.css'
@@ -18,6 +19,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
   const [comment, setComment] = useState('');
   const [imageHidden, setImageHidden] = useState(false);
   const [openReplies, setOpenReplies] = useState({});
+  const [sharing, setSharing] = useState(false);
   const comments = commentsForPost(post);
 
   function toggleReplies(id) {
@@ -125,7 +127,11 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                 <i className="ri-chat-3-line" />
                 {comments.length}
               </span>
-              <button className={`${styles.action} ${styles.spacer}`}>
+              <button
+                className={`${styles.action} ${styles.spacer}`}
+                onClick={() => setSharing(true)}
+                aria-label="Sambaza"
+              >
                 <i className="ri-share-forward-line" />
               </button>
             </div>
@@ -217,6 +223,16 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </button>
         </div>
       </div>
+
+      {sharing && (
+        <ShareCard
+          post={post}
+          author={user}
+          previewImg={images[0]}
+          snippetText={postText}
+          onClose={() => setSharing(false)}
+        />
+      )}
     </div>
   );
 }
