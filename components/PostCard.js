@@ -318,7 +318,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <span>{post.comments}</span>
           </button>
           <button className={styles.pillBtn}>
-            <i className="ri-share-2-line" />
+            <i className="ri-share-line" />
           </button>
         </div>
       </div>
@@ -449,7 +449,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               {post.comments}
             </button>
             <button className={`${styles.action} ${styles.spacer}`}>
-              <i className="ri-share-2-line" />
+              <i className="ri-share-line" />
             </button>
           </div>
         )}
