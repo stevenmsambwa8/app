@@ -117,7 +117,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
 
             <div className={styles.actions}>
               <button
-                className={`${styles.action} ${liked ? styles.liked : ''}`}
+                className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
                 onClick={onLike}
               >
                 <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />

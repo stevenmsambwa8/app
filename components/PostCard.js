@@ -27,7 +27,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const author = post.author || userById(post.uid);
   const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
-
+  // Color-background posts (no real photo) show the post text centered
   // inside the color block itself instead of as a caption underneath.
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
   const [active, setActive] = useState(0);
@@ -348,6 +348,46 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </div>
         </div>
 
+        <div className={styles.actions}>
+          <button
+            className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
+            onClick={onLike}
+          >
+            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+            {likeCount}
+          </button>
+          <button className={styles.action} onClick={viewPost}>
+            <i className="ri-chat-3-line" />
+            {post.comments}
+          </button>
+          <button
+            className={`${styles.action} ${styles.spacer}`}
+            onClick={() => setSharing(true)}
+            aria-label="Sambaza"
+          >
+            <i className="ri-share-line" />
+          </button>
+        </div>
+
+        {displayLikers.length > 0 && (
+          <div className={styles.likersRow}>
+            <div className={styles.likersStack}>
+              {displayLikers.map((l) => (
+                <span key={l.uid} className={styles.likerAvatar}>
+                  {l.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={l.avatarUrl} alt={l.name} />
+                  ) : (
+                    l.avatar
+                  )}
+                </span>
+              ))}
+              {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+            </div>
+            <span className={styles.likersLabel}>{likeCount} wamependa</span>
+          </div>
+        )}
+
         {!isColorOnly && (
           <div className={styles.textWrap}>
             {feeling && images.length === 0 && (
@@ -401,46 +441,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             </button>
           )
         )}
-
-        {displayLikers.length > 0 && (
-          <div className={styles.likersRow}>
-            <div className={styles.likersStack}>
-              {displayLikers.map((l) => (
-                <span key={l.uid} className={styles.likerAvatar}>
-                  {l.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={l.avatarUrl} alt={l.name} />
-                  ) : (
-                    l.avatar
-                  )}
-                </span>
-              ))}
-              {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-            </div>
-            <span className={styles.likersLabel}>{likeCount} wamependa</span>
-          </div>
-        )}
-
-        <div className={styles.actions}>
-          <button
-            className={`${styles.action} ${liked ? styles.liked : ''}`}
-            onClick={onLike}
-          >
-            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-            {likeCount}
-          </button>
-          <button className={styles.action} onClick={viewPost}>
-            <i className="ri-chat-3-line" />
-            {post.comments}
-          </button>
-          <button
-            className={`${styles.action} ${styles.spacer}`}
-            onClick={() => setSharing(true)}
-            aria-label="Sambaza"
-          >
-            <i className="ri-share-line" />
-          </button>
-        </div>
       </div>
 
       {editing && (
