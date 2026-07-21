@@ -24,7 +24,7 @@
 }
 .mediaLikers {
   position: absolute;
-  bottom: 14px;
+  bottom: 208px;
   right: 12px;
   z-index: 9;
   display: flex;
@@ -43,7 +43,7 @@
 }
 .ctaOverlayWrap {
   position: absolute;
-  bottom: 16px;
+  bottom: 210px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9;
@@ -143,6 +143,39 @@
   flex-direction: column;
   gap: 12px;
 }
+.bodyOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  padding: 46px 14px 14px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%);
+  gap: 10px;
+}
+.bodyOverlay .name { color: #fff; }
+.bodyOverlay .meta { color: rgba(255, 255, 255, 0.75); }
+.bodyOverlay .text { color: rgba(255, 255, 255, 0.92); }
+.bodyOverlay .more { color: #fff; }
+.bodyOverlay .myProfileBtn {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(6px);
+}
+.bodyOverlay .action {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+.bodyOverlay .liked { color: #ff6b81; background: rgba(255, 255, 255, 0.16); }
+.bodyOverlay .likersLabel { color: rgba(255, 255, 255, 0.75); }
+.bodyOverlay .ctaStats { color: #fff; }
+.bodyOverlay .readMoreInline {
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.7) 45%);
+  color: #fff;
+}
+.bodyOverlay .readMore { color: #fff; }
 .header {
   display: flex;
   align-items: center;
@@ -291,7 +324,7 @@
   color: var(--accent);
 }
 .media {
-  height: 300px;
+  height: 440px;
   width: 100%;
   border-radius: 0;
   display: flex;

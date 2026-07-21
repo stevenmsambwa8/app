@@ -201,141 +201,8 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     <i className={`ri-more-fill ${styles.more}`} />
   );
 
-  return (
-    <div className={`card ${styles.card}`}>
-      {images.length > 0 && (
-      <div className={styles.mediaWrap}>
-      {images.length > 1 ? (
-        <div className={styles.carouselWrap} onClick={viewPost}>
-          <div
-            className={styles.carousel}
-            ref={carouselRef}
-            onScroll={handleScroll}
-            onTouchStart={markInteracting}
-            onTouchEnd={scheduleResume}
-            onPointerDown={markInteracting}
-            onPointerUp={scheduleResume}
-          >
-            {images.map((bg, i) =>
-              isImageUrl(bg) ? (
-                <div key={i} className={`${styles.media} ${styles.mediaSlide}`}>
-                  {i === 0 && (
-                    <div className={styles.topLeftRow}>
-                      <span className={styles.mediaTag}>{post.tag}</span>
-                      {feeling && (
-                        <span className={styles.feelingBadge}>
-                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={bg} alt="" className={styles.mediaImg} />
-                </div>
-              ) : (
-                <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
-                  {i === 0 && (
-                    <div className={styles.topLeftRow}>
-                      <span className={styles.mediaTag}>{post.tag}</span>
-                      {feeling && (
-                        <span className={styles.feelingBadge}>
-                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <i className="ri-image-line" />
-                </div>
-              )
-            )}
-          </div>
-          <span className={styles.count}>
-            {active + 1}/{images.length}
-          </span>
-          <div className={styles.dots}>
-            {images.map((_, i) => (
-              <span key={i} className={`${styles.dot} ${i === active ? styles.dotActive : ''}`} />
-            ))}
-          </div>
-        </div>
-      ) : images.length === 1 ? (
-        isImageUrl(images[0]) ? (
-          <div className={styles.media} onClick={viewPost}>
-            <div className={styles.topLeftRow}>
-              <span className={styles.mediaTag}>{post.tag}</span>
-              {feeling && (
-                <span className={styles.feelingBadge}>
-                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                </span>
-              )}
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={images[0]} alt="" className={styles.mediaImg} />
-            {isTemplateImage(images[0]) && <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />}
-          </div>
-        ) : (
-          <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
-            <div className={styles.topLeftRow}>
-              <span className={styles.mediaTag}>{post.tag}</span>
-              {feeling && (
-                <span className={styles.feelingBadge}>
-                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                </span>
-              )}
-            </div>
-            <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />
-          </div>
-        )
-      ) : null}
-
-      <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
-        {menuEl}
-      </div>
-
-      {displayLikers.length > 0 && (
-        <div className={styles.mediaLikers} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.likersStack}>
-            {displayLikers.map((l) => (
-              <span key={l.uid} className={styles.likerAvatar}>
-                {l.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.avatarUrl} alt={l.name} />
-                ) : (
-                  l.avatar
-                )}
-              </span>
-            ))}
-            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-          </div>
-          <span className={styles.mediaLikersLabel}>{likeCount}</span>
-        </div>
-      )}
-
-      {post.cta && (
-        <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
-          {post.cta.url ? (
-            <a
-              href={post.cta.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.ctaOverlay}
-              onClick={() => trackCtaClick(post.id)}
-            >
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </a>
-          ) : (
-            <button type="button" className={styles.ctaOverlay} disabled>
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </button>
-          )}
-        </div>
-      )}
-      </div>
-      )}
-
-      <div className={styles.body}>
+  const bodyContent = (
+    <div className={`${styles.body} ${images.length > 0 ? styles.bodyOverlay : ''}`}>
         <div className={styles.header}>
           <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
             <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
@@ -473,6 +340,145 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           )
         )}
       </div>
+  );
+
+  return (
+    <div className={`card ${styles.card}`}>
+      {images.length > 0 && (
+      <div className={styles.mediaWrap}>
+      {images.length > 1 ? (
+        <div className={styles.carouselWrap} onClick={viewPost}>
+          <div
+            className={styles.carousel}
+            ref={carouselRef}
+            onScroll={handleScroll}
+            onTouchStart={markInteracting}
+            onTouchEnd={scheduleResume}
+            onPointerDown={markInteracting}
+            onPointerUp={scheduleResume}
+          >
+            {images.map((bg, i) =>
+              isImageUrl(bg) ? (
+                <div key={i} className={`${styles.media} ${styles.mediaSlide}`}>
+                  {i === 0 && (
+                    <div className={styles.topLeftRow}>
+                      <span className={styles.mediaTag}>{post.tag}</span>
+                      {feeling && (
+                        <span className={styles.feelingBadge}>
+                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={bg} alt="" className={styles.mediaImg} />
+                </div>
+              ) : (
+                <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
+                  {i === 0 && (
+                    <div className={styles.topLeftRow}>
+                      <span className={styles.mediaTag}>{post.tag}</span>
+                      {feeling && (
+                        <span className={styles.feelingBadge}>
+                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <i className="ri-image-line" />
+                </div>
+              )
+            )}
+          </div>
+          <span className={styles.count}>
+            {active + 1}/{images.length}
+          </span>
+          <div className={styles.dots}>
+            {images.map((_, i) => (
+              <span key={i} className={`${styles.dot} ${i === active ? styles.dotActive : ''}`} />
+            ))}
+          </div>
+        </div>
+      ) : images.length === 1 ? (
+        isImageUrl(images[0]) ? (
+          <div className={styles.media} onClick={viewPost}>
+            <div className={styles.topLeftRow}>
+              <span className={styles.mediaTag}>{post.tag}</span>
+              {feeling && (
+                <span className={styles.feelingBadge}>
+                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+                </span>
+              )}
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={images[0]} alt="" className={styles.mediaImg} />
+            {isTemplateImage(images[0]) && <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />}
+          </div>
+        ) : (
+          <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
+            <div className={styles.topLeftRow}>
+              <span className={styles.mediaTag}>{post.tag}</span>
+              {feeling && (
+                <span className={styles.feelingBadge}>
+                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+                </span>
+              )}
+            </div>
+            <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />
+          </div>
+        )
+      ) : null}
+
+      <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
+        {menuEl}
+      </div>
+
+      {displayLikers.length > 0 && (
+        <div className={styles.mediaLikers} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.likersStack}>
+            {displayLikers.map((l) => (
+              <span key={l.uid} className={styles.likerAvatar}>
+                {l.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={l.avatarUrl} alt={l.name} />
+                ) : (
+                  l.avatar
+                )}
+              </span>
+            ))}
+            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+          </div>
+          <span className={styles.mediaLikersLabel}>{likeCount}</span>
+        </div>
+      )}
+
+      {post.cta && (
+        <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
+          {post.cta.url ? (
+            <a
+              href={post.cta.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.ctaOverlay}
+              onClick={() => trackCtaClick(post.id)}
+            >
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </a>
+          ) : (
+            <button type="button" className={styles.ctaOverlay} disabled>
+              <i className={post.cta.icon || 'ri-arrow-right-line'} />
+              {post.cta.label}
+            </button>
+          )}
+        </div>
+      )}
+
+      {bodyContent}
+      </div>
+      )}
+
+      {images.length === 0 && bodyContent}
 
       {editing && (
         <EditPostModal
