@@ -22,6 +22,14 @@ function normalizeUrl(raw) {
   return `https://${v}`;
 }
 
+// Turns a phone number like "+255 712 345 678" into a working wa.me link
+// that opens a chat pre-filled with a short greeting.
+function buildWhatsappLink(raw) {
+  const digits = raw.replace(/[^\d]/g, '');
+  if (!digits) return undefined;
+  return `https://wa.me/${digits}?text=${encodeURIComponent('Habari, nimeona chapisho lako Advat.')}`;
+}
+
 export default function CreatePostPage() {
   const router = useRouter();
   const { addPost, uploadPostImage } = usePosts();
@@ -188,6 +196,8 @@ export default function CreatePostPage() {
     const uploadedUrls = photos.filter((p) => p.url).map((p) => p.url);
     const finalImages = uploadedUrls.length ? uploadedUrls : presetImages.length ? presetImages : [randomBackground()];
     const finalText = encodeFeeling(text.trim(), feeling);
+    const activeCtaPreset = CTA_ICON_PRESETS.find((p) => p.icon === ctaIcon && p.label === ctaLabel);
+    const ctaFinalUrl = activeCtaPreset?.whatsapp ? buildWhatsappLink(ctaUrl) : normalizeUrl(ctaUrl);
 
     const { error } = await addPost({
       text: finalText,
@@ -195,7 +205,7 @@ export default function CreatePostPage() {
       images: finalImages.length ? finalImages : undefined,
       cta:
         ctaOn && ctaLabel.trim()
-          ? { label: ctaLabel.trim(), icon: ctaIcon, url: normalizeUrl(ctaUrl) }
+          ? { label: ctaLabel.trim(), icon: ctaIcon, url: ctaFinalUrl }
           : undefined,
     });
 
@@ -480,16 +490,31 @@ export default function CreatePostPage() {
               </div>
               {ctaLabel.trim() && (
                 <>
-                  <input
-                    type="url"
-                    inputMode="url"
-                    className={styles.ctaUrlInput}
-                    placeholder="Kiungo (mfano: shop.com/item)"
-                    value={ctaUrl}
-                    onChange={(e) => setCtaUrl(e.target.value)}
-                  />
+                  {CTA_ICON_PRESETS.find((p) => p.icon === ctaIcon && p.label === ctaLabel)?.whatsapp ? (
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      className={styles.ctaUrlInput}
+                      placeholder="Namba ya WhatsApp (mfano: 255712345678)"
+                      value={ctaUrl}
+                      onChange={(e) => setCtaUrl(e.target.value)}
+                    />
+                  ) : (
+                    <input
+                      type="url"
+                      inputMode="url"
+                      className={styles.ctaUrlInput}
+                      placeholder="Kiungo (mfano: shop.com/item)"
+                      value={ctaUrl}
+                      onChange={(e) => setCtaUrl(e.target.value)}
+                    />
+                  )}
                   <a
-                    href={normalizeUrl(ctaUrl) || undefined}
+                    href={
+                      (CTA_ICON_PRESETS.find((p) => p.icon === ctaIcon && p.label === ctaLabel)?.whatsapp
+                        ? buildWhatsappLink(ctaUrl)
+                        : normalizeUrl(ctaUrl)) || undefined
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`btnAccent ${styles.ctaPreview}`}

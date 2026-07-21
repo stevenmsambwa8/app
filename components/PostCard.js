@@ -46,7 +46,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const router = useRouter();
   const { user: authUser, profile: authProfile } = useAuth();
   const { openAuth } = useAuthModal();
-  const { deletePost, updatePost } = usePosts();
+  const { deletePost, updatePost, trackCtaClick } = usePosts();
   const { isFollowing, toggleFollow, pending } = useFollow();
   const isOwner = !!authUser && post.uid === authUser.id;
   const authorHref = isOwner ? '/profile' : `/u/${post.uid}`;
@@ -290,6 +290,25 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         {menuEl}
       </div>
 
+      {displayLikers.length > 0 && (
+        <div className={styles.mediaLikers} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.likersStack}>
+            {displayLikers.map((l) => (
+              <span key={l.uid} className={styles.likerAvatar}>
+                {l.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={l.avatarUrl} alt={l.name} />
+                ) : (
+                  l.avatar
+                )}
+              </span>
+            ))}
+            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+          </div>
+          <span className={styles.mediaLikersLabel}>{likeCount}</span>
+        </div>
+      )}
+
       {post.cta && (
         <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
           {post.cta.url ? (
@@ -298,6 +317,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               target="_blank"
               rel="noopener noreferrer"
               className={styles.ctaOverlay}
+              onClick={() => trackCtaClick(post.id)}
             >
               <i className={post.cta.icon || 'ri-arrow-right-line'} />
               {post.cta.label}
@@ -369,7 +389,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           </button>
         </div>
 
-        {displayLikers.length > 0 && (
+        {isOwner && post.cta && (
+          <span className={styles.ctaStats}>
+            <i className="ri-cursor-line" />
+            {post.ctaClicks || 0} wamebofya kiungo
+          </span>
+        )}
+
+        {images.length === 0 && displayLikers.length > 0 && (
           <div className={styles.likersRow}>
             <div className={styles.likersStack}>
               {displayLikers.map((l) => (
@@ -429,7 +456,10 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               target="_blank"
               rel="noopener noreferrer"
               className={`btnAccent ${styles.cta}`}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                trackCtaClick(post.id);
+              }}
             >
               <i className={post.cta.icon || 'ri-arrow-right-line'} />
               {post.cta.label}

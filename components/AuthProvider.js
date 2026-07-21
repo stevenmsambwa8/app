@@ -149,6 +149,29 @@ export default function AuthProvider({ children }) {
     return { error: null };
   }
 
+  // Switches the account between personal and business, optionally saving
+  // a business category and a WhatsApp contact number in the same call.
+  async function updateBusinessInfo({ accountType, businessCategory, whatsapp }) {
+    const uid = session?.user?.id;
+    if (!uid) return { error: new Error('Umetoka. Ingia kwanza.') };
+
+    const payload = {};
+    if (accountType !== undefined) payload.account_type = accountType;
+    if (businessCategory !== undefined) payload.business_category = businessCategory;
+    if (whatsapp !== undefined) payload.whatsapp = whatsapp;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(payload)
+      .eq('id', uid)
+      .select()
+      .single();
+
+    if (error) return { error };
+    setProfile((p) => ({ ...(p || {}), ...data }));
+    return { error: null };
+  }
+
   async function uploadAvatar(file) {
     const uid = session?.user?.id;
     if (!uid) return { error: new Error('Umetoka. Ingia kwanza.') };
@@ -207,6 +230,7 @@ export default function AuthProvider({ children }) {
         signOut,
         refreshProfile: () => loadProfile(session?.user),
         updateUsername,
+        updateBusinessInfo,
         uploadAvatar,
       }}
     >

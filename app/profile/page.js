@@ -21,9 +21,12 @@ export default function ProfilePage() {
   const [formError, setFormError] = useState('');
   const [listModal, setListModal] = useState(null); // 'followers' | 'following' | null
   const [counts, setCounts] = useState({ followers: 0, following: 0 });
+  const [categoryInput, setCategoryInput] = useState('');
+  const [whatsappInput, setWhatsappInput] = useState('');
+  const [savingBusiness, setSavingBusiness] = useState(false);
   const fileInputRef = useRef(null);
 
-  const { user, profile, loading, updateUsername, uploadAvatar } = useAuth();
+  const { user, profile, loading, updateUsername, updateBusinessInfo, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
   const { posts, likes, toggleLike } = usePosts();
   const { getCounts } = useFollow();
@@ -33,6 +36,12 @@ export default function ProfilePage() {
     if (!user) return;
     getCounts(user.id).then(setCounts);
   }, [user, getCounts]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setCategoryInput(profile.business_category || '');
+    setWhatsappInput(profile.whatsapp || '');
+  }, [profile]);
 
   if (loading) return null;
 
@@ -53,11 +62,33 @@ export default function ProfilePage() {
   const avatarUrl = profile?.avatar_url || null;
   const bioText = profile?.bio || 'Daima ninafuatilia mwanga mzuri na urafiki bora. Nitumie ujumbe wakati wowote.';
   const vibeText = profile?.vibe || ME.vibe;
+  const isBusiness = profile?.account_type === 'business';
 
   function startEditing() {
     setNameInput(displayName);
+    setCategoryInput(profile?.business_category || '');
+    setWhatsappInput(profile?.whatsapp || '');
     setFormError('');
     setEditing(true);
+  }
+
+  async function handleSwitchToBusiness() {
+    setFormError('');
+    setSavingBusiness(true);
+    const { error } = await updateBusinessInfo({ accountType: 'business' });
+    setSavingBusiness(false);
+    if (error) setFormError(error.message || 'Imeshindwa kubadilisha aina ya akaunti.');
+  }
+
+  async function handleSaveBusinessDetails() {
+    setFormError('');
+    setSavingBusiness(true);
+    const { error } = await updateBusinessInfo({
+      businessCategory: categoryInput.trim() || null,
+      whatsapp: whatsappInput.trim() || null,
+    });
+    setSavingBusiness(false);
+    if (error) setFormError(error.message || 'Imeshindwa kuhifadhi taarifa za biashara.');
   }
 
   async function handleSaveName() {
@@ -154,7 +185,7 @@ export default function ProfilePage() {
         ) : (
           <div className={styles.nameRow}>
             <span className={styles.name}>{displayName}</span>
-            <UserBadge badge={ME.badge} />
+            <UserBadge badge={isBusiness ? 'business' : null} />
           </div>
         )}
 
@@ -165,6 +196,49 @@ export default function ProfilePage() {
           <VibeTag vibe={vibeText} />
         </div>
         <p className={styles.bio}>{bioText}</p>
+
+        {isBusiness ? (
+          <div className={styles.businessPanel}>
+            <div className={styles.businessPanelHead}>
+              <span className={styles.businessPanelTitle}>
+                <i className="ri-store-2-fill" /> Akaunti ya Biashara
+              </span>
+            </div>
+            <input
+              className={styles.businessInput}
+              value={categoryInput}
+              onChange={(e) => setCategoryInput(e.target.value)}
+              maxLength={40}
+              placeholder="Aina ya biashara (mfano: Mavazi, Chakula)"
+            />
+            <input
+              className={styles.businessInput}
+              type="tel"
+              inputMode="tel"
+              value={whatsappInput}
+              onChange={(e) => setWhatsappInput(e.target.value)}
+              placeholder="Namba ya WhatsApp (mfano: 255712345678)"
+            />
+            <button
+              type="button"
+              className={`btnAccent ${styles.businessSaveBtn}`}
+              onClick={handleSaveBusinessDetails}
+              disabled={savingBusiness}
+            >
+              {savingBusiness ? 'Inahifadhi…' : 'Hifadhi Taarifa za Biashara'}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={styles.businessUpsell}
+            onClick={handleSwitchToBusiness}
+            disabled={savingBusiness}
+          >
+            <i className="ri-store-2-fill" />
+            {savingBusiness ? 'Inabadilisha…' : 'Badilisha kuwa Akaunti ya Biashara'}
+          </button>
+        )}
 
         <div className={styles.statsRow}>
           <span><b>{myPosts.length}</b> <span>machapisho</span></span>

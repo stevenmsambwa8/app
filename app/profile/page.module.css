@@ -26,6 +26,7 @@
   font-size: 17px;
   flex-shrink: 0;
 }
+.whatsappBtn { color: #25D366; }
 .avatarBigRing {
   display: inline-flex;
   padding: 3px;
@@ -94,6 +95,59 @@
 .statBtn { display: flex; align-items: center; gap: 4px; font-size: 13px; }
 .statBtn b { font-weight: 700; }
 .statBtn span { color: var(--text-muted); }
+
+.businessUpsell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px dashed var(--accent);
+  border-radius: 12px;
+}
+.businessUpsell:disabled { opacity: 0.7; }
+.businessPanel {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.businessPanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.businessPanelTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.businessInput {
+  width: 100%;
+  font-size: 13px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+.businessSaveBtn {
+  font-size: 12.5px;
+  padding: 9px;
+}
+.businessSaveBtn:disabled { opacity: 0.7; }
 
 .tabs {
   display: flex;

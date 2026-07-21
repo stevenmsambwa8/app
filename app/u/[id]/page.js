@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabaseClient'
 import VibeTag from '../../../components/VibeTag'
+import UserBadge from '../../../components/UserBadge'
 import Avatar from '../../../components/Avatar'
 import PostCard from '../../../components/PostCard'
 import FollowBtn from '../../../components/FollowBtn'
@@ -40,7 +41,7 @@ export default function UserProfilePage() {
     setNotFound(false);
     supabase
       .from('profiles')
-      .select('id, username, avatar, avatar_url, bio, vibe')
+      .select('id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp')
       .eq('id', uid)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -77,6 +78,9 @@ export default function UserProfilePage() {
   const avatarUrl = profileRow.avatar_url || null;
   const bioText = profileRow.bio || 'Bado hajaandika kuhusu yeye.';
   const vibeText = profileRow.vibe || 'Mwanachama Mpya';
+  const isBusiness = profileRow.account_type === 'business';
+  const businessCategory = profileRow.business_category;
+  const whatsappNumber = profileRow.whatsapp;
 
   const theirPosts = posts.filter((p) => p.uid === uid);
   const following = isFollowing(uid);
@@ -105,6 +109,17 @@ export default function UserProfilePage() {
             )}
           </div>
           <div className={styles.headActions}>
+            {isBusiness && whatsappNumber && (
+              <a
+                href={`https://wa.me/${whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Habari, nimeona wasifu wako Advat.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${styles.messageBtn} ${styles.whatsappBtn}`}
+                aria-label="Wasiliana kwa WhatsApp"
+              >
+                <i className="ri-whatsapp-fill" />
+              </a>
+            )}
             <button
               type="button"
               className={styles.messageBtn}
@@ -119,11 +134,12 @@ export default function UserProfilePage() {
 
         <div className={styles.nameRow}>
           <span className={styles.name}>{displayName}</span>
+          <UserBadge badge={isBusiness ? 'business' : null} />
         </div>
 
         <div className={styles.handleRow}>
           <span className={styles.handle}>{displayHandle}</span>
-          <VibeTag vibe={vibeText} />
+          <VibeTag vibe={isBusiness && businessCategory ? businessCategory : vibeText} />
         </div>
         <p className={styles.bio}>{bioText}</p>
 

@@ -190,6 +190,15 @@
   gap: 8px;
 }
 .cta i { font-size: 16px; }
+.ctaStats {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.ctaStats i { font-size: 13px; }
 
 .actions {
   display: flex;

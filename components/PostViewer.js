@@ -3,6 +3,8 @@ import { useState } from 'react'
 import Avatar from './Avatar'
 import UserBadge from './UserBadge'
 import ShareCard from './ShareCard'
+import { useAuth } from './AuthProvider'
+import { usePosts } from './PostsProvider'
 import { userById, commentsForPost } from '../lib/mockData'
 import { parsePostText } from '../lib/postText'
 import styles from './PostViewer.module.css'
@@ -21,6 +23,9 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
   const [openReplies, setOpenReplies] = useState({});
   const [sharing, setSharing] = useState(false);
   const comments = commentsForPost(post);
+  const { user: authUser } = useAuth();
+  const { trackCtaClick } = usePosts();
+  const isOwner = !!authUser && post.uid === authUser.id;
 
   function toggleReplies(id) {
     setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
@@ -109,10 +114,30 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
             <p className={styles.text}>{postText}</p>
 
             {post.cta && (
-              <button className={`btnAccent ${styles.cta}`}>
-                <i className={post.cta.icon || 'ri-arrow-right-line'} />
-                {post.cta.label}
-              </button>
+              post.cta.url ? (
+                <a
+                  href={post.cta.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`btnAccent ${styles.cta}`}
+                  onClick={() => trackCtaClick(post.id)}
+                >
+                  <i className={post.cta.icon || 'ri-arrow-right-line'} />
+                  {post.cta.label}
+                </a>
+              ) : (
+                <button className={`btnAccent ${styles.cta}`} disabled>
+                  <i className={post.cta.icon || 'ri-arrow-right-line'} />
+                  {post.cta.label}
+                </button>
+              )
+            )}
+
+            {isOwner && post.cta && (
+              <span className={styles.ctaStats}>
+                <i className="ri-cursor-line" />
+                {post.ctaClicks || 0} wamebofya kiungo
+              </span>
             )}
 
             <div className={styles.actions}>

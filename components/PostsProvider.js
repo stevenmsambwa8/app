@@ -13,6 +13,7 @@ const PostsContext = createContext({
   addPost: async () => ({ error: null }),
   updatePost: async () => ({ error: null }),
   deletePost: async () => ({ error: null }),
+  trackCtaClick: () => {},
   uploadPostImage: async () => ({ error: null }),
   uploadVoiceNote: async () => ({ error: null }),
   refreshPosts: async () => {},
@@ -68,7 +69,7 @@ export default function PostsProvider({ children }) {
     setError('');
     const { data: rows, error: fetchError } = await supabase
       .from('posts')
-      .select('id, user_id, text, tag, images, cta, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url)')
+      .select('id, user_id, text, tag, images, cta, cta_clicks, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url, account_type)')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -135,6 +136,7 @@ export default function PostsProvider({ children }) {
         images: hasImages ? r.images : undefined,
         gradient: hasImages ? undefined : null,
         cta: r.cta || undefined,
+        ctaClicks: r.cta_clicks || 0,
         // base count excludes my own like — the shared `likes[id]` toggle adds
         // it back in, same display convention used everywhere else.
         likes: total - (myLike ? 1 : 0),
@@ -147,7 +149,7 @@ export default function PostsProvider({ children }) {
               handle: `@${r.profiles.username || 'mtumiaji'}`,
               avatar: r.profiles.avatar || '🐧',
               avatarUrl: r.profiles.avatar_url || null,
-              badge: null,
+              badge: r.profiles.account_type === 'business' ? 'business' : null,
             }
           : null,
       };
@@ -263,6 +265,18 @@ export default function PostsProvider({ children }) {
     },
     [user]
   );
+
+  // Fire-and-forget: bumps the click counter for a post's CTA button.
+  // Works for anyone (even logged-out visitors) since it goes through a
+  // security-definer function rather than a direct row update. Updates
+  // local state optimistically so the owner sees it move immediately.
+  const trackCtaClick = useCallback((id) => {
+    if (typeof id !== 'string') return;
+    setRealPosts((p) => p.map((post) => (post.id === id ? { ...post, ctaClicks: (post.ctaClicks || 0) + 1 } : post)));
+    supabase.rpc('increment_cta_click', { target_post_id: id }).then(({ error }) => {
+      if (error) console.warn('Failed to record CTA click:', error.message);
+    });
+  }, []);
 
   const deletePost = useCallback(
     async (id) => {
@@ -441,6 +455,7 @@ export default function PostsProvider({ children }) {
       addPost,
       updatePost,
       deletePost,
+      trackCtaClick,
       uploadPostImage,
       uploadVoiceNote,
       refreshPosts: loadPosts,
@@ -457,6 +472,7 @@ export default function PostsProvider({ children }) {
       addPost,
       updatePost,
       deletePost,
+      trackCtaClick,
       uploadPostImage,
       uploadVoiceNote,
       loadPosts,
