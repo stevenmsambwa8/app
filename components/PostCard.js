@@ -27,7 +27,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   const author = post.author || userById(post.uid);
   const { text: postText, feeling } = parsePostText(post.text);
   const images = post.images && post.images.length ? post.images : (post.gradient ? [post.gradient] : []);
-  // Color-background posts (no real photo) show the post text centered
+
   // inside the color block itself instead of as a caption underneath.
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
   const [active, setActive] = useState(0);
