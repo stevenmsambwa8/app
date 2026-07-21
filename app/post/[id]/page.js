@@ -565,18 +565,20 @@ export default function PostDetailPage() {
             )}
 
             <div className={styles.actions}>
-              <button
-                className={`${styles.action} ${liked ? styles.liked : ''}`}
-                onClick={() => toggleLike(post.id)}
-              >
-                <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-                {likeCount}
-              </button>
-              <span className={styles.action}>
-                <i className="ri-chat-3-line" />
-                {countAllComments(comments)}
-              </span>
-              <button className={`${styles.action} ${styles.spacer}`}>
+              <div className={styles.actionsLeft}>
+                <button
+                  className={`${styles.action} ${liked ? styles.liked : ''}`}
+                  onClick={() => toggleLike(post.id)}
+                >
+                  <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+                  {likeCount}
+                </button>
+                <span className={styles.action}>
+                  <i className="ri-chat-3-line" />
+                  {countAllComments(comments)}
+                </span>
+              </div>
+              <button className={`${styles.action} ${styles.spacer}`} aria-label="Sambaza">
                 <i className="ri-share-forward-line" />
               </button>
             </div>
@@ -623,7 +625,6 @@ export default function PostDetailPage() {
                           className={styles.commentLike}
                           onClick={() => startReply(c, c.id)}
                         >
-                          <i className="ri-reply-line" />
                           Jibu
                         </button>
                         {!!user && c.uid !== user.id && !isFollowing(c.uid) && (
@@ -639,11 +640,11 @@ export default function PostDetailPage() {
                         {canDelete && (
                           <button
                             type="button"
-                            className={styles.commentLike}
+                            className={styles.commentDelete}
                             onClick={() => handleDeleteComment(c, false)}
+                            aria-label="Futa maoni"
                           >
                             <i className="ri-delete-bin-line" />
-                            Futa
                           </button>
                         )}
                       </div>
@@ -693,7 +694,6 @@ export default function PostDetailPage() {
                                           className={styles.commentLike}
                                           onClick={() => startReply(r, c.id)}
                                         >
-                                          <i className="ri-reply-line" />
                                           Jibu
                                         </button>
                                         {!!user && r.uid !== user.id && !isFollowing(r.uid) && (
@@ -709,11 +709,11 @@ export default function PostDetailPage() {
                                         {canDeleteReply && (
                                           <button
                                             type="button"
-                                            className={styles.commentLike}
+                                            className={styles.commentDelete}
                                             onClick={() => handleDeleteComment(r, true)}
+                                            aria-label="Futa maoni"
                                           >
                                             <i className="ri-delete-bin-line" />
-                                            Futa
                                           </button>
                                         )}
                                       </div>
