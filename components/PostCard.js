@@ -32,6 +32,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   // Color-background posts (no real photo) show the post text centered
   // inside the color block itself instead of as a caption underneath.
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
+  const isOverlay = images.length > 0;
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
@@ -201,145 +202,193 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     <i className={`ri-more-fill ${styles.more}`} />
   );
 
-  const bodyContent = (
-    <div className={`${styles.body} ${images.length > 0 ? styles.bodyOverlay : ''}`}>
-        <div className={styles.header}>
-          <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
-            <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
-            <div>
-              <div className={styles.nameRow}>
-                <span className={styles.name}>{author.name}</span>
-                <UserBadge badge={author.badge} />
-              </div>
-              <span className={styles.meta}>{post.time} · {post.tag}</span>
-            </div>
-          </Link>
-          <div className={styles.headerActions}>
-            {!isOwner && (
-              <FollowBtn
-                following={isFollowing(post.uid)}
-                pending={!!pending[post.uid]}
-                small
-                onClick={handleFollowClick}
-              />
-            )}
-            {isOwner && images.length > 0 && (
-              <button
-                type="button"
-                className={styles.myProfileBtn}
-                onClick={handleViewProfile}
-              >
-                <i className="ri-user-line" />
-                Wasifu Wangu
-              </button>
-            )}
-            {images.length === 0 && menuEl}
+  const headerBlock = (
+    <div className={styles.header}>
+      <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
+        <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
+        <div>
+          <div className={styles.nameRow}>
+            <span className={styles.name}>{author.name}</span>
+            <UserBadge badge={author.badge} />
           </div>
+          <span className={styles.meta}>{post.time} · {post.tag}</span>
         </div>
-
-        <div className={styles.actions}>
+      </Link>
+      <div className={styles.headerActions}>
+        {!isOwner && (
+          <FollowBtn
+            following={isFollowing(post.uid)}
+            pending={!!pending[post.uid]}
+            small
+            onClick={handleFollowClick}
+          />
+        )}
+        {isOwner && isOverlay && (
           <button
-            className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
-            onClick={onLike}
+            type="button"
+            className={styles.myProfileBtn}
+            onClick={handleViewProfile}
           >
-            <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-            {likeCount}
+            <i className="ri-user-line" />
+            Wasifu Wangu
           </button>
-          <button className={styles.action} onClick={viewPost}>
-            <i className="ri-chat-3-line" />
-            {post.comments}
-          </button>
-          <button
-            className={`${styles.action} ${styles.spacer}`}
-            onClick={() => setSharing(true)}
-            aria-label="Sambaza"
-          >
-            <i className="ri-share-line" />
-          </button>
-        </div>
+        )}
+        {!isOverlay && menuEl}
+      </div>
+    </div>
+  );
 
-        {isOwner && post.cta && (
-          <span className={styles.ctaStats}>
-            <i className="ri-cursor-line" />
-            {post.ctaClicks || 0} wamebofya kiungo
+  const actionsBlock = (
+    <div className={styles.actions}>
+      <button
+        className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
+        onClick={onLike}
+      >
+        <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+        {likeCount}
+      </button>
+      <button className={styles.action} onClick={viewPost}>
+        <i className="ri-chat-3-line" />
+        {post.comments}
+      </button>
+      <button
+        className={`${styles.action} ${!isOverlay ? styles.spacer : ''}`}
+        onClick={() => setSharing(true)}
+        aria-label="Sambaza"
+      >
+        <i className="ri-share-line" />
+      </button>
+    </div>
+  );
+
+  const ctaStatsBlock = isOwner && post.cta && (
+    <span className={styles.ctaStats}>
+      <i className="ri-cursor-line" />
+      {post.ctaClicks || 0} wamebofya kiungo
+    </span>
+  );
+
+  const likersBlock = displayLikers.length > 0 && (
+    <div className={styles.likersRow}>
+      <div className={styles.likersStack}>
+        {displayLikers.map((l) => (
+          <span key={l.uid} className={styles.likerAvatar}>
+            {l.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={l.avatarUrl} alt={l.name} />
+            ) : (
+              l.avatar
+            )}
           </span>
-        )}
+        ))}
+        {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
+      </div>
+      <span className={styles.likersLabel}>{likeCount} wamependa</span>
+    </div>
+  );
 
-        {images.length === 0 && displayLikers.length > 0 && (
-          <div className={styles.likersRow}>
-            <div className={styles.likersStack}>
-              {displayLikers.map((l) => (
-                <span key={l.uid} className={styles.likerAvatar}>
-                  {l.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={l.avatarUrl} alt={l.name} />
-                  ) : (
-                    l.avatar
-                  )}
-                </span>
-              ))}
-              {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-            </div>
-            <span className={styles.likersLabel}>{likeCount} wamependa</span>
-          </div>
-        )}
+  const textBlock = !isColorOnly && (
+    <div className={styles.textWrap}>
+      {feeling && !isOverlay && (
+        <span className={styles.feelingChip}>
+          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+        </span>
+      )}
+      <p
+        ref={textRef}
+        className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
+        dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }}
+      />
+      {!expanded && clamped && (
+        <button
+          type="button"
+          className={styles.readMoreInline}
+          onClick={() => setExpanded(true)}
+        >
+          Soma Zaidi
+        </button>
+      )}
+      {expanded && (
+        <button
+          type="button"
+          className={styles.readMore}
+          onClick={() => setExpanded(false)}
+        >
+          Ficha
+        </button>
+      )}
+    </div>
+  );
 
-        {!isColorOnly && (
-          <div className={styles.textWrap}>
-            {feeling && images.length === 0 && (
-              <span className={styles.feelingChip}>
-                <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-              </span>
-            )}
-            <p
-              ref={textRef}
-              className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
-              dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }}
-            />
-            {!expanded && clamped && (
-              <button
-                type="button"
-                className={styles.readMoreInline}
-                onClick={() => setExpanded(true)}
-              >
-                Soma Zaidi
-              </button>
-            )}
-            {expanded && (
-              <button
-                type="button"
-                className={styles.readMore}
-                onClick={() => setExpanded(false)}
-              >
-                Ficha
-              </button>
-            )}
-          </div>
-        )}
-
-        {images.length === 0 && post.cta && (
-          post.cta.url ? (
-            <a
-              href={post.cta.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`btnAccent ${styles.cta}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                trackCtaClick(post.id);
-              }}
-            >
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </a>
-          ) : (
-            <button className={`btnAccent ${styles.cta}`} disabled>
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </button>
-          )
+  const ctaBlock = post.cta && (
+    isOverlay ? (
+      <div className={styles.ctaOverlayWrap}>
+        {post.cta.url ? (
+          <a
+            href={post.cta.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.ctaOverlay}
+            onClick={(e) => {
+              e.stopPropagation();
+              trackCtaClick(post.id);
+            }}
+          >
+            <i className={post.cta.icon || 'ri-arrow-right-line'} />
+            {post.cta.label}
+          </a>
+        ) : (
+          <button type="button" className={styles.ctaOverlay} disabled>
+            <i className={post.cta.icon || 'ri-arrow-right-line'} />
+            {post.cta.label}
+          </button>
         )}
       </div>
+    ) : (
+      post.cta.url ? (
+        <a
+          href={post.cta.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`btnAccent ${styles.cta}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            trackCtaClick(post.id);
+          }}
+        >
+          <i className={post.cta.icon || 'ri-arrow-right-line'} />
+          {post.cta.label}
+        </a>
+      ) : (
+        <button className={`btnAccent ${styles.cta}`} disabled>
+          <i className={post.cta.icon || 'ri-arrow-right-line'} />
+          {post.cta.label}
+        </button>
+      )
+    )
+  );
+
+  const bodyContent = (
+    <div className={`${styles.body} ${isOverlay ? styles.bodyOverlay : ''}`}>
+      {headerBlock}
+      {isOverlay ? (
+        <>
+          {likersBlock}
+          {textBlock}
+          {ctaStatsBlock}
+          {ctaBlock}
+          {actionsBlock}
+        </>
+      ) : (
+        <>
+          {actionsBlock}
+          {ctaStatsBlock}
+          {likersBlock}
+          {textBlock}
+          {ctaBlock}
+        </>
+      )}
+    </div>
   );
 
   return (
@@ -432,47 +481,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       <div className={styles.actionsRail} onClick={(e) => e.stopPropagation()}>
         {menuEl}
       </div>
-
-      {displayLikers.length > 0 && (
-        <div className={styles.mediaLikers} onClick={(e) => e.stopPropagation()}>
-          <div className={styles.likersStack}>
-            {displayLikers.map((l) => (
-              <span key={l.uid} className={styles.likerAvatar}>
-                {l.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={l.avatarUrl} alt={l.name} />
-                ) : (
-                  l.avatar
-                )}
-              </span>
-            ))}
-            {extraLikers > 0 && <span className={`${styles.likerAvatar} ${styles.likerMore}`}>+{extraLikers}</span>}
-          </div>
-          <span className={styles.mediaLikersLabel}>{likeCount}</span>
-        </div>
-      )}
-
-      {post.cta && (
-        <div className={styles.ctaOverlayWrap} onClick={(e) => e.stopPropagation()}>
-          {post.cta.url ? (
-            <a
-              href={post.cta.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.ctaOverlay}
-              onClick={() => trackCtaClick(post.id)}
-            >
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </a>
-          ) : (
-            <button type="button" className={styles.ctaOverlay} disabled>
-              <i className={post.cta.icon || 'ri-arrow-right-line'} />
-              {post.cta.label}
-            </button>
-          )}
-        </div>
-      )}
 
       {bodyContent}
       </div>
