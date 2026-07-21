@@ -238,6 +238,29 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
+  const ctaOverlayBtn = post.cta && (
+    post.cta.url ? (
+      <a
+        href={post.cta.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.ctaOverlay}
+        onClick={(e) => {
+          e.stopPropagation();
+          trackCtaClick(post.id);
+        }}
+      >
+        <i className={post.cta.icon || 'ri-arrow-right-line'} />
+        {post.cta.label}
+      </a>
+    ) : (
+      <button type="button" className={styles.ctaOverlay} disabled>
+        <i className={post.cta.icon || 'ri-arrow-right-line'} />
+        {post.cta.label}
+      </button>
+    )
+  );
+
   const actionsBlock = (
     <div className={styles.actions}>
       <div className={styles.actionsLeft}>
@@ -253,6 +276,9 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           {post.comments}
         </button>
       </div>
+      {isOverlay && ctaOverlayBtn && (
+        <div className={styles.ctaOverlayInline}>{ctaOverlayBtn}</div>
+      )}
       <button
         className={`${styles.action} ${styles.spacer}`}
         onClick={() => setSharing(true)}
@@ -322,51 +348,26 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
-  const ctaBlock = post.cta && (
-    isOverlay ? (
-      <div className={styles.ctaOverlayWrap}>
-        {post.cta.url ? (
-          <a
-            href={post.cta.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.ctaOverlay}
-            onClick={(e) => {
-              e.stopPropagation();
-              trackCtaClick(post.id);
-            }}
-          >
-            <i className={post.cta.icon || 'ri-arrow-right-line'} />
-            {post.cta.label}
-          </a>
-        ) : (
-          <button type="button" className={styles.ctaOverlay} disabled>
-            <i className={post.cta.icon || 'ri-arrow-right-line'} />
-            {post.cta.label}
-          </button>
-        )}
-      </div>
+  const ctaBlock = post.cta && !isOverlay && (
+    post.cta.url ? (
+      <a
+        href={post.cta.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`btnAccent ${styles.cta}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          trackCtaClick(post.id);
+        }}
+      >
+        <i className={post.cta.icon || 'ri-arrow-right-line'} />
+        {post.cta.label}
+      </a>
     ) : (
-      post.cta.url ? (
-        <a
-          href={post.cta.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`btnAccent ${styles.cta}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            trackCtaClick(post.id);
-          }}
-        >
-          <i className={post.cta.icon || 'ri-arrow-right-line'} />
-          {post.cta.label}
-        </a>
-      ) : (
-        <button className={`btnAccent ${styles.cta}`} disabled>
-          <i className={post.cta.icon || 'ri-arrow-right-line'} />
-          {post.cta.label}
-        </button>
-      )
+      <button className={`btnAccent ${styles.cta}`} disabled>
+        <i className={post.cta.icon || 'ri-arrow-right-line'} />
+        {post.cta.label}
+      </button>
     )
   );
 
@@ -378,7 +379,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           {likersBlock}
           {textBlock}
           {ctaStatsBlock}
-          {ctaBlock}
           {actionsBlock}
         </>
       ) : (
