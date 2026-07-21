@@ -240,19 +240,21 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
 
   const actionsBlock = (
     <div className={styles.actions}>
+      <div className={styles.actionsLeft}>
+        <button
+          className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
+          onClick={onLike}
+        >
+          <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
+          {likeCount}
+        </button>
+        <button className={styles.action} onClick={viewPost}>
+          <i className="ri-chat-3-line" />
+          {post.comments}
+        </button>
+      </div>
       <button
-        className={`${styles.action} ${styles.likeAction} ${liked ? styles.liked : ''}`}
-        onClick={onLike}
-      >
-        <i className={liked ? 'ri-heart-fill' : 'ri-heart-line'} />
-        {likeCount}
-      </button>
-      <button className={styles.action} onClick={viewPost}>
-        <i className="ri-chat-3-line" />
-        {post.comments}
-      </button>
-      <button
-        className={`${styles.action} ${!isOverlay ? styles.spacer : ''}`}
+        className={`${styles.action} ${styles.spacer}`}
         onClick={() => setSharing(true)}
         aria-label="Sambaza"
       >
