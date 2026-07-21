@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Avatar from './Avatar'
+import Emoji from './Emoji'
 import UserBadge from './UserBadge'
 import FollowBtn from './FollowBtn'
 import EditPostModal from './EditPostModal'
@@ -13,6 +14,7 @@ import { usePosts } from './PostsProvider'
 import { useFollow } from './FollowProvider'
 import { userById } from '../lib/mockData'
 import { parsePostText } from '../lib/postText'
+import { twemojiHtml } from '../lib/twemoji'
 import styles from './PostCard.module.css'
 
 function isImageUrl(src) {
@@ -222,7 +224,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                       <span className={styles.mediaTag}>{post.tag}</span>
                       {feeling && (
                         <span className={styles.feelingBadge}>
-                          {feeling.emoji} feeling {feeling.label}
+                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
                         </span>
                       )}
                     </div>
@@ -237,7 +239,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
                       <span className={styles.mediaTag}>{post.tag}</span>
                       {feeling && (
                         <span className={styles.feelingBadge}>
-                          {feeling.emoji} feeling {feeling.label}
+                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
                         </span>
                       )}
                     </div>
@@ -263,13 +265,13 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <span className={styles.mediaTag}>{post.tag}</span>
               {feeling && (
                 <span className={styles.feelingBadge}>
-                  {feeling.emoji} feeling {feeling.label}
+                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
                 </span>
               )}
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[0]} alt="" className={styles.mediaImg} />
-            {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
+            {isTemplateImage(images[0]) && <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />}
           </div>
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
@@ -277,11 +279,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
               <span className={styles.mediaTag}>{post.tag}</span>
               {feeling && (
                 <span className={styles.feelingBadge}>
-                  {feeling.emoji} feeling {feeling.label}
+                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
                 </span>
               )}
             </div>
-            <p className={styles.mediaText}>{postText}</p>
+            <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />
           </div>
         )
       ) : null}
@@ -419,15 +421,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           <div className={styles.textWrap}>
             {feeling && images.length === 0 && (
               <span className={styles.feelingChip}>
-                {feeling.emoji} feeling {feeling.label}
+                <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
               </span>
             )}
             <p
               ref={textRef}
               className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
-            >
-              {postText}
-            </p>
+              dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }}
+            />
             {!expanded && clamped && (
               <button
                 type="button"

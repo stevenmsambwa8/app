@@ -248,3 +248,10 @@ input {
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+.twemoji-inline {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.2em;
+  display: inline-block;
+}

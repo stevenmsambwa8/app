@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { VIBES, FEELINGS } from '../lib/mockData'
 import { parsePostText, encodeFeeling } from '../lib/postText'
+import Emoji from './Emoji'
 import styles from './EditPostModal.module.css'
 
 const MAX_CHARS = 500;
@@ -74,7 +75,7 @@ export default function EditPostModal({ post, onClose, onSave }) {
           {feeling ? (
             <div className={styles.feelingChip}>
               <button type="button" className={styles.feelingChipMain} onClick={() => setFeelingSheetOpen(true)}>
-                {feeling.emoji} Anasikia {feeling.label}
+                <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
               </button>
               <button type="button" onClick={() => setFeeling(null)} aria-label="Ondoa hisia">
                 <i className="ri-close-line" />
@@ -135,7 +136,7 @@ export default function EditPostModal({ post, onClose, onSave }) {
                     setFeelingSheetOpen(false);
                   }}
                 >
-                  <span className={styles.feelingEmoji}>{f.emoji}</span>
+                  <span className={styles.feelingEmoji}><Emoji emoji={f.emoji} size="1.4em" /></span>
                   <span>{f.label}</span>
                 </button>
               ))}

@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import Avatar from './Avatar'
+import Emoji from './Emoji'
+import TwemojiText from './TwemojiText'
 import UserBadge from './UserBadge'
 import ShareCard from './ShareCard'
 import { useAuth } from './AuthProvider'
@@ -108,10 +110,10 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           <div className={styles.topBody}>
             {feeling && (
               <span className={styles.feelingChip}>
-                {feeling.emoji} Anasikia {feeling.label}
+                <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
               </span>
             )}
-            <p className={styles.text}>{postText}</p>
+            <TwemojiText as="p" className={styles.text} text={postText} />
 
             {post.cta && (
               post.cta.url ? (
@@ -177,7 +179,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                     <div className={styles.commentBody}>
                       <div className={styles.commentBubble}>
                         <span className={styles.commentName}>{cu.name}</span>
-                        <p className={styles.commentText}>{c.text}</p>
+                        <TwemojiText as="p" className={styles.commentText} text={c.text} />
                       </div>
                       <div className={styles.commentMeta}>
                         <span>{c.time}</span>
@@ -210,7 +212,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
                                     <div className={styles.commentBody}>
                                       <div className={styles.commentBubble}>
                                         <span className={styles.commentName}>{ru.name}</span>
-                                        <p className={styles.commentText}>{r.text}</p>
+                                        <TwemojiText as="p" className={styles.commentText} text={r.text} />
                                       </div>
                                       <div className={styles.commentMeta}>
                                         <span>{r.time}</span>

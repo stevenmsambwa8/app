@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import Avatar from '../../components/Avatar'
+import TwemojiText from '../../components/TwemojiText'
 import VoiceNote from '../../components/VoiceNote'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
@@ -581,7 +582,7 @@ function DMPageInner() {
                     <img src={m.image_url} alt="" className={styles.bubbleImage} />
                   )}
                   {m.audio_url && <VoiceNote src={m.audio_url} duration={m.audio_duration} />}
-                  {m.text && <p className={styles.bubbleText}>{m.text}</p>}
+                  {m.text && <TwemojiText as="p" className={styles.bubbleText} text={m.text} />}
                 </div>
                 {mine && (
                   <button

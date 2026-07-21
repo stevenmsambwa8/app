@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Avatar from '../../components/Avatar'
+import Emoji from '../../components/Emoji'
 import { usePosts } from '../../components/PostsProvider'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
@@ -243,7 +244,7 @@ export default function CreatePostPage() {
             <div className={styles.name}>{displayName}</div>
             {feeling ? (
               <span className={styles.feelingChip}>
-                anasikia {feeling.emoji} {feeling.label}
+                anasikia <Emoji emoji={feeling.emoji} /> {feeling.label}
                 <button type="button" onClick={() => setFeeling(null)} aria-label="Ondoa hisia">
                   <i className="ri-close-line" />
                 </button>
@@ -274,7 +275,7 @@ export default function CreatePostPage() {
           <div className={styles.emojiStrip}>
             {QUICK_EMOJIS.map((em) => (
               <button type="button" key={em} className={styles.emojiBtn} onClick={() => insertEmoji(em)}>
-                {em}
+                <Emoji emoji={em} size="1.3em" />
               </button>
             ))}
           </div>
@@ -561,7 +562,7 @@ export default function CreatePostPage() {
                     setFeelingSheetOpen(false);
                   }}
                 >
-                  <span className={styles.feelingEmoji}>{f.emoji}</span>
+                  <span className={styles.feelingEmoji}><Emoji emoji={f.emoji} size="1.4em" /></span>
                   <span>{f.label}</span>
                 </button>
               ))}

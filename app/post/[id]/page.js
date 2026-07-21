@@ -3,6 +3,8 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import Avatar from '../../../components/Avatar'
+import Emoji from '../../../components/Emoji'
+import TwemojiText from '../../../components/TwemojiText'
 import UserBadge from '../../../components/UserBadge'
 import FollowBtn from '../../../components/FollowBtn'
 import EditPostModal from '../../../components/EditPostModal'
@@ -494,7 +496,7 @@ export default function PostDetailPage() {
               </div>
               {feeling && (
                 <span className={styles.feelingBadge}>
-                  {feeling.emoji} Anasikia {feeling.label}
+                  <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
                 </span>
               )}
               <span className={styles.count}>{active + 1}/{images.length}</span>
@@ -515,20 +517,20 @@ export default function PostDetailPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={images[0]} alt="" className={styles.mediaImg} />
-                {isTemplateImage(images[0]) && <p className={styles.mediaText}>{postText}</p>}
+                {isTemplateImage(images[0]) && <TwemojiText as="p" className={styles.mediaText} text={postText} />}
                 {!isTemplateImage(images[0]) && <i className={`ri-fullscreen-line ${styles.expandHint}`} />}
                 {feeling && (
                   <span className={styles.feelingBadge}>
-                    {feeling.emoji} Anasikia {feeling.label}
+                    <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
                   </span>
                 )}
               </div>
             ) : (
               <div className={`${styles.media} texture`} style={{ background: images[0] }}>
-                <p className={styles.mediaText}>{postText}</p>
+                <TwemojiText as="p" className={styles.mediaText} text={postText} />
                 {feeling && (
                   <span className={styles.feelingBadge}>
-                    {feeling.emoji} Anasikia {feeling.label}
+                    <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
                   </span>
                 )}
               </div>
@@ -538,10 +540,10 @@ export default function PostDetailPage() {
           <div className={styles.topBody}>
             {!isColorOnly && feeling && images.length === 0 && (
               <span className={styles.feelingChip}>
-                {feeling.emoji} Anasikia {feeling.label}
+                <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
               </span>
             )}
-            {!isColorOnly && <p className={styles.text}>{postText}</p>}
+            {!isColorOnly && <TwemojiText as="p" className={styles.text} text={postText} />}
 
             {post.cta && (
               post.cta.url ? (
