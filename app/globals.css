@@ -38,7 +38,7 @@ input, textarea, [contenteditable] {
   --font: 'TikTok Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* Advat accent system — electric coral-rose + lime spark, same in both themes */
-  --accent: #0d9be1;
+  --accent: #F4C430;
   --accent-rgb: 13,155,225;
   --accent-2: #7a2bff;
   --accent-lime: #c6ff3d;
