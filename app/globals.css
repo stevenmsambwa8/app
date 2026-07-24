@@ -37,14 +37,15 @@ input, textarea, [contenteditable] {
   --font-display: 'TikTok Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font: 'TikTok Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  /* Advat accent system — electric coral-rose + lime spark, same in both themes */
-  --accent: #F4C430;
-  --accent-rgb: 13,155,225;
-  --accent-2: #7a2bff;
-  --accent-lime: #c6ff3d;
-  --accent-teal: #0fb5a3;
-  --accent-amber: #ffb020;
-  --accent-text: #ffffff;
+/* Accent system — golden yellow + complementary accents */
+--accent: #FFC107;
+--accent-rgb: 255, 193, 7;
+
+--accent-2: #FF9800;      /* Deep orange */
+--accent-lime: #AEEA00;   /* Fresh lime */
+--accent-teal: #00B8A9;   /* Vibrant teal */
+--accent-amber: #FFB300;  /* Darker amber for hover */
+--accent-text: #1A1A1A;   /* Dark text for readability on yellow */
 
   /* Shared width driving TopBar / main / BottomNav so they always line up.
      Below 900px there's no sidebar/rail, so it's just a comfortable reading width.
