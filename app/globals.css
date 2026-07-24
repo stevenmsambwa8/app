@@ -17,56 +17,38 @@ input, textarea, [contenteditable] {
   user-select: text;
 }
 
-/* ── Light theme (default) — tokens carried over from Nabogaming ── */
+/* Modern Business Theme */
+
 :root {
   --bg: #ffffff;
   --bg-rgb: 255,255,255;
-  --bg-2: #f5f5f7;
+  --bg-2: #f8fafc;
   --surface: #ffffff;
-  --surface-2: #f5f5f7;
+  --surface-2: #f1f5f9;
 
-  --border: #e5e5ea;
-  --border-light: #d1d1d6;
+  --border: #e2e8f0;
+  --border-light: #cbd5e1;
 
-  --text: #000000;
-  --text-dim: #3a3a3c;
-  --text-muted: #8e8e93;
+  --text: #0f172a;
+  --text-dim: #334155;
+  --text-muted: #64748b;
 
-  --chip-bg: rgba(0,0,0,0.045);
+  --chip-bg: rgba(15,23,42,.05);
 
   --font-display: 'TikTok Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font: 'TikTok Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-/* Accent system — golden yellow + complementary accents */
---accent: #FFC107;
---accent-rgb: 255, 193, 7;
+  /* Brand Colors */
+  --accent: #2563EB;          /* Professional Blue */
+  --accent-rgb: 37,99,235;
 
---accent-2: #FF9800;      /* Deep orange */
---accent-lime: #AEEA00;   /* Fresh lime */
---accent-teal: #00B8A9;   /* Vibrant teal */
---accent-amber: #FFB300;  /* Darker amber for hover */
---accent-text: #1A1A1A;   /* Dark text for readability on yellow */
+  --accent-2: #0F766E;        /* Emerald */
+  --accent-lime: #22C55E;     /* Success */
+  --accent-teal: #0891B2;     /* Info */
+  --accent-amber: #F59E0B;    /* Warning / Premium */
+  --accent-text: #FFFFFF;
 
-  /* Shared width driving TopBar / main / BottomNav so they always line up.
-     Below 900px there's no sidebar/rail, so it's just a comfortable reading width.
-     From 900px+, it fills whatever space is left after the sidebar (and, from
-     1180px+, the right rail too), capped so text never gets too wide to read. */
   --shell: 480px;
-}
-
-@media (min-width: 720px) {
-  :root { --shell: 560px; }
-}
-
-@media (min-width: 900px) {
-  :root { --shell: min(720px, calc(100vw - 240px - 8px)); }
-}
-
-@media (min-width: 1180px) {
-  :root {
-    --rail-width: 320px;
-    --shell: clamp(560px, calc(100vw - 240px - var(--rail-width) - 8px), 920px);
-  }
 }
 
 /* ── Dark theme ── */
