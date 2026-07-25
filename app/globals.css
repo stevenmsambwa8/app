@@ -48,7 +48,7 @@ input, textarea, [contenteditable] {
   --accent-amber: #F59E0B;    /* Warning / Premium */
   --accent-text: #FFFFFF;
 
-  --shell: 480px;
+  --shell: 720px;
 }
 
 /* ── Dark theme ── */
@@ -101,13 +101,9 @@ body {
     justify-content: center;
   }
   .app-content {
-    flex: 0 0 var(--shell);
+    flex: 1 1 var(--shell);
     max-width: var(--shell);
     min-width: 0;
-  }
-  .app-content:has(main.wide-page) {
-    flex: 0 0 640px;
-    max-width: 640px;
   }
 }
 
@@ -124,11 +120,6 @@ main.no-topbar {
 }
 main.no-bottomnav {
   padding-bottom: 0;
-}
-@media (min-width: 720px) {
-  main.wide-page {
-    max-width: 640px;
-  }
 }
 
 @media (min-width: 720px) {
