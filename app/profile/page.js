@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
 import Avatar from '../../components/Avatar'
-import PostCard from '../../components/PostCard'
+import PostThumbGrid from '../../components/PostThumbGrid'
 import FollowListModal from '../../components/FollowListModal'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
@@ -28,7 +28,7 @@ export default function ProfilePage() {
 
   const { user, profile, loading, updateUsername, updateBusinessInfo, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
-  const { posts, likes, toggleLike } = usePosts();
+  const { posts } = usePosts();
   const { getCounts } = useFollow();
   const myPosts = posts.filter((p) => p.uid === user?.id);
 
@@ -272,15 +272,7 @@ export default function ProfilePage() {
                 Hujachapisha bado.
               </p>
             ) : (
-              myPosts.map((p) => (
-                <PostCard
-                  key={p.id}
-                  post={p}
-                  liked={!!likes[p.id]}
-                  likeCount={p.likes + (likes[p.id] ? 1 : 0)}
-                  onLike={() => toggleLike(p.id)}
-                />
-              ))
+              <PostThumbGrid posts={myPosts} />
             )}
           </div>
         ) : (

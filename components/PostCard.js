@@ -251,12 +251,12 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         }}
       >
         <i className={post.cta.icon || 'ri-arrow-right-line'} />
-        {post.cta.label}
+        <span className={styles.ctaLabel}>{post.cta.label}</span>
       </a>
     ) : (
       <button type="button" className={styles.ctaOverlay} disabled>
         <i className={post.cta.icon || 'ri-arrow-right-line'} />
-        {post.cta.label}
+        <span className={styles.ctaLabel}>{post.cta.label}</span>
       </button>
     )
   );
@@ -361,12 +361,12 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         }}
       >
         <i className={post.cta.icon || 'ri-arrow-right-line'} />
-        {post.cta.label}
+        <span className={styles.ctaLabel}>{post.cta.label}</span>
       </a>
     ) : (
       <button className={`btnAccent ${styles.cta}`} disabled>
         <i className={post.cta.icon || 'ri-arrow-right-line'} />
-        {post.cta.label}
+        <span className={styles.ctaLabel}>{post.cta.label}</span>
       </button>
     )
   );

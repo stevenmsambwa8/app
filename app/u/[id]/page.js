@@ -5,7 +5,7 @@ import { supabase } from '../../../lib/supabaseClient'
 import VibeTag from '../../../components/VibeTag'
 import UserBadge from '../../../components/UserBadge'
 import Avatar from '../../../components/Avatar'
-import PostCard from '../../../components/PostCard'
+import PostThumbGrid from '../../../components/PostThumbGrid'
 import FollowBtn from '../../../components/FollowBtn'
 import FollowListModal from '../../../components/FollowListModal'
 import { useAuth } from '../../../components/AuthProvider'
@@ -21,7 +21,7 @@ export default function UserProfilePage() {
 
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
-  const { posts, likes, toggleLike } = usePosts();
+  const { posts } = usePosts();
   const { isFollowing, toggleFollow, pending, getCounts } = useFollow();
 
   const [profileRow, setProfileRow] = useState(null);
@@ -159,15 +159,7 @@ export default function UserProfilePage() {
               Bado hajachapisha chochote.
             </p>
           ) : (
-            theirPosts.map((p) => (
-              <PostCard
-                key={p.id}
-                post={p}
-                liked={!!likes[p.id]}
-                likeCount={p.likes + (likes[p.id] ? 1 : 0)}
-                onLike={() => toggleLike(p.id)}
-              />
-            ))
+            <PostThumbGrid posts={theirPosts} />
           )}
         </div>
       </div>

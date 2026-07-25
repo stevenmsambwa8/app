@@ -563,12 +563,12 @@ export default function PostDetailPage() {
                   className={`btnAccent ${styles.cta}`}
                 >
                   <i className={post.cta.icon || 'ri-arrow-right-line'} />
-                  {post.cta.label}
+                  <span className={styles.ctaLabel}>{post.cta.label}</span>
                 </a>
               ) : (
                 <button type="button" className={`btnAccent ${styles.cta}`} disabled>
                   <i className={post.cta.icon || 'ri-arrow-right-line'} />
-                  {post.cta.label}
+                  <span className={styles.ctaLabel}>{post.cta.label}</span>
                 </button>
               )
             )}
