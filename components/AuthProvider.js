@@ -32,6 +32,7 @@ const AuthContext = createContext({
   signUpWithPassword: async () => ({ error: null }),
   signInWithPhone: async () => ({ error: null }),
   signUpWithPhone: async () => ({ error: null }),
+  checkPhoneLock: async () => null,
   signOut: async () => {},
   refreshProfile: async () => {},
   updateUsername: async () => ({ error: null }),
@@ -135,18 +136,43 @@ export default function AuthProvider({ children }) {
   // actually belongs to the person typing it, there's no "forgot password"
   // recovery path here; a uniqueness clash just surfaces as a friendly
   // "namba hii tayari imesajiliwa" error.
+  //
+  // Lockout after repeated wrong PINs is enforced server-side by the RPCs
+  // in supabase/login_lockout_migration.sql — this function always asks
+  // the server before and after each attempt, never decides on its own.
+  async function checkPhoneLock(phoneInput) {
+    const digits = normalizePhone(phoneInput);
+    if (!isValidPhone(digits)) return null;
+    const { data } = await supabase.rpc('get_lock_status', { target_phone: digits });
+    return data || null;
+  }
+
   async function signInWithPhone(phoneInput, password) {
     const digits = normalizePhone(phoneInput);
     if (!isValidPhone(digits)) {
       return { error: new Error('Namba ya simu si sahihi.') };
     }
+
+    const { data: lockedUntil } = await supabase.rpc('get_lock_status', { target_phone: digits });
+    if (lockedUntil && new Date(lockedUntil) > new Date()) {
+      return { error: new Error('locked'), lockedUntil };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: phoneToSyntheticEmail(digits),
       password,
     });
+
     if (error) {
-      return { error: new Error('Namba ya simu au PIN si sahihi.') };
+      const { data: lockInfo } = await supabase.rpc('record_failed_login', { target_phone: digits });
+      return {
+        error: new Error('Namba ya simu au PIN si sahihi.'),
+        lockedUntil: lockInfo?.locked_until || null,
+        attempts: lockInfo?.attempts ?? null,
+      };
     }
+
+    await supabase.rpc('record_successful_login', { target_phone: digits });
     setSession(data.session);
     loadProfile(data.session?.user);
     return { data, error: null };
@@ -279,6 +305,7 @@ export default function AuthProvider({ children }) {
         signUpWithPassword,
         signInWithPhone,
         signUpWithPhone,
+        checkPhoneLock,
         signOut,
         refreshProfile: () => loadProfile(session?.user),
         updateUsername,
