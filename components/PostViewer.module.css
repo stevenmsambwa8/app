@@ -74,8 +74,53 @@
   flex: 1;
 }
 
+.body2col {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .top {
   flex-shrink: 0;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 900px) {
+  .modal {
+    max-width: 1040px;
+  }
+  .body2col {
+    flex-direction: row;
+    overflow: hidden;
+  }
+  .top {
+    flex: 0 0 56%;
+    max-width: 56%;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+  .mediaCollapse,
+  .mediaCollapsed {
+    height: 480px !important;
+    opacity: 1 !important;
+  }
+  .media {
+    height: 480px;
+  }
+  .rightCol {
+    flex: 1;
+    min-width: 0;
+  }
+  .composer {
+    padding-bottom: 12px;
+  }
 }
 
 .mediaCollapse {

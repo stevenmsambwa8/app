@@ -68,6 +68,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </div>
         </div>
 
+        <div className={styles.body2col}>
         <div className={styles.top}>
           <div className={`${styles.mediaCollapse} ${imageHidden ? styles.mediaCollapsed : ''}`}>
             {images.length > 1 ? (
@@ -165,6 +166,7 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           </div>
         </div>
 
+        <div className={styles.rightCol}>
         <div className={styles.commentsScroll} onScroll={handleCommentsScroll}>
           <div className={styles.commentsSection}>
             <p className={styles.commentsTitle}>Maoni</p>
@@ -248,6 +250,8 @@ export default function PostViewer({ post, liked, likeCount, onLike, onClose }) 
           <button className={styles.send} disabled={!comment.trim()} aria-label="Tuma">
             <i className="ri-send-plane-fill" />
           </button>
+        </div>
+        </div>
         </div>
       </div>
 
