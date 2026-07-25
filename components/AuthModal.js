@@ -4,23 +4,29 @@ import { useAuth } from './AuthProvider'
 import styles from './AuthModal.module.css'
 
 export default function AuthModal({ mode, setMode, onClose }) {
-  const { signInWithPassword, signUpWithPassword } = useAuth();
+  const { signInWithPhone, signUpWithPhone } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const isSignup = mode === 'signup';
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     const form = e.target;
-    const email = form.email.value.trim();
+    const phone = form.phone.value.trim();
     const password = form.password.value;
     const username = form.username?.value?.trim();
 
+    if (!/^\d{6}$/.test(password)) {
+      setError('PIN lazima iwe namba 6.');
+      return;
+    }
+
     setSubmitting(true);
     const { error } = isSignup
-      ? await signUpWithPassword(email, password, username)
-      : await signInWithPassword(email, password);
+      ? await signUpWithPhone(phone, password, username)
+      : await signInWithPhone(phone, password);
     setSubmitting(false);
 
     if (error) {
@@ -77,16 +83,45 @@ export default function AuthModal({ mode, setMode, onClose }) {
           {isSignup && (
             <div className={styles.field}>
               <label>Jina la mtumiaji</label>
-              <input name="username" type="text" placeholder="mfano: baraka22" required />
+              <input name="username" type="text" autoComplete="username" placeholder="mfano: baraka22" required />
             </div>
           )}
           <div className={styles.field}>
-            <label>Barua pepe</label>
-            <input name="email" type="email" placeholder="wewe@mfano.com" required />
+            <label>Namba ya simu</label>
+            <input
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="mfano: 0712 345 678"
+              required
+            />
           </div>
           <div className={styles.field}>
-            <label>Nywila</label>
-            <input name="password" type="password" placeholder="••••••••" required minLength={6} />
+            <label>PIN (namba 6)</label>
+            <div className={styles.passwordRow}>
+              <input
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                inputMode="numeric"
+                pattern="\d{6}"
+                maxLength={6}
+                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                placeholder="••••••"
+                required
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                }}
+              />
+              <button
+                type="button"
+                className={styles.togglePassword}
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ficha PIN' : 'Onyesha PIN'}
+              >
+                <i className={showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} />
+              </button>
+            </div>
           </div>
 
           {error && <p className={styles.error}>{error}</p>}

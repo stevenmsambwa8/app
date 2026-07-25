@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { compressToWebp } from '../lib/compressImage'
+import { normalizePhone, isValidPhone, phoneToSyntheticEmail } from '../lib/phone'
 
 // Removes every file in a user's own avatars/<uid>/ folder except the one
 // that matches their current profile.avatar_url. Runs client-side using the
@@ -29,6 +30,8 @@ const AuthContext = createContext({
   loading: true,
   signInWithPassword: async () => ({ error: null }),
   signUpWithPassword: async () => ({ error: null }),
+  signInWithPhone: async () => ({ error: null }),
+  signUpWithPhone: async () => ({ error: null }),
   signOut: async () => {},
   refreshProfile: async () => {},
   updateUsername: async () => ({ error: null }),
@@ -123,6 +126,53 @@ export default function AuthProvider({ children }) {
       loadProfile(data.session.user);
     }
     return { data, error };
+  }
+
+  // Phone+password auth: no OTP/SMS step. Under the hood this still talks
+  // to Supabase's email/password auth using a synthetic
+  // "<phone>@phone.advat.local" address (see lib/phone.js) — the real
+  // number lives in profiles.phone. Since nothing verifies the number
+  // actually belongs to the person typing it, there's no "forgot password"
+  // recovery path here; a uniqueness clash just surfaces as a friendly
+  // "namba hii tayari imesajiliwa" error.
+  async function signInWithPhone(phoneInput, password) {
+    const digits = normalizePhone(phoneInput);
+    if (!isValidPhone(digits)) {
+      return { error: new Error('Namba ya simu si sahihi.') };
+    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: phoneToSyntheticEmail(digits),
+      password,
+    });
+    if (error) {
+      return { error: new Error('Namba ya simu au PIN si sahihi.') };
+    }
+    setSession(data.session);
+    loadProfile(data.session?.user);
+    return { data, error: null };
+  }
+
+  async function signUpWithPhone(phoneInput, password, username) {
+    const digits = normalizePhone(phoneInput);
+    if (!isValidPhone(digits)) {
+      return { error: new Error('Namba ya simu si sahihi.') };
+    }
+    const { data, error } = await supabase.auth.signUp({
+      email: phoneToSyntheticEmail(digits),
+      password,
+      options: {
+        data: { phone: digits, ...(username ? { username } : {}) },
+      },
+    });
+    if (error) {
+      const alreadyExists = /already registered|already exists/i.test(error.message || '');
+      return { error: new Error(alreadyExists ? 'Namba hii tayari imesajiliwa.' : error.message) };
+    }
+    if (data.session) {
+      setSession(data.session);
+      loadProfile(data.session.user);
+    }
+    return { data, error: null };
   }
 
   async function signOut() {
@@ -227,6 +277,8 @@ export default function AuthProvider({ children }) {
         loading,
         signInWithPassword,
         signUpWithPassword,
+        signInWithPhone,
+        signUpWithPhone,
         signOut,
         refreshProfile: () => loadProfile(session?.user),
         updateUsername,
