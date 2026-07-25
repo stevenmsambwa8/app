@@ -3,8 +3,6 @@
   top: 0;
   left: 0;
   right: 0;
-  max-width: var(--shell);
-  margin: 0 auto;
   height: 68px;
   padding: 0 16px;
   background: var(--bg);
@@ -94,13 +92,19 @@
 @media (min-width: 900px) {
   .bar {
     left: 240px;
-    right: auto;
-    width: var(--shell);
+    right: 0;
+    width: auto;
     margin: 0;
     border-left: none;
   }
 
   .menuBtn {
     display: none;
+  }
+}
+
+@media (min-width: 1180px) {
+  .bar {
+    right: 320px;
   }
 }

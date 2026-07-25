@@ -98,18 +98,15 @@ body {
 @media (min-width: 900px) {
   .app-shell {
     display: flex;
-    justify-content: center;
   }
   .app-content {
-    flex: 1 1 var(--shell);
-    max-width: var(--shell);
+    flex: 1 1 auto;
     min-width: 0;
   }
 }
 
 main {
-  max-width: var(--shell);
-  margin: 0 auto;
+  width: 100%;
   min-height: 100%;
   padding-bottom: 104px;
   padding-top: 68px;
