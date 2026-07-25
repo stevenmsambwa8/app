@@ -209,7 +209,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         <div>
           <div className={styles.nameRow}>
             <span className={styles.name}>{author.name}</span>
-            <UserBadge badge={author.badge} />
+            <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
           </div>
           <span className={styles.meta}>{post.time} · {post.tag}</span>
         </div>

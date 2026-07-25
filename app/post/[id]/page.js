@@ -414,7 +414,7 @@ export default function PostDetailPage() {
           <div>
             <div className={styles.nameRow}>
               <span className={styles.name}>{author.name}</span>
-              <UserBadge badge={author.badge} />
+              <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
             </div>
             <span className={styles.meta}>{post.time} · {post.tag}</span>
           </div>
@@ -494,11 +494,14 @@ export default function PostDetailPage() {
                   )
                 )}
               </div>
-              {feeling && (
-                <span className={styles.feelingBadge}>
-                  <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
-                </span>
-              )}
+              <div className={styles.topLeftRow}>
+                <span className={styles.mediaTag}>{post.tag}</span>
+                {feeling && (
+                  <span className={styles.feelingBadge}>
+                    <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
+                  </span>
+                )}
+              </div>
               <span className={styles.count}>{active + 1}/{images.length}</span>
               <div className={styles.dots}>
                 {images.map((_, i) => (
@@ -519,20 +522,26 @@ export default function PostDetailPage() {
                 <img src={images[0]} alt="" className={styles.mediaImg} />
                 {isTemplateImage(images[0]) && <TwemojiText as="p" className={styles.mediaText} text={postText} />}
                 {!isTemplateImage(images[0]) && <i className={`ri-fullscreen-line ${styles.expandHint}`} />}
-                {feeling && (
-                  <span className={styles.feelingBadge}>
-                    <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
-                  </span>
-                )}
+                <div className={styles.topLeftRow}>
+                  <span className={styles.mediaTag}>{post.tag}</span>
+                  {feeling && (
+                    <span className={styles.feelingBadge}>
+                      <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
+                    </span>
+                  )}
+                </div>
               </div>
             ) : (
               <div className={`${styles.media} texture`} style={{ background: images[0] }}>
+                <div className={styles.topLeftRow}>
+                  <span className={styles.mediaTag}>{post.tag}</span>
+                  {feeling && (
+                    <span className={styles.feelingBadge}>
+                      <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
+                    </span>
+                  )}
+                </div>
                 <TwemojiText as="p" className={styles.mediaText} text={postText} />
-                {feeling && (
-                  <span className={styles.feelingBadge}>
-                    <Emoji emoji={feeling.emoji} /> Anasikia {feeling.label}
-                  </span>
-                )}
               </div>
             )
           ) : null}

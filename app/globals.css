@@ -98,11 +98,16 @@ body {
 @media (min-width: 900px) {
   .app-shell {
     display: flex;
+    justify-content: center;
   }
   .app-content {
     flex: 0 0 var(--shell);
     max-width: var(--shell);
     min-width: 0;
+  }
+  .app-content:has(main.wide-page) {
+    flex: 0 0 640px;
+    max-width: 640px;
   }
 }
 
@@ -119,6 +124,11 @@ main.no-topbar {
 }
 main.no-bottomnav {
   padding-bottom: 0;
+}
+@media (min-width: 720px) {
+  main.wide-page {
+    max-width: 640px;
+  }
 }
 
 @media (min-width: 720px) {

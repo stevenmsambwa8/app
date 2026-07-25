@@ -7,3 +7,11 @@
   color: var(--accent);
 }
 .badge i { font-size: 12px; }
+.iconOnly {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.12);
+  flex-shrink: 0;
+}
+.iconOnly i { font-size: 10px; }
