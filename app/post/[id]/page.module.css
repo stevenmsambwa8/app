@@ -30,10 +30,48 @@
   }
 }
 
+.bodyWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .scrollArea {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+}
+
+@media (min-width: 900px) {
+  .bodyWrap {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(340px, 420px);
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "media comments"
+      "media composer";
+    overflow: hidden;
+  }
+  .scrollArea {
+    display: contents;
+  }
+  .top {
+    grid-area: media;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+  }
+  .media {
+    height: 460px;
+  }
+  .commentsSection {
+    grid-area: comments;
+    overflow-y: auto;
+    border-top: none;
+  }
+  .composerWrap {
+    grid-area: composer;
+  }
 }
 
 .notFound {

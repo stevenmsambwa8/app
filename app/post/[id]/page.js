@@ -467,7 +467,15 @@ export default function PostDetailPage() {
         producing race conditions on short comment lists. This way there's
         nothing to guess: scrolling down naturally moves the image out of
         view and comments get the full viewport, with no listener at all.
+
+        On wider screens (see page.module.css, 900px+) bodyWrap switches to
+        a two-column grid instead: media+tags stay on the left, comments +
+        the composer move to the right with the composer pinned to the
+        bottom of that column. .scrollArea becomes `display:contents` at
+        that breakpoint so .top and .commentsSection can sit in separate
+        grid columns without changing this markup.
       */}
+      <div className={styles.bodyWrap}>
       <div className={styles.scrollArea}>
         <div className={styles.top}>
           {images.length > 1 ? (
@@ -843,6 +851,7 @@ export default function PostDetailPage() {
             </button>
           </div>
         )}
+      </div>
       </div>
 
       {editing && (
