@@ -409,7 +409,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   );
 
   const topLeftBlock = (
-    <div className={styles.topLeftStack}>
+    <>
       <div className={styles.topLeftRow}>
         <span className={styles.mediaTag}>{post.tag}</span>
         {feeling && (
@@ -419,11 +419,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         )}
       </div>
       {post.price != null && (
-        <div className={styles.priceOverlay} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.priceTopCenter} onClick={(e) => e.stopPropagation()}>
           <AddToCartButton post={post} />
         </div>
       )}
-    </div>
+    </>
   );
 
   return (
