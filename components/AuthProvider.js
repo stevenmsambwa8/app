@@ -4,6 +4,16 @@ import { supabase } from '../lib/supabaseClient'
 import { compressToWebp } from '../lib/compressImage'
 import { normalizePhone, isValidPhone, phoneToSyntheticEmail } from '../lib/phone'
 
+// Every profiles read/write from the client must use this explicit column
+// list, never '*' or an unscoped .select(). login_lockout_migration.sql
+// revoked table-wide SELECT on profiles and only granted these columns —
+// phone, failed_pin_attempts, and locked_until are deliberately excluded
+// (see that migration for why). Touching an ungranted column, even via an
+// UPDATE's implicit RETURNING *, fails with "permission denied for table
+// profiles" — that's what selecting/returning '*' anywhere below caused.
+const PROFILE_COLUMNS =
+  'id, username, avatar, avatar_url, bio, vibe, created_at, account_type, business_category, whatsapp';
+
 // Removes every file in a user's own avatars/<uid>/ folder except the one
 // that matches their current profile.avatar_url. Runs client-side using the
 // signed-in user's own storage permissions (folder-scoped RLS), so it only
@@ -53,7 +63,7 @@ export default function AuthProvider({ children }) {
     }
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .eq('id', authUser.id)
       .maybeSingle();
 
@@ -72,7 +82,7 @@ export default function AuthProvider({ children }) {
     const { data: created, error: createError } = await supabase
       .from('profiles')
       .upsert({ id: authUser.id, username: fallbackUsername }, { onConflict: 'id' })
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (createError) {
@@ -217,7 +227,7 @@ export default function AuthProvider({ children }) {
       .from('profiles')
       .update({ username: trimmed })
       .eq('id', uid)
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (error) return { error };
@@ -240,7 +250,7 @@ export default function AuthProvider({ children }) {
       .from('profiles')
       .update(payload)
       .eq('id', uid)
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (error) return { error };
@@ -282,7 +292,7 @@ export default function AuthProvider({ children }) {
       .from('profiles')
       .update({ avatar_url })
       .eq('id', uid)
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
     if (updateError) return { error: updateError };
 
