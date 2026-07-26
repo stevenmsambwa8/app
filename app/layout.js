@@ -12,6 +12,7 @@ import PostsProvider from '../components/PostsProvider'
 import CartProvider from '../components/CartProvider'
 import PageMain from '../components/PageMain'
 import ThemeScript from '../components/ThemeScript'
+import PhoneConfirmProvider from '../components/PhoneConfirmProvider'
 
 export const metadata = {
   title: 'Advat — Shiriki Matukio Yako',
@@ -36,6 +37,7 @@ export default function RootLayout({ children }) {
         <ThemeScript />
       </head>
       <body>
+        <PhoneConfirmProvider>
         <ThemeProvider>
           <AuthProvider>
             <AuthModalProvider>
@@ -59,6 +61,7 @@ export default function RootLayout({ children }) {
             </AuthModalProvider>
           </AuthProvider>
         </ThemeProvider>
+        </PhoneConfirmProvider>
       </body>
     </html>
   );

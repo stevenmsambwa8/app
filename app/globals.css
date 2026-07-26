@@ -221,12 +221,16 @@ input {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
+  -webkit-text-stroke: 0.6px #fff;
+  paint-order: stroke fill;
 }
 .rich-mention,
 .rich-hashtag,
 .rich-phone {
   color: var(--accent-teal);
   font-weight: 700;
+  -webkit-text-stroke: 0.6px #fff;
+  paint-order: stroke fill;
 }
 .rich-mention,
 .rich-hashtag,
