@@ -200,6 +200,31 @@ input {
   border: 1px solid var(--border-light);
 }
 
+/* Rich text markup applied to post/comment/DM bodies by lib/richText.js —
+   used on any screen rendering user text (feed, post detail, DMs, previews)
+   so links, @mentions, #hashtags and numbers always look the same. */
+.rich-link {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--accent-rgb), 0.4);
+  word-break: break-word;
+}
+.rich-mention {
+  color: var(--accent-2);
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-word;
+}
+.rich-hashtag {
+  color: var(--accent-teal);
+  font-weight: 700;
+}
+.rich-number {
+  color: var(--accent-amber);
+  font-weight: 700;
+}
+
 .avatar {
   display: flex;
   align-items: center;

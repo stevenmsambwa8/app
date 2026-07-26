@@ -124,14 +124,7 @@ export default function PostPreview({ author, text, feeling, tag, images = [], c
                 <div className={cardStyles.textWrap}>
                   <p
                     className={cardStyles.text}
-                    dangerouslySetInnerHTML={{
-                      __html: richTextHtml(displayText, {
-                        link: cardStyles.richLink,
-                        mention: cardStyles.richMention,
-                        hashtag: cardStyles.richHashtag,
-                        number: cardStyles.richNumber,
-                      }),
-                    }}
+                    dangerouslySetInnerHTML={{ __html: richTextHtml(displayText) }}
                   />
                 </div>
               )}
@@ -151,14 +144,7 @@ export default function PostPreview({ author, text, feeling, tag, images = [], c
             <div className={cardStyles.textWrap}>
               <p
                 className={cardStyles.text}
-                dangerouslySetInnerHTML={{
-                  __html: richTextHtml(displayText, {
-                    link: cardStyles.richLink,
-                    mention: cardStyles.richMention,
-                    hashtag: cardStyles.richHashtag,
-                    number: cardStyles.richNumber,
-                  }),
-                }}
+                dangerouslySetInnerHTML={{ __html: richTextHtml(displayText) }}
               />
             </div>
             {hasCta && (

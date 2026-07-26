@@ -278,20 +278,6 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
-.richLink,
-.richMention {
-  color: var(--accent);
-  font-weight: 700;
-  text-decoration: none;
-  word-break: break-word;
-}
-.richHashtag {
-  color: var(--accent-teal, var(--accent));
-  font-weight: 700;
-}
-.richNumber {
-  font-weight: 700;
-}
 .textClamped {
   display: -webkit-box;
   -webkit-line-clamp: 3;

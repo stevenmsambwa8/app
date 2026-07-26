@@ -346,14 +346,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         onClick={(e) => {
           if (e.target.closest('a')) e.stopPropagation();
         }}
-        dangerouslySetInnerHTML={{
-          __html: richTextHtml(postText, {
-            link: styles.richLink,
-            mention: styles.richMention,
-            hashtag: styles.richHashtag,
-            number: styles.richNumber,
-          }),
-        }}
+        dangerouslySetInnerHTML={{ __html: richTextHtml(postText) }}
       />
       {!expanded && clamped && (
         <button
@@ -485,12 +478,20 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             {topLeftBlock}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[0]} alt="" className={styles.mediaImg} />
-            {isTemplateImage(images[0]) && <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />}
+            {isTemplateImage(images[0]) && (
+              <p
+                className={styles.mediaText}
+                dangerouslySetInnerHTML={{ __html: richTextHtml(postText) }}
+              />
+            )}
           </div>
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
             {topLeftBlock}
-            <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />
+            <p
+              className={styles.mediaText}
+              dangerouslySetInnerHTML={{ __html: richTextHtml(postText) }}
+            />
           </div>
         )
       ) : null}
