@@ -210,14 +210,6 @@ input {
    backgrounds. display:inline-block + nowrap keeps each token (a username,
    a hashtag, a URL) as one atomic unit that wraps as a whole to the next
    line instead of ever breaking mid-word between individual letters. */
-.rich-link,
-.rich-mention,
-.rich-hashtag,
-.rich-number {
-  text-shadow:
-    0 0 2px rgba(255, 255, 255, 0.75),
-    0 0 1px rgba(255, 255, 255, 0.75);
-}
 .rich-link {
   display: inline-block;
   color: var(--accent);
@@ -232,17 +224,16 @@ input {
 }
 .rich-mention,
 .rich-hashtag,
-.rich-number {
+.rich-phone {
   color: var(--accent-teal);
   font-weight: 700;
 }
 .rich-mention,
-.rich-hashtag {
+.rich-hashtag,
+.rich-phone {
   display: inline-block;
   white-space: nowrap;
-}
-.rich-number {
-  white-space: nowrap;
+  text-decoration: none;
 }
 
 .avatar {
