@@ -54,6 +54,7 @@ export default function CreatePostPage() {
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [bgOpen, setBgOpen] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [activeTab, setActiveTab] = useState('create'); // 'create' | 'preview'
   const [posting, setPosting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const fileInputRef = useRef(null);
@@ -332,19 +333,27 @@ export default function CreatePostPage() {
         <div style={{ width: 36 }} />
       </div>
 
-      <div className={styles.previewSlot}>
-        <PostPreview
-          author={previewAuthor}
-          text={text}
-          feeling={feeling}
-          tag={tag}
-          images={previewImages}
-          cta={previewCta}
-          price={priceOn ? price : null}
-        />
+      <div className={styles.tabBar}>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${activeTab === 'create' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('create')}
+        >
+          <i className="ri-edit-2-line" />
+          Unda
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${activeTab === 'preview' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('preview')}
+        >
+          <i className="ri-eye-line" />
+          Onyesho la Awali
+        </button>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
+        <div className={styles.createPane} style={{ display: activeTab === 'create' ? 'flex' : 'none' }}>
         <div className={styles.who}>
           <Avatar emoji={profile?.avatar || ME.avatar} src={profile?.avatar_url} size={40} ring />
           <div className={styles.whoText}>
@@ -737,6 +746,22 @@ export default function CreatePostPage() {
 
           return null;
         })}
+        </div>
+
+        <div className={styles.previewPane} style={{ display: activeTab === 'preview' ? 'flex' : 'none' }}>
+          <PostPreview
+            author={previewAuthor}
+            text={text}
+            feeling={feeling}
+            tag={tag}
+            images={previewImages}
+            cta={previewCta}
+            price={priceOn ? price : null}
+          />
+          <p className={styles.previewPaneHint}>
+            Hivi ndivyo chapisho lako litakavyoonekana kwenye mlisho. Gusa &quot;Unda&quot; kuendelea kuhariri.
+          </p>
+        </div>
 
         {submitError && <p className={styles.formError}>{submitError}</p>}
 
