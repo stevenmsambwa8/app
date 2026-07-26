@@ -34,6 +34,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   // inside the color block itself instead of as a caption underneath.
   const isColorOnly = images.length === 1 && (!isImageUrl(images[0]) || isTemplateImage(images[0]));
   const isOverlay = images.length > 0;
+  // A post only ever "does" one commercial thing: sell (price) or drive a
+  // click (cta). If both somehow ended up set, price wins since it's the
+  // more concrete action.
+  const hasPrice = post.price != null;
+  const hasCta = !!post.cta && !hasPrice;
   const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
@@ -239,7 +244,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
-  const ctaOverlayBtn = post.cta && (
+  const ctaOverlayBtn = hasCta && (
     post.cta.url ? (
       <a
         href={post.cta.url}
@@ -280,6 +285,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       {isOverlay && ctaOverlayBtn && (
         <div className={styles.ctaOverlayInline}>{ctaOverlayBtn}</div>
       )}
+      {isOverlay && hasPrice && (
+        <div className={styles.ctaOverlayInline}>
+          <AddToCartButton post={post} />
+        </div>
+      )}
       <button
         className={`${styles.action} ${styles.spacer}`}
         onClick={() => setSharing(true)}
@@ -290,14 +300,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
-  const ctaStatsBlock = isOwner && post.cta && (
+  const ctaStatsBlock = isOwner && hasCta && (
     <span className={styles.ctaStats}>
       <i className="ri-cursor-line" />
       {post.ctaClicks || 0} wamebofya kiungo
     </span>
   );
 
-  const cartStatsBlock = isOwner && post.price != null && (
+  const cartStatsBlock = isOwner && hasPrice && (
     <span className={styles.ctaStats}>
       <i className="ri-shopping-cart-2-line" />
       {post.cartAdds || 0} wameongeza kikapuni
@@ -356,7 +366,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
-  const ctaBlock = post.cta && !isOverlay && (
+  const ctaBlock = hasCta && !isOverlay && (
     post.cta.url ? (
       <a
         href={post.cta.url}
@@ -398,7 +408,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           {likersBlock}
           {textBlock}
           {ctaBlock}
-          {post.price != null && (
+          {hasPrice && (
             <div className={styles.cartBlockRow}>
               <AddToCartButton post={post} />
             </div>
@@ -409,21 +419,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
   );
 
   const topLeftBlock = (
-    <>
-      <div className={styles.topLeftRow}>
-        <span className={styles.mediaTag}>{post.tag}</span>
-        {feeling && (
-          <span className={styles.feelingBadge}>
-            <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-          </span>
-        )}
-      </div>
-      {post.price != null && (
-        <div className={styles.priceTopCenter} onClick={(e) => e.stopPropagation()}>
-          <AddToCartButton post={post} />
-        </div>
+    <div className={styles.topLeftRow}>
+      <span className={styles.mediaTag}>{post.tag}</span>
+      {feeling && (
+        <span className={styles.feelingBadge}>
+          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+        </span>
       )}
-    </>
+    </div>
   );
 
   return (
