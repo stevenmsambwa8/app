@@ -203,26 +203,53 @@ input {
 /* Rich text markup applied to post/comment/DM bodies by lib/richText.js —
    used on any screen rendering user text (feed, post detail, DMs, previews)
    so links, @mentions, #hashtags and numbers always look the same. */
+/* Rich text markup applied to post/comment/DM bodies by lib/richText.js —
+   used on any screen rendering user text (feed, post detail, DMs, previews)
+   so links, @mentions, #hashtags and numbers always look the same. The
+   white text-shadow "halo" keeps them legible over busy/colored gradient
+   backgrounds. display:inline-block + nowrap keeps each token (a username,
+   a hashtag, a URL) as one atomic unit that wraps as a whole to the next
+   line instead of ever breaking mid-word between individual letters. */
+.rich-link,
+.rich-mention,
+.rich-hashtag,
+.rich-number {
+  text-shadow:
+    -1px -1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px 1px 0 #fff,
+    0 0 3px rgba(255, 255, 255, 0.6);
+}
 .rich-link {
+  display: inline-block;
   color: var(--accent);
   font-weight: 700;
   text-decoration: underline;
   text-decoration-color: rgba(var(--accent-rgb), 0.4);
-  word-break: break-word;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 .rich-mention {
+  display: inline-block;
   color: var(--accent-2);
   font-weight: 700;
   text-decoration: none;
-  word-break: break-word;
+  white-space: nowrap;
 }
 .rich-hashtag {
+  display: inline-block;
   color: var(--accent-teal);
   font-weight: 700;
+  white-space: nowrap;
 }
 .rich-number {
-  color: var(--accent-amber);
   font-weight: 700;
+  color: var(--accent-amber);
+  white-space: nowrap;
 }
 
 .avatar {
