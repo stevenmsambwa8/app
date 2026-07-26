@@ -8,6 +8,7 @@ import TwemojiText from '../../../components/TwemojiText'
 import UserBadge from '../../../components/UserBadge'
 import FollowBtn from '../../../components/FollowBtn'
 import EditPostModal from '../../../components/EditPostModal'
+import AddToCartButton from '../../../components/AddToCartButton'
 import { usePosts } from '../../../components/PostsProvider'
 import { useAuth } from '../../../components/AuthProvider'
 import { useAuthModal } from '../../../components/AuthModalProvider'
@@ -579,6 +580,12 @@ export default function PostDetailPage() {
                   <span className={styles.ctaLabel}>{post.cta.label}</span>
                 </button>
               )
+            )}
+
+            {post.price != null && (
+              <div style={{ marginTop: 4 }}>
+                <AddToCartButton post={post} />
+              </div>
             )}
 
             <div className={styles.actions}>

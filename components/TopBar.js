@@ -8,12 +8,14 @@ import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
 import { useAuth } from './AuthProvider'
 import { useNotifications } from './NotificationsProvider'
+import { useCart } from './CartProvider'
 import MobileDrawer from './MobileDrawer'
 import styles from './TopBar.module.css'
 
 export default function TopBar() {
   const pathname = usePathname()
   const { unreadCount } = useNotifications()
+  const { totalCount: cartCount } = useCart()
   const { theme } = useTheme()
   const { user, profile } = useAuth()
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -51,6 +53,13 @@ export default function TopBar() {
         </div>
 
         <div className={styles.right}>
+          <Link href="/cart" className={styles.bell} aria-label="Kikapu">
+            <i className="ri-shopping-cart-2-line" />
+            {cartCount > 0 && (
+              <span className={styles.badge}>{cartCount}</span>
+            )}
+          </Link>
+
           <Link href="/notifications" className={styles.bell}>
             <i className="ri-notification-3-line" />
             {unreadCount > 0 && (

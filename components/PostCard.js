@@ -8,6 +8,7 @@ import UserBadge from './UserBadge'
 import FollowBtn from './FollowBtn'
 import EditPostModal from './EditPostModal'
 import ShareCard from './ShareCard'
+import AddToCartButton from './AddToCartButton'
 import { useAuth } from './AuthProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
@@ -279,6 +280,11 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       {isOverlay && ctaOverlayBtn && (
         <div className={styles.ctaOverlayInline}>{ctaOverlayBtn}</div>
       )}
+      {isOverlay && post.price != null && (
+        <div className={styles.ctaOverlayInline}>
+          <AddToCartButton post={post} />
+        </div>
+      )}
       <button
         className={`${styles.action} ${styles.spacer}`}
         onClick={() => setSharing(true)}
@@ -293,6 +299,13 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     <span className={styles.ctaStats}>
       <i className="ri-cursor-line" />
       {post.ctaClicks || 0} wamebofya kiungo
+    </span>
+  );
+
+  const cartStatsBlock = isOwner && post.price != null && (
+    <span className={styles.ctaStats}>
+      <i className="ri-shopping-cart-2-line" />
+      {post.cartAdds || 0} wameongeza kikapuni
     </span>
   );
 
@@ -379,15 +392,22 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           {likersBlock}
           {textBlock}
           {ctaStatsBlock}
+          {cartStatsBlock}
           {actionsBlock}
         </>
       ) : (
         <>
           {actionsBlock}
           {ctaStatsBlock}
+          {cartStatsBlock}
           {likersBlock}
           {textBlock}
           {ctaBlock}
+          {post.price != null && (
+            <div className={styles.cartBlockRow}>
+              <AddToCartButton post={post} />
+            </div>
+          )}
         </>
       )}
     </div>

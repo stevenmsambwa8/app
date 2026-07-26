@@ -36,6 +36,7 @@ export default function CreatePostPage() {
   const { addPost, uploadPostImage } = usePosts();
   const { user, profile, loading: authLoading } = useAuth();
   const { openAuth } = useAuthModal();
+  const isBusiness = profile?.account_type === 'business';
 
   const [text, setText] = useState('');
   const [tag, setTag] = useState(VIBES[0]);
@@ -45,6 +46,8 @@ export default function CreatePostPage() {
   const [ctaLabel, setCtaLabel] = useState('');
   const [ctaIcon, setCtaIcon] = useState(CTA_ICON_PRESETS[0].icon);
   const [ctaUrl, setCtaUrl] = useState('');
+  const [priceOn, setPriceOn] = useState(false);
+  const [price, setPrice] = useState('');
   const [feeling, setFeeling] = useState(null); // { emoji, label }
   const [feelingSheetOpen, setFeelingSheetOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -208,6 +211,7 @@ export default function CreatePostPage() {
         ctaOn && ctaLabel.trim()
           ? { label: ctaLabel.trim(), icon: ctaIcon, url: ctaFinalUrl }
           : undefined,
+      price: isBusiness && priceOn && price.trim() ? Number(price) : null,
     });
 
     setPosting(false);
@@ -225,7 +229,12 @@ export default function CreatePostPage() {
   }
 
   const displayName = profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || ME.name;
-  const canSubmit = !!text.trim() && !posting && !isUploading && !(ctaOn && !!ctaLabel.trim() && !ctaUrl.trim());
+  const canSubmit =
+    !!text.trim() &&
+    !posting &&
+    !isUploading &&
+    !(ctaOn && !!ctaLabel.trim() && !ctaUrl.trim()) &&
+    !(priceOn && (!price.trim() || Number(price) <= 0));
 
   return (
     <div className={styles.wrap}>
@@ -311,6 +320,16 @@ export default function CreatePostPage() {
             <i className="ri-link-m" />
             <span>Kiungo</span>
           </button>
+          {isBusiness && (
+            <button
+              type="button"
+              className={`${styles.toolBtn} ${priceOn ? styles.toolBtnActive : ''}`}
+              onClick={() => setPriceOn((v) => !v)}
+            >
+              <i className="ri-price-tag-3-line" />
+              <span>Bei</span>
+            </button>
+          )}
           <button
             type="button"
             className={`${styles.toolBtn} ${bgOpen ? styles.toolBtnActive : ''}`}
@@ -527,6 +546,25 @@ export default function CreatePostPage() {
                 </>
               )}
             </div>
+          </div>
+        )}
+
+        {isBusiness && priceOn && (
+          <div className={styles.section}>
+            <p className={styles.sectionLabel}>Bei ya bidhaa</p>
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="1"
+              className={styles.ctaUrlInput}
+              placeholder="Bei (TZS), mfano: 15000"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <p className={styles.previewNote}>
+              <i className="ri-information-line" /> Chapisho hili litapata kitufe cha &quot;Ongeza Kikapuni&quot; wateja wataponunua.
+            </p>
           </div>
         )}
 

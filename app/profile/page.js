@@ -4,6 +4,7 @@ import VibeTag from '../../components/VibeTag'
 import UserBadge from '../../components/UserBadge'
 import Avatar from '../../components/Avatar'
 import PostThumbGrid from '../../components/PostThumbGrid'
+import BusinessStats from '../../components/BusinessStats'
 import FollowListModal from '../../components/FollowListModal'
 import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
@@ -251,10 +252,17 @@ export default function ProfilePage() {
         </div>
 
         <div className={styles.tabs}>
-          {[
-            { key: 'posts', label: 'Machapisho' },
-            { key: 'flex', label: 'Flex' },
-          ].map((t) => (
+          {(isBusiness
+            ? [
+                { key: 'posts', label: 'Machapisho' },
+                { key: 'products', label: 'Bidhaa' },
+                { key: 'stats', label: 'Takwimu' },
+              ]
+            : [
+                { key: 'posts', label: 'Machapisho' },
+                { key: 'flex', label: 'Flex' },
+              ]
+          ).map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
@@ -275,6 +283,18 @@ export default function ProfilePage() {
               <PostThumbGrid posts={myPosts} />
             )}
           </div>
+        ) : tab === 'products' ? (
+          <div className={styles.posts}>
+            {myPosts.filter((p) => p.price != null).length === 0 ? (
+              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+                Hujaweka bidhaa yenye bei bado. Weka bei wakati wa kuchapisha ili ionekane hapa.
+              </p>
+            ) : (
+              <PostThumbGrid posts={myPosts.filter((p) => p.price != null)} />
+            )}
+          </div>
+        ) : tab === 'stats' ? (
+          <BusinessStats posts={myPosts} />
         ) : (
           <div className={styles.flexGrid}>
             {FLEX_CARDS.map((c) => (

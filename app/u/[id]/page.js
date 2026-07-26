@@ -28,6 +28,7 @@ export default function UserProfilePage() {
   const [notFound, setNotFound] = useState(false);
   const [counts, setCounts] = useState({ followers: 0, following: 0 });
   const [listModal, setListModal] = useState(null);
+  const [tab, setTab] = useState('posts');
 
   // If someone lands on their own uid via this route, send them to /profile
   // instead so they get the editable version.
@@ -153,14 +154,39 @@ export default function UserProfilePage() {
           </button>
         </div>
 
-        <div className={styles.posts} style={{ marginTop: 20 }}>
-          {theirPosts.length === 0 ? (
-            <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
-              Bado hajachapisha chochote.
-            </p>
-          ) : (
-            <PostThumbGrid posts={theirPosts} />
-          )}
+        {isBusiness && (
+          <div className={styles.tabs}>
+            {[
+              { key: 'posts', label: 'Machapisho' },
+              { key: 'products', label: 'Bidhaa' },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`${styles.tab} ${tab === t.key ? styles.tabActive : ''}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.posts} style={{ marginTop: isBusiness ? 0 : 20 }}>
+          {(() => {
+            const shown = isBusiness && tab === 'products'
+              ? theirPosts.filter((p) => p.price != null)
+              : theirPosts;
+            if (shown.length === 0) {
+              return (
+                <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+                  {isBusiness && tab === 'products'
+                    ? 'Hakuna bidhaa yenye bei bado.'
+                    : 'Bado hajachapisha chochote.'}
+                </p>
+              );
+            }
+            return <PostThumbGrid posts={shown} />;
+          })()}
         </div>
       </div>
 

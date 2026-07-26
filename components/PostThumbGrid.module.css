@@ -68,6 +68,19 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
+.priceBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  z-index: 1;
+}
+
 .overlay {
   position: absolute;
   inset: 0;

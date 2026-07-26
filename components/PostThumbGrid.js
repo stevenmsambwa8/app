@@ -52,6 +52,11 @@ export default function PostThumbGrid({ posts }) {
               </div>
             )}
             {images.length > 1 && <i className={`ri-stack-line ${styles.stackIcon}`} />}
+            {post.price != null && (
+              <span className={styles.priceBadge}>
+                TZS {Number(post.price).toLocaleString('sw-TZ')}
+              </span>
+            )}
             <div className={styles.overlay}>
               <span className={styles.stat}>
                 <i className="ri-heart-fill" />

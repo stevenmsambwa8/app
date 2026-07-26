@@ -6,6 +6,7 @@ import Avatar from './Avatar'
 import { useTheme } from './ThemeProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { useAuth } from './AuthProvider'
+import { useCart } from './CartProvider'
 import { NOTIFS } from '../lib/mockData'
 import styles from './Sidebar.module.css'
 
@@ -13,6 +14,7 @@ const TABS = [
   { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
   { href: '/people', label: 'Watu', icon: 'ri-team-line', activeIcon: 'ri-team-fill' },
   { href: '/flex', label: 'Flex', icon: 'ri-fire-line', activeIcon: 'ri-fire-fill' },
+  { href: '/cart', label: 'Kikapu', icon: 'ri-shopping-cart-2-line', activeIcon: 'ri-shopping-cart-2-fill' },
   { href: '/dm', label: 'Ujumbe', icon: 'ri-chat-3-line', activeIcon: 'ri-chat-3-fill' },
   { href: '/profile', label: 'Wasifu', icon: 'ri-user-line', activeIcon: 'ri-user-fill' },
 ];
@@ -22,6 +24,7 @@ export default function Sidebar() {
   const { theme, toggleTheme } = useTheme();
   const { openAuth } = useAuthModal();
   const { user, profile, signOut } = useAuth();
+  const { totalCount: cartCount } = useCart();
   const unread = NOTIFS.filter((n) => n.unread).length;
   const displayName = profile?.username || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Wewe';
   const displayHandle = user ? `@${displayName}` : '@wewe';
@@ -56,7 +59,7 @@ export default function Sidebar() {
               className={`${styles.item} ${isActive ? styles.active : ''}`}
             >
               <i className={isActive ? t.activeIcon : t.icon} />
-              <span>{t.label}</span>
+              <span>{t.label}{t.href === '/cart' && cartCount > 0 ? ` · ${cartCount}` : ''}</span>
             </Link>
           );
         })}

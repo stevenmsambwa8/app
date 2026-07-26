@@ -14,6 +14,7 @@ const PostsContext = createContext({
   updatePost: async () => ({ error: null }),
   deletePost: async () => ({ error: null }),
   trackCtaClick: () => {},
+  trackCartAdd: () => {},
   uploadPostImage: async () => ({ error: null }),
   uploadVoiceNote: async () => ({ error: null }),
   refreshPosts: async () => {},
@@ -69,7 +70,7 @@ export default function PostsProvider({ children }) {
     setError('');
     const { data: rows, error: fetchError } = await supabase
       .from('posts')
-      .select('id, user_id, text, tag, images, cta, cta_clicks, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url, account_type)')
+      .select('id, user_id, text, tag, images, cta, cta_clicks, price, cart_adds, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url, account_type, whatsapp)')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -137,6 +138,8 @@ export default function PostsProvider({ children }) {
         gradient: hasImages ? undefined : null,
         cta: r.cta || undefined,
         ctaClicks: r.cta_clicks || 0,
+        price: r.price ?? null,
+        cartAdds: r.cart_adds || 0,
         // base count excludes my own like — the shared `likes[id]` toggle adds
         // it back in, same display convention used everywhere else.
         likes: total - (myLike ? 1 : 0),
@@ -150,6 +153,7 @@ export default function PostsProvider({ children }) {
               avatar: r.profiles.avatar || '🐧',
               avatarUrl: r.profiles.avatar_url || null,
               badge: r.profiles.account_type === 'business' ? 'business' : null,
+              whatsapp: r.profiles.whatsapp || null,
             }
           : null,
       };
@@ -227,6 +231,7 @@ export default function PostsProvider({ children }) {
         tag: draft.tag,
         images: draft.images && draft.images.length ? draft.images : [],
         cta: draft.cta || null,
+        price: draft.price ?? null,
       };
 
       let { error } = await supabase.from('posts').insert(payload);
@@ -256,6 +261,7 @@ export default function PostsProvider({ children }) {
       const payload = {};
       if (updates.text !== undefined) payload.text = updates.text;
       if (updates.tag !== undefined) payload.tag = updates.tag;
+      if (updates.price !== undefined) payload.price = updates.price;
 
       const { error } = await supabase.from('posts').update(payload).eq('id', id).eq('user_id', user.id);
       if (error) return { error };
@@ -275,6 +281,17 @@ export default function PostsProvider({ children }) {
     setRealPosts((p) => p.map((post) => (post.id === id ? { ...post, ctaClicks: (post.ctaClicks || 0) + 1 } : post)));
     supabase.rpc('increment_cta_click', { target_post_id: id }).then(({ error }) => {
       if (error) console.warn('Failed to record CTA click:', error.message);
+    });
+  }, []);
+
+  // Same fire-and-forget pattern as trackCtaClick: bumps posts.cart_adds
+  // through a security-definer RPC so it works for anyone, logged in or
+  // not, and updates local state optimistically.
+  const trackCartAdd = useCallback((id) => {
+    if (typeof id !== 'string') return;
+    setRealPosts((p) => p.map((post) => (post.id === id ? { ...post, cartAdds: (post.cartAdds || 0) + 1 } : post)));
+    supabase.rpc('increment_cart_add', { target_post_id: id }).then(({ error }) => {
+      if (error) console.warn('Failed to record cart add:', error.message);
     });
   }, []);
 
@@ -456,6 +473,7 @@ export default function PostsProvider({ children }) {
       updatePost,
       deletePost,
       trackCtaClick,
+      trackCartAdd,
       uploadPostImage,
       uploadVoiceNote,
       refreshPosts: loadPosts,
@@ -473,6 +491,7 @@ export default function PostsProvider({ children }) {
       updatePost,
       deletePost,
       trackCtaClick,
+      trackCartAdd,
       uploadPostImage,
       uploadVoiceNote,
       loadPosts,
