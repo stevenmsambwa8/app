@@ -76,7 +76,7 @@
 .previewPane {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
   padding: 10px 0 18px;
 }
@@ -85,6 +85,7 @@
   font-size: 12px;
   color: var(--text-muted);
   text-align: center;
+  align-self: center;
   max-width: 280px;
   margin: 0;
 }
