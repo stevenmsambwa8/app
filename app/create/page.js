@@ -9,6 +9,7 @@ import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
 import { ME, VIBES, IMAGE_PRESETS, BACKGROUND_PRESETS, randomBackground, CTA_ICON_PRESETS, FEELINGS, QUICK_EMOJIS } from '../../lib/mockData'
 import { encodeFeeling } from '../../lib/postText'
+import { supabase } from '../../lib/supabaseClient'
 import styles from './page.module.css'
 
 const MAX_IMAGES = 5;
@@ -51,6 +52,10 @@ export default function CreatePostPage() {
   const [price, setPrice] = useState('');
   const [feeling, setFeeling] = useState(null); // { emoji, label }
   const [feelingSheetOpen, setFeelingSheetOpen] = useState(false);
+  const [tagSheetOpen, setTagSheetOpen] = useState(false);
+  const [tagQuery, setTagQuery] = useState('');
+  const [tagResults, setTagResults] = useState([]);
+  const [tagSearching, setTagSearching] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [bgOpen, setBgOpen] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
@@ -210,6 +215,45 @@ export default function CreatePostPage() {
 
   function insertEmoji(emoji) {
     setText((t) => (t.length + emoji.length <= MAX_CHARS ? t + emoji : t));
+    textareaRef.current?.focus();
+  }
+
+  // Debounced search against real profiles (people + business accounts)
+  // for the "tag someone" sheet. Only runs while the sheet is open so it
+  // doesn't fire queries in the background.
+  useEffect(() => {
+    if (!tagSheetOpen) return;
+    const q = tagQuery.trim();
+    if (!q) {
+      setTagResults([]);
+      setTagSearching(false);
+      return;
+    }
+    setTagSearching(true);
+    const id = setTimeout(async () => {
+      let query = supabase
+        .from('profiles')
+        .select('id, username, avatar, avatar_url, account_type')
+        .ilike('username', `%${q}%`)
+        .limit(8);
+      if (user?.id) query = query.neq('id', user.id);
+      const { data } = await query;
+      setTagResults(data || []);
+      setTagSearching(false);
+    }, 300);
+    return () => clearTimeout(id);
+  }, [tagQuery, tagSheetOpen, user?.id]);
+
+  function insertMention(username) {
+    const mention = `@${username} `;
+    setText((t) => {
+      const needsSpace = t.length > 0 && !/\s$/.test(t);
+      const next = (needsSpace ? `${t} ` : t) + mention;
+      return next.length <= MAX_CHARS ? next : t;
+    });
+    setTagSheetOpen(false);
+    setTagQuery('');
+    setTagResults([]);
     textareaRef.current?.focus();
   }
 
@@ -418,6 +462,14 @@ export default function CreatePostPage() {
           >
             <i className="ri-sticky-note-add-line" />
             <span>Emoji</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.toolBtn} ${tagSheetOpen ? styles.toolBtnActive : ''}`}
+            onClick={() => setTagSheetOpen(true)}
+          >
+            <i className="ri-at-line" />
+            <span>Tag</span>
           </button>
           <button
             type="button"
@@ -797,6 +849,42 @@ export default function CreatePostPage() {
                 >
                   <span className={styles.feelingEmoji}><Emoji emoji={f.emoji} size="1.4em" /></span>
                   <span>{f.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {tagSheetOpen && (
+        <div className={styles.sheetOverlay} onClick={() => setTagSheetOpen(false)}>
+          <div className={styles.sheetContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.sheetHandle} />
+            <p className={styles.sheetTitle}>Mtaje mtu au biashara</p>
+            <input
+              type="text"
+              className={styles.ctaUrlInput}
+              placeholder="Tafuta jina la mtumiaji..."
+              value={tagQuery}
+              onChange={(e) => setTagQuery(e.target.value)}
+              autoFocus
+            />
+            <div className={styles.tagResultsList}>
+              {tagSearching && <p className={styles.hint} style={{ marginTop: 10 }}>Inatafuta...</p>}
+              {!tagSearching && tagQuery.trim() && tagResults.length === 0 && (
+                <p className={styles.hint} style={{ marginTop: 10 }}>Hakuna aliyepatikana.</p>
+              )}
+              {tagResults.map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  className={styles.tagResultRow}
+                  onClick={() => insertMention(p.username)}
+                >
+                  <Avatar emoji={p.avatar} src={p.avatar_url} size={32} />
+                  <span className={styles.tagResultName}>@{p.username}</span>
+                  {p.account_type === 'business' && (
+                    <i className={`ri-verified-badge-fill ${styles.tagResultBadge}`} />
+                  )}
                 </button>
               ))}
             </div>

@@ -278,6 +278,20 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+.richLink,
+.richMention {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-word;
+}
+.richHashtag {
+  color: var(--accent-teal, var(--accent));
+  font-weight: 700;
+}
+.richNumber {
+  font-weight: 700;
+}
 .textClamped {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -421,6 +435,17 @@
   padding: 4px 10px;
   border-radius: 999px;
   flex-shrink: 0;
+}
+.bodyTag {
+  align-self: flex-start;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
 }
 .topLeftRow .mediaTag {
   position: static;

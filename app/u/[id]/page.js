@@ -14,10 +14,14 @@ import { usePosts } from '../../../components/PostsProvider'
 import { useFollow } from '../../../components/FollowProvider'
 import styles from '../../profile/page.module.css'
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const uid = params.id;
+  // The route accepts either a profile UUID or a @mention username
+  // (mentions in post text link to /u/<username>).
+  const routeParam = params.id;
 
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
@@ -30,20 +34,24 @@ export default function UserProfilePage() {
   const [listModal, setListModal] = useState(null);
   const [tab, setTab] = useState('posts');
 
-  // If someone lands on their own uid via this route, send them to /profile
-  // instead so they get the editable version.
+  // Once resolved, this is always the real profile id — everything below
+  // (follows, post filtering, counts) keys off this, never the raw param.
+  const uid = profileRow?.id || null;
+
+  // If someone lands on their own profile via this route, send them to
+  // /profile instead so they get the editable version.
   useEffect(() => {
-    if (user && uid === user.id) router.replace('/profile');
+    if (user && uid && uid === user.id) router.replace('/profile');
   }, [user, uid, router]);
 
   useEffect(() => {
     let cancelled = false;
     setProfileRow(null);
     setNotFound(false);
-    supabase
+    const query = supabase
       .from('profiles')
-      .select('id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp')
-      .eq('id', uid)
+      .select('id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp');
+    (UUID_RE.test(routeParam) ? query.eq('id', routeParam) : query.eq('username', routeParam))
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -56,7 +64,7 @@ export default function UserProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [uid]);
+  }, [routeParam]);
 
   useEffect(() => {
     if (!uid) return;

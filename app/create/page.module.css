@@ -680,3 +680,41 @@
   color: var(--accent);
   outline: 1.5px solid var(--accent);
 }
+
+.tagResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.tagResultRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.tagResultRow:active {
+  background: var(--surface-2);
+}
+
+.tagResultName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tagResultBadge {
+  color: var(--accent);
+  font-size: 15px;
+}

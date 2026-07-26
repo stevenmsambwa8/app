@@ -15,7 +15,7 @@ import { usePosts } from './PostsProvider'
 import { useFollow } from './FollowProvider'
 import { userById } from '../lib/mockData'
 import { parsePostText } from '../lib/postText'
-import { twemojiHtml } from '../lib/twemoji'
+import { richTextHtml } from '../lib/richText'
 import styles from './PostCard.module.css'
 
 function isImageUrl(src) {
@@ -343,7 +343,17 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       <p
         ref={textRef}
         className={`${styles.text} ${!expanded ? styles.textClamped : ''}`}
-        dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }}
+        onClick={(e) => {
+          if (e.target.closest('a')) e.stopPropagation();
+        }}
+        dangerouslySetInnerHTML={{
+          __html: richTextHtml(postText, {
+            link: styles.richLink,
+            mention: styles.richMention,
+            hashtag: styles.richHashtag,
+            number: styles.richNumber,
+          }),
+        }}
       />
       {!expanded && clamped && (
         <button
@@ -406,6 +416,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
           {ctaStatsBlock}
           {cartStatsBlock}
           {likersBlock}
+          {post.tag && <span className={styles.bodyTag}>{post.tag}</span>}
           {textBlock}
           {ctaBlock}
           {hasPrice && (

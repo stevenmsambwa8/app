@@ -2,6 +2,7 @@
 import Avatar from './Avatar'
 import Emoji from './Emoji'
 import UserBadge from './UserBadge'
+import { richTextHtml } from '../lib/richText'
 import cardStyles from './PostCard.module.css'
 import styles from './PostPreview.module.css'
 
@@ -121,7 +122,17 @@ export default function PostPreview({ author, text, feeling, tag, images = [], c
               {headerBlock}
               {!isColorOnly && (
                 <div className={cardStyles.textWrap}>
-                  <p className={cardStyles.text}>{displayText}</p>
+                  <p
+                    className={cardStyles.text}
+                    dangerouslySetInnerHTML={{
+                      __html: richTextHtml(displayText, {
+                        link: cardStyles.richLink,
+                        mention: cardStyles.richMention,
+                        hashtag: cardStyles.richHashtag,
+                        number: cardStyles.richNumber,
+                      }),
+                    }}
+                  />
                 </div>
               )}
               {actionsBlock}
@@ -136,8 +147,19 @@ export default function PostPreview({ author, text, feeling, tag, images = [], c
                 <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
               </span>
             )}
+            {tag && <span className={cardStyles.bodyTag}>{tag}</span>}
             <div className={cardStyles.textWrap}>
-              <p className={cardStyles.text}>{displayText}</p>
+              <p
+                className={cardStyles.text}
+                dangerouslySetInnerHTML={{
+                  __html: richTextHtml(displayText, {
+                    link: cardStyles.richLink,
+                    mention: cardStyles.richMention,
+                    hashtag: cardStyles.richHashtag,
+                    number: cardStyles.richNumber,
+                  }),
+                }}
+              />
             </div>
             {hasCta && (
               <span className={`btnAccent ${cardStyles.cta}`}>
