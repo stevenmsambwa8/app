@@ -280,11 +280,6 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       {isOverlay && ctaOverlayBtn && (
         <div className={styles.ctaOverlayInline}>{ctaOverlayBtn}</div>
       )}
-      {isOverlay && post.price != null && (
-        <div className={styles.ctaOverlayInline}>
-          <AddToCartButton post={post} />
-        </div>
-      )}
       <button
         className={`${styles.action} ${styles.spacer}`}
         onClick={() => setSharing(true)}
@@ -413,6 +408,24 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     </div>
   );
 
+  const topLeftBlock = (
+    <div className={styles.topLeftStack}>
+      <div className={styles.topLeftRow}>
+        <span className={styles.mediaTag}>{post.tag}</span>
+        {feeling && (
+          <span className={styles.feelingBadge}>
+            <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
+          </span>
+        )}
+      </div>
+      {post.price != null && (
+        <div className={styles.priceOverlay} onClick={(e) => e.stopPropagation()}>
+          <AddToCartButton post={post} />
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className={`card ${styles.card}`}>
       {images.length > 0 && (
@@ -431,31 +444,13 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             {images.map((bg, i) =>
               isImageUrl(bg) ? (
                 <div key={i} className={`${styles.media} ${styles.mediaSlide}`}>
-                  {i === 0 && (
-                    <div className={styles.topLeftRow}>
-                      <span className={styles.mediaTag}>{post.tag}</span>
-                      {feeling && (
-                        <span className={styles.feelingBadge}>
-                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  {i === 0 && topLeftBlock}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={bg} alt="" className={styles.mediaImg} />
                 </div>
               ) : (
                 <div key={i} className={`${styles.media} ${styles.mediaSlide} texture`} style={{ background: bg }}>
-                  {i === 0 && (
-                    <div className={styles.topLeftRow}>
-                      <span className={styles.mediaTag}>{post.tag}</span>
-                      {feeling && (
-                        <span className={styles.feelingBadge}>
-                          <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                        </span>
-                      )}
-                    </div>
-                  )}
+                  {i === 0 && topLeftBlock}
                   <i className="ri-image-line" />
                 </div>
               )
@@ -473,28 +468,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
       ) : images.length === 1 ? (
         isImageUrl(images[0]) ? (
           <div className={styles.media} onClick={viewPost}>
-            <div className={styles.topLeftRow}>
-              <span className={styles.mediaTag}>{post.tag}</span>
-              {feeling && (
-                <span className={styles.feelingBadge}>
-                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                </span>
-              )}
-            </div>
+            {topLeftBlock}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={images[0]} alt="" className={styles.mediaImg} />
             {isTemplateImage(images[0]) && <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />}
           </div>
         ) : (
           <div className={`${styles.media} texture`} style={{ background: images[0] }} onClick={viewPost}>
-            <div className={styles.topLeftRow}>
-              <span className={styles.mediaTag}>{post.tag}</span>
-              {feeling && (
-                <span className={styles.feelingBadge}>
-                  <Emoji emoji={feeling.emoji} /> feeling {feeling.label}
-                </span>
-              )}
-            </div>
+            {topLeftBlock}
             <p className={styles.mediaText} dangerouslySetInnerHTML={{ __html: twemojiHtml(postText) }} />
           </div>
         )
