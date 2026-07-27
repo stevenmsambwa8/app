@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -9,6 +10,8 @@ import { useAuth } from './AuthProvider'
 import { useCart } from './CartProvider'
 import { useNotifications } from './NotificationsProvider'
 import styles from './MobileDrawer.module.css'
+
+const CLOSE_MS = 260; // must match the bounceOut animation duration in the CSS
 
 const TABS = [
   { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
@@ -31,11 +34,40 @@ export default function MobileDrawer({ open, onClose }) {
   const avatarEmoji = profile?.avatar || '🐧';
   const avatarUrl = profile?.avatar_url || null;
 
-  if (!open) return null;
+  // Keeps the drawer mounted for CLOSE_MS after `open` goes false so the
+  // bounce-out animation gets to play instead of the drawer just vanishing.
+  const [visible, setVisible] = useState(open);
+  const [closing, setClosing] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setVisible(true);
+      setClosing(false);
+      return undefined;
+    }
+    if (visible) {
+      setClosing(true);
+      const t = setTimeout(() => {
+        setVisible(false);
+        setClosing(false);
+      }, CLOSE_MS);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  if (!visible) return null;
 
   return (
-    <div className={styles.backdrop} onClick={onClose}>
-      <aside className={styles.drawer} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`${styles.backdrop} ${closing ? styles.backdropClosing : ''}`}
+      onClick={onClose}
+    >
+      <aside
+        className={`${styles.drawer} ${closing ? styles.drawerClosing : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.head}>
           <Image
             src={theme === 'dark' ? '/advat-black.png' : '/advat-white.png'}
