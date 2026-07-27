@@ -16,7 +16,7 @@ const CLOSE_MS = 220; // must match the slideOut animation duration in the CSS
 const TABS = [
   { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
   { href: '/people', label: 'Watu', icon: 'ri-team-line', activeIcon: 'ri-team-fill' },
-  { href: '/flex', label: 'Flex', icon: 'ri-fire-line', activeIcon: 'ri-fire-fill' },
+  { href: '/flex', label: 'Uchambuzi', icon: 'ri-bar-chart-2-line', activeIcon: 'ri-bar-chart-2-fill' },
   { href: '/cart', label: 'Kikapu', icon: 'ri-shopping-cart-2-line', activeIcon: 'ri-shopping-cart-2-fill' },
   { href: '/dm', label: 'Ujumbe', icon: 'ri-chat-3-line', activeIcon: 'ri-chat-3-fill' },
   { href: '/profile', label: 'Wasifu', icon: 'ri-user-line', activeIcon: 'ri-user-fill' },

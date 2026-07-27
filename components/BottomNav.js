@@ -66,6 +66,7 @@ export default function BottomNav() {
         aria-label="Chapisha"
       >
         <i className="ri-add-line" />
+        <span className={styles.label}>Unda</span>
       </Link>
 
       {RIGHT_TABS.map((tab) => (
