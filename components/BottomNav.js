@@ -21,12 +21,6 @@ const LEFT_TABS = [
 
 const RIGHT_TABS = [
   {
-    href: '/flex',
-    label: 'Flex',
-    icon: 'ri-fire-line',
-    activeIcon: 'ri-fire-fill',
-  },
-  {
     href: '/dm',
     label: 'Ujumbe',
     icon: 'ri-chat-3-line',
@@ -68,8 +62,8 @@ export default function BottomNav() {
 
       <Link
         href="/create"
-        className={styles.createBtn}
-        aria-label="Create post"
+        className={styles.item}
+        aria-label="Chapisha"
       >
         <i className="ri-add-line" />
       </Link>

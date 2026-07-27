@@ -7,10 +7,9 @@ export default function FollowBtn({ following, onClick, pending, small }) {
       type="button"
       onClick={onClick}
       disabled={pending}
-      className={`${styles.btn} ${small ? styles.small : ''} ${following ? 'btnGhost' : 'btnAccent'}`}
+      className={`${styles.btn} ${small ? styles.small : ''} ${following ? styles.following : 'btnAccent'}`}
     >
-      <i className={pending ? 'ri-loader-4-line' : following ? 'ri-check-line' : 'ri-user-add-line'} />
-      {following ? 'Unamfuata' : 'Fuata'}
+      {pending ? 'Inasubiri...' : following ? 'Unamfuata' : 'Fuata'}
     </button>
   );
 }

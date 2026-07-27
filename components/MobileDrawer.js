@@ -11,7 +11,7 @@ import { useCart } from './CartProvider'
 import { useNotifications } from './NotificationsProvider'
 import styles from './MobileDrawer.module.css'
 
-const CLOSE_MS = 260; // must match the bounceOut animation duration in the CSS
+const CLOSE_MS = 220; // must match the slideOut animation duration in the CSS
 
 const TABS = [
   { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
