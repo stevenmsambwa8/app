@@ -1,5 +1,6 @@
 'use client'
 import { useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -43,6 +44,7 @@ const CHART_OPTIONS = {
 // the UI (what stats matter, what a campaign card needs) before wiring up
 // analytics_events/campaigns tables in Supabase.
 export default function FlexPage() {
+  const router = useRouter();
   const salesData = useMemo(
     () => ({
       labels: ANALYTICS_SALES_SERIES.labels,
@@ -80,18 +82,21 @@ export default function FlexPage() {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.pageHead}>
-        <div>
-          <h1 className={styles.title}>Uchambuzi wa Biashara</h1>
-          <p className={styles.subtitle}>Fuatilia mauzo, watazamaji na kampeni zako.</p>
-        </div>
+      <div className={styles.topRow}>
+        <button className={styles.back} onClick={() => router.back()} aria-label="Rudi nyuma">
+          <i className="ri-arrow-left-line" />
+        </button>
+        <h1 className={styles.title}>Uchambuzi wa Biashara</h1>
         <span className={styles.mockBadge}>
           <i className="ri-flask-line" />
-          Data ya Mfano
+          Mfano
         </span>
       </div>
 
-      <div className={styles.statGrid}>
+      <div className={styles.content}>
+        <p className={styles.subtitle}>Fuatilia mauzo, watazamaji na kampeni zako.</p>
+
+        <div className={styles.statGrid}>
         {ANALYTICS_OVERVIEW.map((s) => (
           <div key={s.id} className={`card ${styles.statCard}`}>
             <div className={styles.statTop}>
@@ -171,6 +176,7 @@ export default function FlexPage() {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );
