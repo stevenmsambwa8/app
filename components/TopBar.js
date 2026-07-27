@@ -23,7 +23,8 @@ export default function TopBar() {
   if (
     pathname?.startsWith('/create') ||
     pathname?.startsWith('/post/') ||
-    pathname?.startsWith('/dm')
+    pathname?.startsWith('/dm') ||
+    pathname?.startsWith('/flex')
   )
     return null
 

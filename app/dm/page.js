@@ -67,8 +67,20 @@ function DMPageInner() {
   const recordStreamRef = useRef(null);
   const recordTimerRef = useRef(null);
 
+  // fetchProfiles is intentionally stable (empty dep array) — it reads the
+  // latest cache via profilesRef instead of closing over `profiles` state.
+  // Previously it depended on [profiles], which meant its identity changed
+  // on every new profile fetched; the realtime subscription effect below
+  // depends on fetchProfiles, so that was tearing down and re-subscribing
+  // the whole DM channel every time a message arrived from a new sender —
+  // the resubscribe round-trip is what showed up as messages "delaying".
+  const profilesRef = useRef(profiles);
+  useEffect(() => {
+    profilesRef.current = profiles;
+  }, [profiles]);
+
   const fetchProfiles = useCallback(async (ids) => {
-    const missing = ids.filter((id) => id && !profiles[id]);
+    const missing = ids.filter((id) => id && !profilesRef.current[id]);
     if (missing.length === 0) return;
     const { data } = await supabase
       .from('profiles')
@@ -82,7 +94,7 @@ function DMPageInner() {
       });
       return next;
     });
-  }, [profiles]);
+  }, []);
 
   // Load conversation list: every message involving me, collapsed to the
   // latest message per other participant.
