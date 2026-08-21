@@ -143,21 +143,7 @@
   transition: transform 0.15s ease;
 }
 .headMoreBtn:active { transform: scale(0.9); }
-.myProfileBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 700;
-  font-size: 12px;
-  padding: 7px 15px;
-  white-space: nowrap;
-  border-radius: 999px;
-  background: var(--chip-bg);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.myProfileBtn i { font-size: 14px; }
+
 .headMenu {
   position: absolute;
   top: calc(100% + 6px);

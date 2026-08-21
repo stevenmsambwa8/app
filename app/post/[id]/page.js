@@ -448,9 +448,13 @@ export default function PostDetailPage() {
           />
         )}
         {isOwner && (
-          <button type="button" className={styles.myProfileBtn} onClick={handleViewProfile}>
+          <button
+            type="button"
+            className={styles.headMoreBtn}
+            onClick={handleViewProfile}
+            aria-label="Wasifu wangu"
+          >
             <i className="ri-user-line" />
-            Wasifu Wangu
           </button>
         )}
         {isOwner && (
