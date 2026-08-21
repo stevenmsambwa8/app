@@ -26,7 +26,7 @@ export default function UserProfilePage() {
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
   const { posts } = usePosts();
-  const { isFollowing, toggleFollow, pending, getCounts } = useFollow();
+  const { isFollowing, toggleFollow, pending, getCounts, countsCache } = useFollow();
 
   const [profileRow, setProfileRow] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -68,6 +68,10 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     if (!uid) return;
+    // Show the cached count instantly (if we've fetched it before this
+    // session) so the number doesn't flash to 0 while the fresh request
+    // is still in flight, then update in the background once it resolves.
+    if (countsCache[uid]) setCounts(countsCache[uid]);
     getCounts(uid).then(setCounts);
   }, [uid, getCounts]);
 

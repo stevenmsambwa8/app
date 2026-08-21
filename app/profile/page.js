@@ -30,11 +30,15 @@ export default function ProfilePage() {
   const { user, profile, loading, updateUsername, updateBusinessInfo, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
   const { posts } = usePosts();
-  const { getCounts } = useFollow();
+  const { getCounts, countsCache } = useFollow();
   const myPosts = posts.filter((p) => p.uid === user?.id);
 
   useEffect(() => {
     if (!user) return;
+    // Show the cached count instantly if we already have it from this
+    // session, then refresh quietly in the background — avoids the
+    // "0 -> real number" flash every time this page is opened.
+    if (countsCache[user.id]) setCounts(countsCache[user.id]);
     getCounts(user.id).then(setCounts);
   }, [user, getCounts]);
 

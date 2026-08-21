@@ -62,8 +62,18 @@ const MAX_RECORD_SECONDS = 120;
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { posts, likes, toggleLike, deletePost, updatePost, fetchComments, addComment, deleteComment, uploadVoiceNote } =
-    usePosts();
+  const {
+    posts,
+    likes,
+    toggleLike,
+    deletePost,
+    updatePost,
+    fetchComments,
+    getCachedComments,
+    addComment,
+    deleteComment,
+    uploadVoiceNote,
+  } = usePosts();
   const { user, profile } = useAuth();
   const { openAuth } = useAuthModal();
   const { isFollowing, toggleFollow, pending } = useFollow();
@@ -111,7 +121,16 @@ export default function PostDetailPage() {
       setCommentsLoading(false);
       return;
     }
-    setCommentsLoading(true);
+    // If we've already loaded this post's comments before, show them
+    // immediately instead of blanking the screen — then quietly refetch
+    // in the background to pick up anything new.
+    const cached = getCachedComments(post.id);
+    if (cached) {
+      setComments(cached);
+      setCommentsLoading(false);
+    } else {
+      setCommentsLoading(true);
+    }
     fetchComments(post.id).then(({ comments: loaded }) => {
       if (!cancelled) {
         setComments(loaded);
@@ -121,7 +140,7 @@ export default function PostDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [post?.id, fetchComments]);
+  }, [post?.id, fetchComments, getCachedComments]);
 
   useEffect(() => {
     return () => {
@@ -412,7 +431,7 @@ export default function PostDetailPage() {
         </button>
         <Link href={isOwner ? '/profile' : `/u/${post.uid}`} className={styles.who}>
           <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
-          <div>
+          <div className={styles.whoText}>
             <div className={styles.nameRow}>
               <span className={styles.name}>{author.name}</span>
               <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />

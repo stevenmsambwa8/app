@@ -19,6 +19,7 @@ const PostsContext = createContext({
   uploadVoiceNote: async () => ({ error: null }),
   refreshPosts: async () => {},
   fetchComments: async () => ({ error: null, comments: [] }),
+  getCachedComments: () => null,
   addComment: async () => ({ error: null }),
   deleteComment: async () => ({ error: null }),
 });
@@ -65,6 +66,11 @@ export default function PostsProvider({ children }) {
   const [likes, setLikes] = useState({}); // { [postId]: liked-by-me }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Comments per post, keyed by post id, kept for the life of the app so
+  // re-opening a post you've already viewed renders instantly instead of
+  // showing a blank "loading" state again while we refetch in the
+  // background (stale-while-revalidate).
+  const [commentsCache, setCommentsCache] = useState({});
 
   const loadPosts = useCallback(async () => {
     setError('');
@@ -366,8 +372,11 @@ export default function PostsProvider({ children }) {
       }
     });
 
+    setCommentsCache((prev) => ({ ...prev, [postId]: roots }));
     return { error: null, comments: roots };
   }, []);
+
+  const getCachedComments = useCallback((postId) => commentsCache[postId] || null, [commentsCache]);
 
   const addComment = useCallback(
     async (postId, text, parentId = null, audio = null) => {
@@ -415,6 +424,17 @@ export default function PostsProvider({ children }) {
         replies: [],
       };
 
+      // Keep the cache in sync so it stays instant on the next visit
+      // without needing a network round trip to pick up this new comment.
+      setCommentsCache((prev) => {
+        const list = prev[postId];
+        if (!list) return prev;
+        const updated = parentId
+          ? list.map((c) => (c.id === parentId ? { ...c, replies: [comment, ...(c.replies || [])] } : c))
+          : [comment, ...list];
+        return { ...prev, [postId]: updated };
+      });
+
       return { error: null, comment };
     },
     [user, profile]
@@ -439,6 +459,20 @@ export default function PostsProvider({ children }) {
             : post
         )
       );
+
+      setCommentsCache((prev) => {
+        const list = prev[postId];
+        if (!list) return prev;
+        const isRoot = list.some((c) => c.id === commentId);
+        const updated = isRoot
+          ? list.filter((c) => c.id !== commentId)
+          : list.map((c) =>
+              c.replies && c.replies.some((r) => r.id === commentId)
+                ? { ...c, replies: c.replies.filter((r) => r.id !== commentId) }
+                : c
+            );
+        return { ...prev, [postId]: updated };
+      });
 
       return { error: null };
     },
@@ -478,6 +512,7 @@ export default function PostsProvider({ children }) {
       uploadVoiceNote,
       refreshPosts: loadPosts,
       fetchComments,
+      getCachedComments,
       addComment,
       deleteComment,
     }),
@@ -496,6 +531,7 @@ export default function PostsProvider({ children }) {
       uploadVoiceNote,
       loadPosts,
       fetchComments,
+      getCachedComments,
       addComment,
       deleteComment,
     ]
