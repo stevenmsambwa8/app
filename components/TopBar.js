@@ -54,6 +54,10 @@ export default function TopBar() {
         </div>
 
         <div className={styles.right}>
+          <Link href="/search" className={styles.bell} aria-label="Tafuta">
+            <i className="ri-search-line" />
+          </Link>
+
           <Link href="/cart" className={styles.bell} aria-label="Kikapu">
             <i className="ri-shopping-cart-2-line" />
             {cartCount > 0 && (

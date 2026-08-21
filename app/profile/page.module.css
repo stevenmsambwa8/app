@@ -122,6 +122,18 @@
 .statBtn { display: flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; }
 .statBtn b { font-weight: 700; }
 .statBtn span { color: var(--text-muted); }
+@keyframes skelPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.skelStat {
+  display: inline-block;
+  width: 18px;
+  height: 13px;
+  border-radius: 4px;
+  background: var(--chip-bg);
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
 
 .businessUpsell {
   display: flex;

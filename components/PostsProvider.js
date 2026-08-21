@@ -18,7 +18,7 @@ const PostsContext = createContext({
   uploadPostImage: async () => ({ error: null }),
   uploadVoiceNote: async () => ({ error: null }),
   refreshPosts: async () => {},
-  fetchComments: async () => ({ error: null, comments: [] }),
+  fetchComments: async () => ({ error: null, comments: [], hasMore: false }),
   getCachedComments: () => null,
   addComment: async () => ({ error: null }),
   deleteComment: async () => ({ error: null }),
@@ -33,6 +33,31 @@ function relativeTime(iso) {
   if (hrs < 24) return `saa ${hrs}`;
   const days = Math.floor(hrs / 24);
   return `siku ${days}`;
+}
+
+// How many root comments fetchComments pulls per page. Replies for those
+// roots are fetched alongside (they're one level deep, never paginated on
+// their own — a comment thread rarely has enough replies for that to matter).
+const COMMENTS_PAGE_SIZE = 20;
+
+function mapCommentRow(c) {
+  return {
+    id: c.id,
+    uid: c.user_id,
+    parentId: c.parent_id,
+    text: c.text,
+    audioUrl: c.audio_url || null,
+    audioDuration: c.audio_duration || null,
+    time: relativeTime(c.created_at),
+    author: c.profiles
+      ? {
+          name: c.profiles.username || 'Mtumiaji',
+          avatar: c.profiles.avatar || '🐧',
+          avatarUrl: c.profiles.avatar_url || null,
+        }
+      : null,
+    replies: [],
+  };
 }
 
 // Extracts the storage object path from a public URL, e.g.
@@ -152,6 +177,7 @@ export default function PostsProvider({ children }) {
         likers: likersByPost[r.id] || [],
         comments: commentCounts[r.id] || 0,
         time: relativeTime(r.created_at),
+        createdAt: r.created_at,
         author: r.profiles
           ? {
               name: r.profiles.username || 'Mtumiaji',
@@ -325,55 +351,63 @@ export default function PostsProvider({ children }) {
     [user, realPosts]
   );
 
-  const fetchComments = useCallback(async (postId) => {
-    const { data, error } = await supabase
+  const fetchComments = useCallback(async (postId, { offset = 0, limit = COMMENTS_PAGE_SIZE } = {}) => {
+    // Root comments only, paginated — replies are fetched separately just
+    // for the roots on this page so opening a post with hundreds of
+    // comments doesn't pull the entire thread in one shot.
+    const { data: rootRows, error: rootError } = await supabase
       .from('comments')
       .select(
         'id, post_id, parent_id, user_id, text, audio_url, audio_duration, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
       )
       .eq('post_id', postId)
-      .order('created_at', { ascending: false });
+      .is('parent_id', null)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    if (error) {
-      console.warn('Failed to load comments:', error.message);
-      return { error, comments: [] };
+    if (rootError) {
+      console.warn('Failed to load comments:', rootError.message);
+      return { error: rootError, comments: [], hasMore: false };
     }
 
-    const mapRow = (c) => ({
-      id: c.id,
-      uid: c.user_id,
-      parentId: c.parent_id,
-      text: c.text,
-      audioUrl: c.audio_url || null,
-      audioDuration: c.audio_duration || null,
-      time: relativeTime(c.created_at),
-      author: c.profiles
-        ? {
-            name: c.profiles.username || 'Mtumiaji',
-            avatar: c.profiles.avatar || '🐧',
-            avatarUrl: c.profiles.avatar_url || null,
-          }
-        : null,
-      replies: [],
-    });
+    const roots = (rootRows || []).map(mapCommentRow);
+    const rootIds = roots.map((r) => r.id);
+
+    let replyRows = [];
+    if (rootIds.length > 0) {
+      const { data, error: replyError } = await supabase
+        .from('comments')
+        .select(
+          'id, post_id, parent_id, user_id, text, audio_url, audio_duration, created_at, profiles!comments_user_id_fkey(username, avatar, avatar_url)'
+        )
+        .eq('post_id', postId)
+        .in('parent_id', rootIds)
+        .order('created_at', { ascending: false });
+      if (replyError) {
+        console.warn('Failed to load replies:', replyError.message);
+      } else {
+        replyRows = data || [];
+      }
+    }
 
     const byId = {};
-    (data || []).forEach((c) => {
-      byId[c.id] = mapRow(c);
+    roots.forEach((r) => {
+      byId[r.id] = r;
+    });
+    replyRows.forEach((c) => {
+      if (byId[c.parent_id]) byId[c.parent_id].replies.push(mapCommentRow(c));
     });
 
-    const roots = [];
-    (data || []).forEach((c) => {
-      const node = byId[c.id];
-      if (c.parent_id && byId[c.parent_id]) {
-        byId[c.parent_id].replies.push(node);
-      } else {
-        roots.push(node);
-      }
-    });
+    const hasMore = roots.length === limit;
 
-    setCommentsCache((prev) => ({ ...prev, [postId]: roots }));
-    return { error: null, comments: roots };
+    // Only the first page gets cached — that's what makes reopening a post
+    // instant. Loading further pages is a deliberate "load more" action, so
+    // it doesn't need to persist across navigations the same way.
+    if (offset === 0) {
+      setCommentsCache((prev) => ({ ...prev, [postId]: roots }));
+    }
+
+    return { error: null, comments: roots, hasMore };
   }, []);
 
   const getCachedComments = useCallback((postId) => commentsCache[postId] || null, [commentsCache]);

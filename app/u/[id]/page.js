@@ -31,6 +31,7 @@ export default function UserProfilePage() {
   const [profileRow, setProfileRow] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [counts, setCounts] = useState({ followers: 0, following: 0 });
+  const [countsReady, setCountsReady] = useState(false);
   const [listModal, setListModal] = useState(null);
   const [tab, setTab] = useState('posts');
 
@@ -71,8 +72,15 @@ export default function UserProfilePage() {
     // Show the cached count instantly (if we've fetched it before this
     // session) so the number doesn't flash to 0 while the fresh request
     // is still in flight, then update in the background once it resolves.
-    if (countsCache[uid]) setCounts(countsCache[uid]);
-    getCounts(uid).then(setCounts);
+    // Only the very first, never-cached load shows a skeleton.
+    if (countsCache[uid]) {
+      setCounts(countsCache[uid]);
+      setCountsReady(true);
+    }
+    getCounts(uid).then((c) => {
+      setCounts(c);
+      setCountsReady(true);
+    });
   }, [uid, getCounts]);
 
   if (notFound) {
@@ -159,10 +167,12 @@ export default function UserProfilePage() {
         <div className={styles.statsRow}>
           <span><b>{theirPosts.length}</b> <span>machapisho</span></span>
           <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
-            <b>{counts.followers}</b> <span>wafuasi</span>
+            {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
+            <span>wafuasi</span>
           </button>
           <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
-            <b>{counts.following}</b> <span>anaowafuata</span>
+            {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
+            <span>anaowafuata</span>
           </button>
         </div>
 

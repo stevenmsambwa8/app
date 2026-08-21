@@ -12,6 +12,7 @@ import styles from './Sidebar.module.css'
 
 const TABS = [
   { href: '/feed', label: 'Mlisho', icon: 'ri-sparkling-2-line', activeIcon: 'ri-sparkling-2-fill' },
+  { href: '/search', label: 'Tafuta', icon: 'ri-search-line', activeIcon: 'ri-search-fill' },
   { href: '/people', label: 'Watu', icon: 'ri-team-line', activeIcon: 'ri-team-fill' },
   { href: '/flex', label: 'Uchambuzi', icon: 'ri-bar-chart-2-line', activeIcon: 'ri-bar-chart-2-fill' },
   { href: '/cart', label: 'Kikapu', icon: 'ri-shopping-cart-2-line', activeIcon: 'ri-shopping-cart-2-fill' },

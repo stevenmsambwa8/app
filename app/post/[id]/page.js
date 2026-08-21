@@ -17,6 +17,7 @@ import { userById } from '../../../lib/mockData'
 import { parsePostText } from '../../../lib/postText'
 import { getBlobDuration } from '../../../lib/audioDuration'
 import VoiceNote from '../../../components/VoiceNote'
+import ShareCard from '../../../components/ShareCard'
 import styles from './page.module.css'
 
 function isImageUrl(src) {
@@ -92,10 +93,14 @@ export default function PostDetailPage() {
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(true);
+  const [commentsOffset, setCommentsOffset] = useState(0);
+  const [hasMoreComments, setHasMoreComments] = useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [posting, setPosting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [openReplies, setOpenReplies] = useState({});
@@ -131,9 +136,11 @@ export default function PostDetailPage() {
     } else {
       setCommentsLoading(true);
     }
-    fetchComments(post.id).then(({ comments: loaded }) => {
+    fetchComments(post.id).then(({ comments: loaded, hasMore }) => {
       if (!cancelled) {
         setComments(loaded);
+        setCommentsOffset(loaded.length);
+        setHasMoreComments(!!hasMore);
         setCommentsLoading(false);
       }
     });
@@ -141,6 +148,17 @@ export default function PostDetailPage() {
       cancelled = true;
     };
   }, [post?.id, fetchComments, getCachedComments]);
+
+  function handleLoadMoreComments() {
+    if (!post || loadingMoreComments) return;
+    setLoadingMoreComments(true);
+    fetchComments(post.id, { offset: commentsOffset }).then(({ comments: loaded, hasMore }) => {
+      setComments((prev) => [...prev, ...loaded]);
+      setCommentsOffset((prev) => prev + loaded.length);
+      setHasMoreComments(!!hasMore);
+      setLoadingMoreComments(false);
+    });
+  }
 
   useEffect(() => {
     return () => {
@@ -413,10 +431,6 @@ export default function PostDetailPage() {
     setOpenReplies((r) => ({ ...r, [id]: !r[id] }));
   }
 
-  function countAllComments(list) {
-    return list.reduce((sum, c) => sum + 1 + (c.replies ? countAllComments(c.replies) : 0), 0);
-  }
-
   function handleScroll(e) {
     const el = e.currentTarget;
     const idx = Math.round(el.scrollLeft / el.clientWidth);
@@ -622,10 +636,14 @@ export default function PostDetailPage() {
                 </button>
                 <span className={styles.action}>
                   <i className="ri-chat-3-line" />
-                  {countAllComments(comments)}
+                  {post.comments || 0}
                 </span>
               </div>
-              <button className={`${styles.action} ${styles.spacer}`} aria-label="Sambaza">
+              <button
+                className={`${styles.action} ${styles.spacer}`}
+                aria-label="Sambaza"
+                onClick={() => setSharing(true)}
+              >
                 <i className="ri-share-forward-line" />
               </button>
             </div>
@@ -636,7 +654,17 @@ export default function PostDetailPage() {
           <p className={styles.commentsTitle}>Maoni</p>
           <div className={styles.commentsList}>
             {commentsLoading ? (
-              <p className={styles.meta}>Inapakia maoni…</p>
+              <div className={styles.commentsSkeleton} aria-hidden="true">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className={styles.comment}>
+                    <div className={styles.skelAvatar} />
+                    <div className={styles.commentBody}>
+                      <div className={styles.skelBubble} style={{ width: i === 1 ? '70%' : '90%' }} />
+                      <div className={styles.skelMeta} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : comments.length === 0 ? (
               <p className={styles.meta}>Hakuna maoni bado. Kuwa wa kwanza kutoa maoni.</p>
             ) : (
@@ -777,6 +805,16 @@ export default function PostDetailPage() {
                 );
               })
             )}
+            {!commentsLoading && hasMoreComments && (
+              <button
+                type="button"
+                className={styles.loadMoreComments}
+                onClick={handleLoadMoreComments}
+                disabled={loadingMoreComments}
+              >
+                {loadingMoreComments ? 'Inapakia…' : 'Onyesha maoni zaidi'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -889,6 +927,16 @@ export default function PostDetailPage() {
           post={post}
           onClose={() => setEditing(false)}
           onSave={(updates) => updatePost(post.id, updates)}
+        />
+      )}
+
+      {sharing && (
+        <ShareCard
+          post={post}
+          author={author}
+          previewImg={images[0]}
+          snippetText={postText}
+          onClose={() => setSharing(false)}
         />
       )}
 

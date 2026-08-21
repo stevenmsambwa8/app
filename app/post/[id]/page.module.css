@@ -545,6 +545,54 @@
   flex-direction: column;
   gap: 18px;
 }
+.loadMoreComments {
+  align-self: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border-light);
+}
+.loadMoreComments:disabled {
+  opacity: 0.6;
+}
+
+/* Skeleton placeholders shown only on a post's very first (uncached) load —
+   once comments have been fetched once this session, getCachedComments
+   renders the real thing instantly instead. */
+.commentsSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+@keyframes skelPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.skelAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--chip-bg);
+  flex-shrink: 0;
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
+.skelBubble {
+  height: 38px;
+  border-radius: 4px 16px 16px 16px;
+  background: var(--chip-bg);
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
+.skelMeta {
+  width: 60px;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  background: var(--chip-bg);
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
 .comment {
   display: flex;
   gap: 10px;

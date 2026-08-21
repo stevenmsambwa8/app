@@ -10,8 +10,78 @@ import { useAuth } from '../../components/AuthProvider'
 import { useAuthModal } from '../../components/AuthModalProvider'
 import { usePosts } from '../../components/PostsProvider'
 import { useFollow } from '../../components/FollowProvider'
-import { ME, FLEX_CARDS } from '../../lib/mockData'
+import { ME } from '../../lib/mockData'
 import styles from './page.module.css'
+
+// Consecutive-day posting streak, counted the way most habit trackers do:
+// if there's already a post today it counts, otherwise the streak is still
+// "alive" through the end of today as long as there was one yesterday.
+function computeStreakDays(posts) {
+  const dateKeys = new Set(
+    posts
+      .filter((p) => p.createdAt)
+      .map((p) => {
+        const d = new Date(p.createdAt);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      })
+  );
+  if (dateKeys.size === 0) return 0;
+
+  let cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  const keyOf = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  if (!dateKeys.has(keyOf(cursor))) {
+    cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
+  }
+
+  let streak = 0;
+  while (dateKeys.has(keyOf(cursor))) {
+    streak += 1;
+    cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
+  }
+  return streak;
+}
+
+function computeFlexCards(posts, likes) {
+  const totalLikes = posts.reduce((sum, p) => sum + p.likes + (likes[p.id] ? 1 : 0), 0);
+  const totalComments = posts.reduce((sum, p) => sum + (p.comments || 0), 0);
+  const bestPost = posts.reduce((best, p) => {
+    const total = p.likes + (likes[p.id] ? 1 : 0);
+    return total > (best?.total || 0) ? { post: p, total } : best;
+  }, null);
+  const streak = computeStreakDays(posts);
+
+  return [
+    {
+      id: 'streak',
+      title: 'Mfululizo wa Kuchapisha',
+      stat: streak > 0 ? `siku ${streak}` : 'Anza leo',
+      icon: 'ri-fire-fill',
+      gradient: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+    },
+    {
+      id: 'likes',
+      title: 'Mapendo Yote',
+      stat: totalLikes > 0 ? `mapendo ${totalLikes.toLocaleString('sw-TZ')}` : 'Bado hakuna',
+      icon: 'ri-heart-fill',
+      gradient: 'linear-gradient(135deg, var(--accent-lime), var(--accent-teal))',
+    },
+    {
+      id: 'comments',
+      title: 'Maoni Yote',
+      stat: totalComments > 0 ? `maoni ${totalComments.toLocaleString('sw-TZ')}` : 'Bado hakuna',
+      icon: 'ri-chat-3-fill',
+      gradient: 'linear-gradient(135deg, var(--accent-amber), var(--accent))',
+    },
+    {
+      id: 'best',
+      title: 'Chapisho Bora',
+      stat: bestPost ? `mapendo ${bestPost.total.toLocaleString('sw-TZ')}` : 'Chapisha la kwanza',
+      icon: 'ri-trophy-fill',
+      gradient: 'linear-gradient(135deg, var(--accent-2), var(--accent-teal))',
+    },
+  ];
+}
 
 export default function ProfilePage() {
   const [tab, setTab] = useState('posts');
@@ -22,6 +92,7 @@ export default function ProfilePage() {
   const [formError, setFormError] = useState('');
   const [listModal, setListModal] = useState(null); // 'followers' | 'following' | null
   const [counts, setCounts] = useState({ followers: 0, following: 0 });
+  const [countsReady, setCountsReady] = useState(false);
   const [categoryInput, setCategoryInput] = useState('');
   const [whatsappInput, setWhatsappInput] = useState('');
   const [savingBusiness, setSavingBusiness] = useState(false);
@@ -29,17 +100,25 @@ export default function ProfilePage() {
 
   const { user, profile, loading, updateUsername, updateBusinessInfo, uploadAvatar } = useAuth();
   const { openAuth } = useAuthModal();
-  const { posts } = usePosts();
+  const { posts, likes } = usePosts();
   const { getCounts, countsCache } = useFollow();
   const myPosts = posts.filter((p) => p.uid === user?.id);
+  const flexCards = computeFlexCards(myPosts, likes);
 
   useEffect(() => {
     if (!user) return;
     // Show the cached count instantly if we already have it from this
     // session, then refresh quietly in the background — avoids the
-    // "0 -> real number" flash every time this page is opened.
-    if (countsCache[user.id]) setCounts(countsCache[user.id]);
-    getCounts(user.id).then(setCounts);
+    // "0 -> real number" flash every time this page is opened. Only the
+    // very first, never-cached load shows a skeleton instead of a number.
+    if (countsCache[user.id]) {
+      setCounts(countsCache[user.id]);
+      setCountsReady(true);
+    }
+    getCounts(user.id).then((c) => {
+      setCounts(c);
+      setCountsReady(true);
+    });
   }, [user, getCounts]);
 
   useEffect(() => {
@@ -248,10 +327,12 @@ export default function ProfilePage() {
         <div className={styles.statsRow}>
           <span><b>{myPosts.length}</b> <span>machapisho</span></span>
           <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
-            <b>{counts.followers}</b> <span>wafuasi</span>
+            {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
+            <span>wafuasi</span>
           </button>
           <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
-            <b>{counts.following}</b> <span>anaowafuata</span>
+            {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
+            <span>anaowafuata</span>
           </button>
         </div>
 
@@ -301,7 +382,7 @@ export default function ProfilePage() {
           <BusinessStats posts={myPosts} />
         ) : (
           <div className={styles.flexGrid}>
-            {FLEX_CARDS.map((c) => (
+            {flexCards.map((c) => (
               <div key={c.id} className={styles.flexCard} style={{ background: c.gradient }}>
                 <i className={`${c.icon} ${styles.flexIcon}`} />
                 <div className={styles.flexTitle}>{c.title}</div>
