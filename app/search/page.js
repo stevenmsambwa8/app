@@ -1,6 +1,7 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 import Avatar from '../../components/Avatar'
 import VibeTag from '../../components/VibeTag'
@@ -17,16 +18,20 @@ const TABS = [
 
 const HASHTAG_RE = /#([a-zA-Z0-9_]{2,30})/g;
 
-export default function SearchPage() {
-  const [query, setQuery] = useState('');
+// The actual typing happens in TopBar's search bar (it's the single input
+// for this whole feature, driving the ?q= param) — this page just renders
+// results for whatever query is currently in the URL.
+function SearchResults() {
+  const searchParams = useSearchParams();
+  const query = searchParams.get('q') || '';
+  const trimmed = query.trim();
+
   const [tab, setTab] = useState('people');
   const [people, setPeople] = useState([]);
   const [peopleLoading, setPeopleLoading] = useState(false);
 
   const { user } = useAuth();
   const { posts } = usePosts();
-
-  const trimmed = query.trim();
 
   // People search hits the database directly (usernames aren't all loaded
   // client-side), debounced so we're not firing a query on every keystroke.
@@ -90,26 +95,6 @@ export default function SearchPage() {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.search}>
-        <i className="ri-search-line" />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tafuta watu, lebo, au bidhaa..."
-          autoFocus
-        />
-        {query && (
-          <button
-            type="button"
-            className={styles.clearBtn}
-            onClick={() => setQuery('')}
-            aria-label="Futa utafutaji"
-          >
-            <i className="ri-close-line" />
-          </button>
-        )}
-      </div>
-
       <div className={styles.tabs}>
         {TABS.map((t) => (
           <button
@@ -183,5 +168,13 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className={styles.wrap} />}>
+      <SearchResults />
+    </Suspense>
   );
 }
