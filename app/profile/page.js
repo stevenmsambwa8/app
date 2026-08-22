@@ -147,6 +147,8 @@ export default function ProfilePage() {
   const bioText = profile?.bio || 'Daima ninafuatilia mwanga mzuri na urafiki bora. Nitumie ujumbe wakati wowote.';
   const vibeText = profile?.vibe || ME.vibe;
   const isBusiness = profile?.account_type === 'business';
+  const businessCategory = profile?.business_category;
+  const whatsappNumber = profile?.whatsapp;
 
   function startEditing() {
     setNameInput(displayName);
@@ -212,17 +214,18 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <div className={styles.cover} />
       <div className={styles.body}>
-        <div className={styles.headRow}>
-          <div className={styles.avatarBigRing} style={{ position: 'relative' }}>
-            {avatarUrl ? (
-              <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
-                <Avatar src={avatarUrl} alt={displayName} size={80} />
-              </div>
-            ) : (
-              <div className={styles.avatarBig}>{avatarEmoji}</div>
-            )}
+        <div className={styles.headerCenter}>
+          <div className={styles.avatarWrap}>
+            <div className={styles.avatarBigRing}>
+              {avatarUrl ? (
+                <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
+                  <Avatar src={avatarUrl} alt={displayName} size={90} />
+                </div>
+              ) : (
+                <div className={styles.avatarBig}>{avatarEmoji}</div>
+              )}
+            </div>
             <button
               type="button"
               className={styles.avatarEditBtn}
@@ -240,100 +243,135 @@ export default function ProfilePage() {
               style={{ display: 'none' }}
             />
           </div>
-          {editing ? (
-            <div className={styles.editActions}>
-              <button className="btnGhost" onClick={() => setEditing(false)} disabled={savingName}>
-                Ghairi
-              </button>
-              <button className="btnAccent" onClick={handleSaveName} disabled={savingName}>
-                {savingName ? 'Inahifadhi…' : 'Hifadhi'}
-              </button>
-            </div>
-          ) : (
-            <button className={`btnGhost ${styles.editBtn}`} onClick={startEditing}>
-              Hariri Wasifu
-            </button>
-          )}
-        </div>
 
-        {editing ? (
-          <div className={styles.nameEditRow}>
-            <input
-              className={styles.nameInput}
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              maxLength={24}
-              placeholder="Jina lako"
-            />
-          </div>
-        ) : (
           <div className={styles.nameRow}>
             <span className={styles.name}>{displayName}</span>
             <UserBadge badge={isBusiness ? 'business' : null} />
           </div>
-        )}
 
-        {formError && <p className={styles.formError}>{formError}</p>}
+          <div className={styles.handleRow}>
+            <span className={styles.handle}>{displayHandle}</span>
+            {!isBusiness && <VibeTag vibe={vibeText} />}
+          </div>
 
-        <div className={styles.handleRow}>
-          <span className={styles.handle}>{displayHandle}</span>
-          <VibeTag vibe={vibeText} />
-        </div>
-        <p className={styles.bio}>{bioText}</p>
+          {isBusiness && businessCategory && (
+            <span className={styles.categoryChip}>
+              <i className="ri-store-2-fill" />
+              {businessCategory}
+            </span>
+          )}
+          {isBusiness && !businessCategory && (
+            <button type="button" className={styles.categoryChip} onClick={startEditing}>
+              <i className="ri-store-2-fill" />
+              Weka aina ya biashara
+            </button>
+          )}
 
-        {isBusiness ? (
-          <div className={styles.businessPanel}>
-            <div className={styles.businessPanelHead}>
-              <span className={styles.businessPanelTitle}>
-                <i className="ri-store-2-fill" /> Akaunti ya Biashara
-              </span>
-            </div>
-            <input
-              className={styles.businessInput}
-              value={categoryInput}
-              onChange={(e) => setCategoryInput(e.target.value)}
-              maxLength={40}
-              placeholder="Aina ya biashara (mfano: Mavazi, Chakula)"
-            />
-            <input
-              className={styles.businessInput}
-              type="tel"
-              inputMode="tel"
-              value={whatsappInput}
-              onChange={(e) => setWhatsappInput(e.target.value)}
-              placeholder="Namba ya WhatsApp (mfano: 255712345678)"
-            />
-            <button
-              type="button"
-              className={`btnAccent ${styles.businessSaveBtn}`}
-              onClick={handleSaveBusinessDetails}
-              disabled={savingBusiness}
-            >
-              {savingBusiness ? 'Inahifadhi…' : 'Hifadhi Taarifa za Biashara'}
+          <div className={styles.statsRow}>
+            <span className={styles.statCell}>
+              <b>{myPosts.length}</b>
+              <span>machapisho</span>
+            </span>
+            <div className={styles.statDivider} />
+            <button type="button" className={styles.statCell} onClick={() => setListModal('followers')}>
+              {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}
+              <span>wafuasi</span>
+            </button>
+            <div className={styles.statDivider} />
+            <button type="button" className={styles.statCell} onClick={() => setListModal('following')}>
+              {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}
+              <span>anaowafuata</span>
             </button>
           </div>
-        ) : (
-          <button
-            type="button"
-            className={styles.businessUpsell}
-            onClick={handleSwitchToBusiness}
-            disabled={savingBusiness}
-          >
-            <i className="ri-store-2-fill" />
-            {savingBusiness ? 'Inabadilisha…' : 'Badilisha kuwa Akaunti ya Biashara'}
-          </button>
-        )}
 
-        <div className={styles.statsRow}>
-          <span><b>{myPosts.length}</b> <span>machapisho</span></span>
-          <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
-            {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
-            <span>wafuasi</span>
-          </button>
-          <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
-            {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
-            <span>anaowafuata</span>
-          </button>
+          <div className={styles.actionsRow}>
+            {editing ? (
+              <div className={styles.editActions}>
+                <button className="btnGhost" onClick={() => setEditing(false)} disabled={savingName}>
+                  Ghairi
+                </button>
+                <button className="btnAccent" onClick={handleSaveName} disabled={savingName}>
+                  {savingName ? 'Inahifadhi…' : 'Hifadhi'}
+                </button>
+              </div>
+            ) : (
+              <>
+                <button className={`btnGhost ${styles.editBtnWide}`} onClick={startEditing}>
+                  Hariri Wasifu
+                </button>
+                {isBusiness && whatsappNumber && (
+                  <a
+                    href={`https://wa.me/${whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Habari, nimeona wasifu wangu Advat.')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.whatsappActionBtn}
+                  >
+                    <i className="ri-whatsapp-fill" />
+                    WhatsApp
+                  </a>
+                )}
+              </>
+            )}
+          </div>
+
+          {formError && <p className={styles.formError}>{formError}</p>}
+
+          {!editing && <p className={styles.bio}>{bioText}</p>}
+
+          {editing && (
+            <div className={styles.editPanel}>
+              <input
+                className={styles.nameInput}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                maxLength={24}
+                placeholder="Jina lako"
+              />
+
+              {isBusiness ? (
+                <div className={styles.businessPanel}>
+                  <div className={styles.businessPanelHead}>
+                    <span className={styles.businessPanelTitle}>
+                      <i className="ri-store-2-fill" /> Akaunti ya Biashara
+                    </span>
+                  </div>
+                  <input
+                    className={styles.businessInput}
+                    value={categoryInput}
+                    onChange={(e) => setCategoryInput(e.target.value)}
+                    maxLength={40}
+                    placeholder="Aina ya biashara (mfano: Mavazi, Chakula)"
+                  />
+                  <input
+                    className={styles.businessInput}
+                    type="tel"
+                    inputMode="tel"
+                    value={whatsappInput}
+                    onChange={(e) => setWhatsappInput(e.target.value)}
+                    placeholder="Namba ya WhatsApp (mfano: 255712345678)"
+                  />
+                  <button
+                    type="button"
+                    className={`btnAccent ${styles.businessSaveBtn}`}
+                    onClick={handleSaveBusinessDetails}
+                    disabled={savingBusiness}
+                  >
+                    {savingBusiness ? 'Inahifadhi…' : 'Hifadhi Taarifa za Biashara'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.businessUpsell}
+                  onClick={handleSwitchToBusiness}
+                  disabled={savingBusiness}
+                >
+                  <i className="ri-store-2-fill" />
+                  {savingBusiness ? 'Inabadilisha…' : 'Badilisha kuwa Akaunti ya Biashara'}
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={styles.tabs}>
@@ -361,7 +399,7 @@ export default function ProfilePage() {
         {tab === 'posts' ? (
           <div className={styles.posts}>
             {myPosts.length === 0 ? (
-              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0', maxWidth: 'none' }}>
                 Hujachapisha bado.
               </p>
             ) : (
@@ -371,7 +409,7 @@ export default function ProfilePage() {
         ) : tab === 'products' ? (
           <div className={styles.posts}>
             {myPosts.filter((p) => p.price != null).length === 0 ? (
-              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+              <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0', maxWidth: 'none' }}>
                 Hujaweka bidhaa yenye bei bado. Weka bei wakati wa kuchapisha ili ionekane hapa.
               </p>
             ) : (

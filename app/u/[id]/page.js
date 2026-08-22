@@ -117,63 +117,81 @@ export default function UserProfilePage() {
 
   return (
     <div>
-      <div className={styles.cover} />
       <div className={styles.body}>
-        <div className={styles.headRow}>
-          <div className={styles.avatarBigRing}>
-            {avatarUrl ? (
-              <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
-                <Avatar src={avatarUrl} alt={displayName} size={80} />
-              </div>
-            ) : (
-              <div className={styles.avatarBig}>{avatarEmoji}</div>
-            )}
+        <div className={styles.headerCenter}>
+          <div className={styles.avatarWrap}>
+            <div className={styles.avatarBigRing}>
+              {avatarUrl ? (
+                <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
+                  <Avatar src={avatarUrl} alt={displayName} size={90} />
+                </div>
+              ) : (
+                <div className={styles.avatarBig}>{avatarEmoji}</div>
+              )}
+            </div>
           </div>
-          <div className={styles.headActions}>
-            {isBusiness && whatsappNumber && (
-              <a
-                href={`https://wa.me/${whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Habari, nimeona wasifu wako Advat.')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${styles.messageBtn} ${styles.whatsappBtn}`}
-                aria-label="Wasiliana kwa WhatsApp"
-              >
-                <i className="ri-whatsapp-fill" />
-              </a>
-            )}
+
+          <div className={styles.nameRow}>
+            <span className={styles.name}>{displayName}</span>
+            <UserBadge badge={isBusiness ? 'business' : null} />
+          </div>
+
+          <div className={styles.handleRow}>
+            <span className={styles.handle}>{displayHandle}</span>
+            {!isBusiness && <VibeTag vibe={vibeText} />}
+          </div>
+
+          {isBusiness && businessCategory && (
+            <span className={styles.categoryChip}>
+              <i className="ri-store-2-fill" />
+              {businessCategory}
+            </span>
+          )}
+
+          <div className={styles.statsRow}>
+            <span className={styles.statCell}>
+              <b>{theirPosts.length}</b>
+              <span>machapisho</span>
+            </span>
+            <div className={styles.statDivider} />
+            <button type="button" className={styles.statCell} onClick={() => setListModal('followers')}>
+              {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}
+              <span>wafuasi</span>
+            </button>
+            <div className={styles.statDivider} />
+            <button type="button" className={styles.statCell} onClick={() => setListModal('following')}>
+              {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}
+              <span>anaowafuata</span>
+            </button>
+          </div>
+
+          <div className={styles.actionsRow}>
+            <div className={styles.followActionBtn}>
+              <FollowBtn following={following} pending={!!pending[uid]} onClick={handleFollowClick} />
+            </div>
             <button
               type="button"
-              className={styles.messageBtn}
+              className={styles.messageActionBtn}
               onClick={() => (user ? router.push(`/dm?with=${uid}`) : openAuth('signin'))}
               aria-label="Tuma ujumbe"
             >
               <i className="ri-chat-3-line" />
             </button>
-            <FollowBtn following={following} pending={!!pending[uid]} onClick={handleFollowClick} />
+            {isBusiness && whatsappNumber && (
+              <a
+                href={`https://wa.me/${whatsappNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent('Habari, nimeona wasifu wako Advat.')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.whatsappActionBtn}
+                aria-label="Wasiliana kwa WhatsApp"
+              >
+                <i className="ri-whatsapp-fill" />
+                WhatsApp
+              </a>
+            )}
           </div>
-        </div>
 
-        <div className={styles.nameRow}>
-          <span className={styles.name}>{displayName}</span>
-          <UserBadge badge={isBusiness ? 'business' : null} />
-        </div>
-
-        <div className={styles.handleRow}>
-          <span className={styles.handle}>{displayHandle}</span>
-          <VibeTag vibe={isBusiness && businessCategory ? businessCategory : vibeText} />
-        </div>
-        <p className={styles.bio}>{bioText}</p>
-
-        <div className={styles.statsRow}>
-          <span><b>{theirPosts.length}</b> <span>machapisho</span></span>
-          <button type="button" className={styles.statBtn} onClick={() => setListModal('followers')}>
-            {countsReady ? <b>{counts.followers}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
-            <span>wafuasi</span>
-          </button>
-          <button type="button" className={styles.statBtn} onClick={() => setListModal('following')}>
-            {countsReady ? <b>{counts.following}</b> : <span className={styles.skelStat} aria-hidden="true" />}{' '}
-            <span>anaowafuata</span>
-          </button>
+          <p className={styles.bio}>{bioText}</p>
         </div>
 
         {isBusiness && (
@@ -200,7 +218,7 @@ export default function UserProfilePage() {
               : theirPosts;
             if (shown.length === 0) {
               return (
-                <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0' }}>
+                <p className={styles.bio} style={{ textAlign: 'center', padding: '24px 0', maxWidth: 'none' }}>
                   {isBusiness && tab === 'products'
                     ? 'Hakuna bidhaa yenye bei bado.'
                     : 'Bado hajachapisha chochote.'}
