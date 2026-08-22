@@ -141,6 +141,14 @@ export default function ProfilePage() {
   const isBusiness = profile?.account_type === 'business';
   const businessCategory = profile?.business_category;
   const whatsappNumber = profile?.whatsapp;
+  const businessName = profile?.business_name;
+  const businessDescription = profile?.business_description;
+  const businessEmail = profile?.business_email;
+  const businessAddress = profile?.business_address;
+  const businessWebsite = profile?.business_website;
+  const businessHours = profile?.business_hours;
+  const businessPhone = profile?.business_phone;
+  const mentionUsername = profile?.mention_username;
 
   function startEditing() {
     setNameInput(displayName);
@@ -286,6 +294,50 @@ export default function ProfilePage() {
           {formError && <p className={styles.formError}>{formError}</p>}
 
           {!editing && <p className={styles.bio}>{bioText}</p>}
+
+          {!editing && isBusiness && (businessName || businessDescription || businessEmail || businessAddress || businessWebsite || businessHours || businessPhone || mentionUsername) && (
+            <div className={styles.businessInfoCard}>
+              {businessName && <p className={styles.businessInfoName}>{businessName}</p>}
+              {businessDescription && <p className={styles.businessInfoRow}>{businessDescription}</p>}
+              {businessAddress && (
+                <p className={styles.businessInfoRow}><i className="ri-map-pin-2-line" /> {businessAddress}</p>
+              )}
+              {businessHours && (
+                <p className={styles.businessInfoRow}><i className="ri-time-line" /> {businessHours}</p>
+              )}
+              {businessPhone && (
+                <a className={styles.businessInfoRow} href={`tel:+${businessPhone}`}>
+                  <i className="ri-phone-line" /> +{businessPhone}
+                </a>
+              )}
+              {businessEmail && (
+                <p className={styles.businessInfoRow}><i className="ri-mail-line" /> {businessEmail}</p>
+              )}
+              {businessWebsite && (
+                <a
+                  className={styles.businessInfoRow}
+                  href={/^https?:\/\//.test(businessWebsite) ? businessWebsite : `https://${businessWebsite}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="ri-global-line" /> {businessWebsite}
+                </a>
+              )}
+              {mentionUsername && (
+                <p className={styles.businessInfoRow}>
+                  <i className="ri-user-star-line" /> Wasiliana na{' '}
+                  <a href={`/u/${mentionUsername}`} className="rich-mention">@{mentionUsername}</a>
+                </p>
+              )}
+            </div>
+          )}
+
+          {!editing && isBusiness && !businessName && !businessDescription && (
+            <Link href="/business" className={styles.businessInfoUpsell}>
+              <i className="ri-add-circle-line" />
+              Kamilisha taarifa za biashara yako
+            </Link>
+          )}
 
           {editing && (
             <div className={styles.editPanel}>
