@@ -13,7 +13,8 @@ import { normalizePhone, isValidPhone, phoneToSyntheticEmail } from '../lib/phon
 // profiles" — that's what selecting/returning '*' anywhere below caused.
 const PROFILE_COLUMNS =
   'id, username, avatar, avatar_url, bio, vibe, created_at, account_type, business_category, whatsapp, ' +
-  'business_name, business_description, business_email, business_address, business_website, business_hours, mention_username';
+  'business_name, business_description, business_email, business_address, business_website, business_hours, ' +
+  'business_phone, mention_username';
 
 // Removes every file in a user's own avatars/<uid>/ folder except the one
 // that matches their current profile.avatar_url. Runs client-side using the
@@ -241,7 +242,10 @@ export default function AuthProvider({ children }) {
   // Switches the account between personal and business, optionally saving
   // a business category, WhatsApp contact number, and the extended
   // business-profile fields (name, description, email, address, website,
-  // hours, and a "custom mention" @username) in the same call.
+  // hours, phone, and a "custom mention" @username) in the same call.
+  // whatsapp and businessPhone are both normalized to digits-only,
+  // country-code-prefixed form here (accepts "0..." or "+255..." typed
+  // in) — see lib/phone.js normalizePhone.
   async function updateBusinessInfo({
     accountType,
     businessCategory,
@@ -252,6 +256,7 @@ export default function AuthProvider({ children }) {
     businessAddress,
     businessWebsite,
     businessHours,
+    businessPhone,
     mentionUsername,
   }) {
     const uid = session?.user?.id;
@@ -268,16 +273,29 @@ export default function AuthProvider({ children }) {
       }
     }
 
+    let normalizedWhatsapp = whatsapp;
+    if (whatsapp) {
+      normalizedWhatsapp = normalizePhone(whatsapp);
+      if (!isValidPhone(normalizedWhatsapp)) return { error: new Error('Namba ya WhatsApp si sahihi.') };
+    }
+
+    let normalizedPhone = businessPhone;
+    if (businessPhone) {
+      normalizedPhone = normalizePhone(businessPhone);
+      if (!isValidPhone(normalizedPhone)) return { error: new Error('Namba ya simu si sahihi.') };
+    }
+
     const payload = {};
     if (accountType !== undefined) payload.account_type = accountType;
     if (businessCategory !== undefined) payload.business_category = businessCategory;
-    if (whatsapp !== undefined) payload.whatsapp = whatsapp;
+    if (whatsapp !== undefined) payload.whatsapp = normalizedWhatsapp;
     if (businessName !== undefined) payload.business_name = businessName;
     if (businessDescription !== undefined) payload.business_description = businessDescription;
     if (businessEmail !== undefined) payload.business_email = businessEmail;
     if (businessAddress !== undefined) payload.business_address = businessAddress;
     if (businessWebsite !== undefined) payload.business_website = businessWebsite;
     if (businessHours !== undefined) payload.business_hours = businessHours;
+    if (businessPhone !== undefined) payload.business_phone = normalizedPhone;
     if (mentionUsername !== undefined) {
       payload.mention_username = mentionUsername ? mentionUsername.replace(/^@/, '').trim() : null;
     }

@@ -53,7 +53,7 @@ export default function UserProfilePage() {
       .from('profiles')
       .select(
         'id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp, ' +
-        'business_name, business_description, business_email, business_address, business_website, business_hours, mention_username'
+        'business_name, business_description, business_email, business_address, business_website, business_hours, business_phone, mention_username'
       );
     (UUID_RE.test(routeParam) ? query.eq('id', routeParam) : query.eq('username', routeParam))
       .maybeSingle()
@@ -111,6 +111,7 @@ export default function UserProfilePage() {
   const businessAddress = profileRow.business_address;
   const businessWebsite = profileRow.business_website;
   const businessHours = profileRow.business_hours;
+  const businessPhone = profileRow.business_phone;
   const mentionUsername = profileRow.mention_username;
 
   const theirPosts = posts.filter((p) => p.uid === uid);
@@ -201,7 +202,7 @@ export default function UserProfilePage() {
 
           <p className={styles.bio}>{bioText}</p>
 
-          {isBusiness && (businessName || businessDescription || businessEmail || businessAddress || businessWebsite || businessHours || mentionUsername) && (
+          {isBusiness && (businessName || businessDescription || businessEmail || businessAddress || businessWebsite || businessHours || businessPhone || mentionUsername) && (
             <div className={styles.businessInfoCard}>
               {businessName && <p className={styles.businessInfoName}>{businessName}</p>}
               {businessDescription && <p className={styles.businessInfoRow}>{businessDescription}</p>}
@@ -210,6 +211,11 @@ export default function UserProfilePage() {
               )}
               {businessHours && (
                 <p className={styles.businessInfoRow}><i className="ri-time-line" /> {businessHours}</p>
+              )}
+              {businessPhone && (
+                <a className={styles.businessInfoRow} href={`tel:+${businessPhone}`}>
+                  <i className="ri-phone-line" /> +{businessPhone}
+                </a>
               )}
               {businessEmail && (
                 <p className={styles.businessInfoRow}><i className="ri-mail-line" /> {businessEmail}</p>

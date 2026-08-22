@@ -49,7 +49,8 @@ export default function BottomNav() {
   if (
     pathname?.startsWith('/post/') ||
     pathname?.startsWith('/dm') ||
-    pathname?.startsWith('/create')
+    pathname?.startsWith('/create') ||
+    pathname?.startsWith('/business')
   ) {
     return null
   }

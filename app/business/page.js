@@ -20,6 +20,7 @@ export default function BusinessAccountPage() {
 
   const [categoryInput, setCategoryInput] = useState('');
   const [whatsappInput, setWhatsappInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
   const [nameInput, setNameInput] = useState('');
   const [descriptionInput, setDescriptionInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
@@ -37,6 +38,7 @@ export default function BusinessAccountPage() {
     if (!profile) return;
     setCategoryInput(profile.business_category || '');
     setWhatsappInput(profile.whatsapp || '');
+    setPhoneInput(profile.business_phone || '');
     setNameInput(profile.business_name || '');
     setDescriptionInput(profile.business_description || '');
     setEmailInput(profile.business_email || '');
@@ -83,7 +85,21 @@ export default function BusinessAccountPage() {
     );
   }
 
-  const canSubmit = categoryInput.trim().length > 0 && whatsappInput.trim().length > 0;
+  // These are the fields the business profile can't be saved without —
+  // category, WhatsApp, name, description, email, address, hours, and a
+  // plain contact phone number. Website stays out of this list while
+  // that field is locked.
+  const REQUIRED_MESSAGE =
+    'Jaza aina ya biashara, jina, maelezo, barua pepe, anwani, saa za kufungua, namba ya WhatsApp na namba ya simu ili kuendelea.';
+  const canSubmit =
+    categoryInput.trim().length > 0 &&
+    whatsappInput.trim().length > 0 &&
+    phoneInput.trim().length > 0 &&
+    nameInput.trim().length > 0 &&
+    descriptionInput.trim().length > 0 &&
+    emailInput.trim().length > 0 &&
+    addressInput.trim().length > 0 &&
+    hoursInput.trim().length > 0;
   const mentionBlocksSubmit = mentionStatus === 'checking' || mentionStatus === 'err';
 
   function buildExtraFields() {
@@ -92,15 +108,15 @@ export default function BusinessAccountPage() {
       businessDescription: descriptionInput.trim() || null,
       businessEmail: emailInput.trim() || null,
       businessAddress: addressInput.trim() || null,
-      businessWebsite: websiteInput.trim() || null,
       businessHours: hoursInput.trim() || null,
+      businessPhone: phoneInput.trim() || null,
       mentionUsername: mentionInput.trim() ? mentionInput.trim().replace(/^@/, '') : null,
     };
   }
 
   async function handleActivate() {
     if (!canSubmit) {
-      setError('Jaza aina ya biashara na namba ya WhatsApp ili kuendelea.');
+      setError(REQUIRED_MESSAGE);
       return;
     }
     if (mentionBlocksSubmit) {
@@ -124,6 +140,10 @@ export default function BusinessAccountPage() {
   }
 
   async function handleSaveDetails() {
+    if (!canSubmit) {
+      setError(REQUIRED_MESSAGE);
+      return;
+    }
     if (mentionBlocksSubmit) {
       setError('Jina la mtumiaji ulilotaja halipo. Angalia tena au liache tupu.');
       return;
@@ -191,7 +211,9 @@ export default function BusinessAccountPage() {
       )}
 
       <div className={styles.form}>
-        <label className={styles.label}>Aina ya Biashara</label>
+        <p className={styles.hint} style={{ marginTop: 0 }}>Sehemu zenye alama ya * ni lazima zijazwe.</p>
+
+        <label className={styles.label}>Aina ya Biashara *</label>
         <input
           className={styles.input}
           value={categoryInput}
@@ -200,19 +222,30 @@ export default function BusinessAccountPage() {
           placeholder="Mfano: Mavazi, Chakula, Vipodozi"
         />
 
-        <label className={styles.label}>Namba ya WhatsApp</label>
+        <label className={styles.label}>Namba ya WhatsApp *</label>
         <input
           className={styles.input}
           type="tel"
           inputMode="tel"
           value={whatsappInput}
           onChange={(e) => setWhatsappInput(e.target.value)}
-          placeholder="Mfano: 255712345678"
+          placeholder="Mfano: 0712345678 au +255712345678"
         />
+
+        <label className={styles.label}>Namba ya Simu *</label>
+        <input
+          className={styles.input}
+          type="tel"
+          inputMode="tel"
+          value={phoneInput}
+          onChange={(e) => setPhoneInput(e.target.value)}
+          placeholder="Mfano: 0712345678 au +255712345678"
+        />
+        <p className={styles.hint}>Namba ya kupigiwa simu na wateja — inaweza kuwa tofauti na WhatsApp.</p>
 
         <p className={styles.sectionTitle}>Taarifa za Biashara</p>
 
-        <label className={styles.label}>Jina la Biashara</label>
+        <label className={styles.label}>Jina la Biashara *</label>
         <input
           className={styles.input}
           value={nameInput}
@@ -221,7 +254,7 @@ export default function BusinessAccountPage() {
           placeholder="Mfano: Duka la Amina"
         />
 
-        <label className={styles.label}>Maelezo</label>
+        <label className={styles.label}>Maelezo *</label>
         <textarea
           className={styles.textarea}
           value={descriptionInput}
@@ -230,7 +263,7 @@ export default function BusinessAccountPage() {
           placeholder="Eleza biashara yako kwa ufupi…"
         />
 
-        <label className={styles.label}>Barua pepe</label>
+        <label className={styles.label}>Barua pepe *</label>
         <input
           className={styles.input}
           type="email"
@@ -239,7 +272,7 @@ export default function BusinessAccountPage() {
           placeholder="Mfano: mauzo@biashara.co.tz"
         />
 
-        <label className={styles.label}>Anwani / Mahali</label>
+        <label className={styles.label}>Anwani / Mahali *</label>
         <input
           className={styles.input}
           value={addressInput}
@@ -254,10 +287,12 @@ export default function BusinessAccountPage() {
           type="url"
           value={websiteInput}
           onChange={(e) => setWebsiteInput(e.target.value)}
-          placeholder="Mfano: https://biashara.co.tz"
+          placeholder="Inakuja hivi karibuni"
+          disabled
         />
+        <p className={styles.hint}>Sehemu hii bado imefungwa — inakuja hivi karibuni.</p>
 
-        <label className={styles.label}>Saa za Kufungua</label>
+        <label className={styles.label}>Saa za Kufungua *</label>
         <input
           className={styles.input}
           value={hoursInput}
