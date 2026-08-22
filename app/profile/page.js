@@ -188,15 +188,13 @@ export default function ProfilePage() {
       <div className={styles.body}>
         <div className={styles.headerCenter}>
           <div className={styles.avatarWrap}>
-            <div className={styles.avatarBigRing}>
-              {avatarUrl ? (
-                <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
-                  <Avatar src={avatarUrl} alt={displayName} size={90} />
-                </div>
-              ) : (
-                <div className={styles.avatarBig}>{avatarEmoji}</div>
-              )}
-            </div>
+            {avatarUrl ? (
+              <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
+                <Avatar src={avatarUrl} alt={displayName} size={90} />
+              </div>
+            ) : (
+              <div className={styles.avatarBig}>{avatarEmoji}</div>
+            )}
             <button
               type="button"
               className={styles.avatarEditBtn}

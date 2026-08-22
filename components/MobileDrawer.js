@@ -112,6 +112,10 @@ export default function MobileDrawer({ open, onClose }) {
         </nav>
 
         <div className={styles.footer}>
+          <Link href="/settings" className={styles.footerBtn} onClick={onClose}>
+            <i className="ri-settings-3-line" />
+            <span>Mipangilio</span>
+          </Link>
           <button
             type="button"
             className={styles.footerBtn}

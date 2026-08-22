@@ -51,7 +51,10 @@ export default function UserProfilePage() {
     setNotFound(false);
     const query = supabase
       .from('profiles')
-      .select('id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp');
+      .select(
+        'id, username, avatar, avatar_url, bio, vibe, account_type, business_category, whatsapp, ' +
+        'business_name, business_description, business_email, business_address, business_website, business_hours, mention_username'
+      );
     (UUID_RE.test(routeParam) ? query.eq('id', routeParam) : query.eq('username', routeParam))
       .maybeSingle()
       .then(({ data, error }) => {
@@ -102,6 +105,13 @@ export default function UserProfilePage() {
   const isBusiness = profileRow.account_type === 'business';
   const businessCategory = profileRow.business_category;
   const whatsappNumber = profileRow.whatsapp;
+  const businessName = profileRow.business_name;
+  const businessDescription = profileRow.business_description;
+  const businessEmail = profileRow.business_email;
+  const businessAddress = profileRow.business_address;
+  const businessWebsite = profileRow.business_website;
+  const businessHours = profileRow.business_hours;
+  const mentionUsername = profileRow.mention_username;
 
   const theirPosts = posts.filter((p) => p.uid === uid);
   const following = isFollowing(uid);
@@ -120,15 +130,13 @@ export default function UserProfilePage() {
       <div className={styles.body}>
         <div className={styles.headerCenter}>
           <div className={styles.avatarWrap}>
-            <div className={styles.avatarBigRing}>
-              {avatarUrl ? (
-                <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
-                  <Avatar src={avatarUrl} alt={displayName} size={90} />
-                </div>
-              ) : (
-                <div className={styles.avatarBig}>{avatarEmoji}</div>
-              )}
-            </div>
+            {avatarUrl ? (
+              <div className={styles.avatarBig} style={{ padding: 0, overflow: 'hidden' }}>
+                <Avatar src={avatarUrl} alt={displayName} size={90} />
+              </div>
+            ) : (
+              <div className={styles.avatarBig}>{avatarEmoji}</div>
+            )}
           </div>
 
           <div className={styles.nameRow}>
@@ -192,6 +200,38 @@ export default function UserProfilePage() {
           </div>
 
           <p className={styles.bio}>{bioText}</p>
+
+          {isBusiness && (businessName || businessDescription || businessEmail || businessAddress || businessWebsite || businessHours || mentionUsername) && (
+            <div className={styles.businessInfoCard}>
+              {businessName && <p className={styles.businessInfoName}>{businessName}</p>}
+              {businessDescription && <p className={styles.businessInfoRow}>{businessDescription}</p>}
+              {businessAddress && (
+                <p className={styles.businessInfoRow}><i className="ri-map-pin-2-line" /> {businessAddress}</p>
+              )}
+              {businessHours && (
+                <p className={styles.businessInfoRow}><i className="ri-time-line" /> {businessHours}</p>
+              )}
+              {businessEmail && (
+                <p className={styles.businessInfoRow}><i className="ri-mail-line" /> {businessEmail}</p>
+              )}
+              {businessWebsite && (
+                <a
+                  className={styles.businessInfoRow}
+                  href={/^https?:\/\//.test(businessWebsite) ? businessWebsite : `https://${businessWebsite}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="ri-global-line" /> {businessWebsite}
+                </a>
+              )}
+              {mentionUsername && (
+                <p className={styles.businessInfoRow}>
+                  <i className="ri-user-star-line" /> Wasiliana na{' '}
+                  <a href={`/u/${mentionUsername}`} className="rich-mention">@{mentionUsername}</a>
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {isBusiness && (

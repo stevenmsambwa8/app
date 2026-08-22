@@ -75,6 +75,10 @@ export default function Sidebar() {
           <i className="ri-notification-3-line" />
           <span>Arifa{unread > 0 ? ` · ${unread}` : ''}</span>
         </Link>
+        <Link href="/settings" className={styles.footerBtn}>
+          <i className="ri-settings-3-line" />
+          <span>Mipangilio</span>
+        </Link>
         {user ? (
           <button onClick={signOut} className={`btnGhost ${styles.authBtn}`}>
             <i className="ri-logout-box-line" />

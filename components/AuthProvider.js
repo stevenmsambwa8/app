@@ -12,7 +12,8 @@ import { normalizePhone, isValidPhone, phoneToSyntheticEmail } from '../lib/phon
 // UPDATE's implicit RETURNING *, fails with "permission denied for table
 // profiles" — that's what selecting/returning '*' anywhere below caused.
 const PROFILE_COLUMNS =
-  'id, username, avatar, avatar_url, bio, vibe, created_at, account_type, business_category, whatsapp';
+  'id, username, avatar, avatar_url, bio, vibe, created_at, account_type, business_category, whatsapp, ' +
+  'business_name, business_description, business_email, business_address, business_website, business_hours, mention_username';
 
 // Removes every file in a user's own avatars/<uid>/ folder except the one
 // that matches their current profile.avatar_url. Runs client-side using the
@@ -47,6 +48,8 @@ const AuthContext = createContext({
   refreshProfile: async () => {},
   updateUsername: async () => ({ error: null }),
   uploadAvatar: async () => ({ error: null }),
+  updateBusinessInfo: async () => ({ error: null }),
+  resolveMentionUsername: async () => null,
 });
 
 export default function AuthProvider({ children }) {
@@ -236,15 +239,48 @@ export default function AuthProvider({ children }) {
   }
 
   // Switches the account between personal and business, optionally saving
-  // a business category and a WhatsApp contact number in the same call.
-  async function updateBusinessInfo({ accountType, businessCategory, whatsapp }) {
+  // a business category, WhatsApp contact number, and the extended
+  // business-profile fields (name, description, email, address, website,
+  // hours, and a "custom mention" @username) in the same call.
+  async function updateBusinessInfo({
+    accountType,
+    businessCategory,
+    whatsapp,
+    businessName,
+    businessDescription,
+    businessEmail,
+    businessAddress,
+    businessWebsite,
+    businessHours,
+    mentionUsername,
+  }) {
     const uid = session?.user?.id;
     if (!uid) return { error: new Error('Umetoka. Ingia kwanza.') };
+
+    // A mention is only ever saved once it's been checked against a real
+    // username — see resolveMentionUsername, which the settings/business
+    // form calls before this. Guard here too so a bad value never lands in
+    // the DB even if some other caller skips that check.
+    if (mentionUsername) {
+      const clean = mentionUsername.replace(/^@/, '').trim();
+      if (!/^[a-zA-Z0-9_]{2,30}$/.test(clean)) {
+        return { error: new Error('Jina la mtumiaji si sahihi.') };
+      }
+    }
 
     const payload = {};
     if (accountType !== undefined) payload.account_type = accountType;
     if (businessCategory !== undefined) payload.business_category = businessCategory;
     if (whatsapp !== undefined) payload.whatsapp = whatsapp;
+    if (businessName !== undefined) payload.business_name = businessName;
+    if (businessDescription !== undefined) payload.business_description = businessDescription;
+    if (businessEmail !== undefined) payload.business_email = businessEmail;
+    if (businessAddress !== undefined) payload.business_address = businessAddress;
+    if (businessWebsite !== undefined) payload.business_website = businessWebsite;
+    if (businessHours !== undefined) payload.business_hours = businessHours;
+    if (mentionUsername !== undefined) {
+      payload.mention_username = mentionUsername ? mentionUsername.replace(/^@/, '').trim() : null;
+    }
 
     const { data, error } = await supabase
       .from('profiles')
@@ -256,6 +292,22 @@ export default function AuthProvider({ children }) {
     if (error) return { error };
     setProfile((p) => ({ ...(p || {}), ...data }));
     return { error: null };
+  }
+
+  // Looks up a username to confirm it exists before it's saved as a
+  // business's "custom mention" contact. Returns the matching profile's
+  // username (canonical case) or null if nobody has that username.
+  async function resolveMentionUsername(rawUsername) {
+    const clean = (rawUsername || '').replace(/^@/, '').trim();
+    if (!clean) return null;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('username')
+      .ilike('username', clean)
+      .limit(1)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.username;
   }
 
   async function uploadAvatar(file) {
@@ -321,6 +373,7 @@ export default function AuthProvider({ children }) {
         updateUsername,
         updateBusinessInfo,
         uploadAvatar,
+        resolveMentionUsername,
       }}
     >
       {children}
