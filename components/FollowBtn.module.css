@@ -15,7 +15,6 @@
   font-size: 12px;
 }
 .following {
-  background: #ffffff;
-  color: #000000;
-  border: 1px solid #000000;
+  background: var(--chip-bg);
+  color: var(--text);
 }

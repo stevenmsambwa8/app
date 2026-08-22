@@ -1,0 +1,125 @@
+.wrap { padding: 0 16px 32px; max-width: 460px; margin: 0 auto; }
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  margin: 0 -16px 8px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--bg);
+  backdrop-filter: blur(10px);
+}
+.back {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--text);
+  font-size: 18px;
+}
+.back:active { transform: scale(0.9); }
+.headTitle { font-weight: 700; font-size: 15px; }
+
+.iconBadge {
+  width: 60px;
+  height: 60px;
+  margin: 24px auto 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+.title { font-size: 18px; font-weight: 800; text-align: center; }
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--chip-bg);
+  border: 1px solid var(--border);
+}
+.benefitRow { display: flex; align-items: flex-start; gap: 12px; }
+.benefitIcon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+.benefitRow p { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; padding-top: 5px; }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 24px;
+}
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+.label:first-child { margin-top: 0; }
+.input {
+  width: 100%;
+  font-size: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 13px;
+  margin-bottom: 4px;
+}
+.form > button { margin-top: 14px; padding: 12px; font-size: 13.5px; }
+.error { color: #ef4444; font-size: 12.5px; }
+
+.dangerZone {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.dangerText {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.dangerBtn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+.dangerBtn:disabled { opacity: 0.7; }

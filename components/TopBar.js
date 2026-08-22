@@ -41,7 +41,8 @@ export default function TopBar() {
     pathname?.startsWith('/create') ||
     pathname?.startsWith('/post/') ||
     pathname?.startsWith('/dm') ||
-    pathname?.startsWith('/flex')
+    pathname?.startsWith('/flex') ||
+    pathname?.startsWith('/business')
   )
     return null
 
