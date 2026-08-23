@@ -217,14 +217,14 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <span className={styles.name}>{author.name}</span>
             <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
           </div>
-          <span className={styles.meta}>{post.time} · {post.tag}</span>
-          {author.badge === 'business' && author.businessCategory && (
-            <span className={styles.businessCategoryChip}>{author.businessCategory}</span>
-          )}
+          <span className={styles.meta}>
+            {post.time} · {post.tag}
+            {author.badge === 'business' && author.businessCategory ? ` · ${author.businessCategory}` : ''}
+          </span>
         </div>
       </Link>
       <div className={styles.headerActions}>
-        {author.badge === 'business' && author.whatsapp && (
+        {!isOwner && author.badge === 'business' && author.whatsapp && (
           <a
             href={`https://wa.me/${author.whatsapp}`}
             target="_blank"
@@ -236,7 +236,7 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             <i className="ri-whatsapp-line" />
           </a>
         )}
-        {author.badge === 'business' && author.businessPhone && (
+        {!isOwner && author.badge === 'business' && author.businessPhone && (
           <a
             href={`tel:+${author.businessPhone}`}
             className={styles.contactBtn}
@@ -259,9 +259,9 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
             type="button"
             className={styles.myProfileBtn}
             onClick={handleViewProfile}
+            aria-label="Wasifu Wangu"
           >
             <i className="ri-user-line" />
-            Wasifu Wangu
           </button>
         )}
         {!isOverlay && menuEl}

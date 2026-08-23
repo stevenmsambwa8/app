@@ -222,16 +222,6 @@
   white-space: nowrap;
   display: block;
 }
-.businessCategoryChip {
-  display: inline-block;
-  margin-top: 3px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: rgba(var(--accent-rgb), 0.1);
-  color: var(--accent);
-  font-size: 10.5px;
-  font-weight: 700;
-}
 
 .top {
 }
