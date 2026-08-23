@@ -101,7 +101,7 @@ export default function PostsProvider({ children }) {
     setError('');
     const { data: rows, error: fetchError } = await supabase
       .from('posts')
-      .select('id, user_id, text, tag, images, cta, cta_clicks, price, cart_adds, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url, account_type, whatsapp)')
+      .select('id, user_id, text, tag, images, cta, cta_clicks, price, cart_adds, created_at, profiles!posts_user_id_fkey(username, avatar, avatar_url, account_type, whatsapp, business_phone, business_category)')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -186,6 +186,8 @@ export default function PostsProvider({ children }) {
               avatarUrl: r.profiles.avatar_url || null,
               badge: r.profiles.account_type === 'business' ? 'business' : null,
               whatsapp: r.profiles.whatsapp || null,
+              businessPhone: r.profiles.business_phone || null,
+              businessCategory: r.profiles.business_category || null,
             }
           : null,
       };

@@ -143,6 +143,7 @@
   transition: transform 0.15s ease;
 }
 .headMoreBtn:active { transform: scale(0.9); }
+.contactBtnWhatsapp { color: #25D366; }
 
 .headMenu {
   position: absolute;

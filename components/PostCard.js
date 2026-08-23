@@ -221,6 +221,28 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
         </div>
       </Link>
       <div className={styles.headerActions}>
+        {!isOwner && author.badge === 'business' && author.whatsapp && (
+          <a
+            href={`https://wa.me/${author.whatsapp}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${styles.contactBtn} ${styles.contactBtnWhatsapp}`}
+            aria-label="Wasiliana WhatsApp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <i className="ri-whatsapp-line" />
+          </a>
+        )}
+        {!isOwner && author.badge === 'business' && author.businessPhone && (
+          <a
+            href={`tel:+${author.businessPhone}`}
+            className={styles.contactBtn}
+            aria-label="Piga Simu"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <i className="ri-phone-line" />
+          </a>
+        )}
         {!isOwner && (
           <FollowBtn
             following={isFollowing(post.uid)}

@@ -453,6 +453,22 @@ export default function PostDetailPage() {
             <span className={styles.meta}>{post.time} · {post.tag}</span>
           </div>
         </Link>
+        {!isOwner && author.badge === 'business' && author.whatsapp && (
+          <a
+            href={`https://wa.me/${author.whatsapp}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${styles.headMoreBtn} ${styles.contactBtnWhatsapp}`}
+            aria-label="Wasiliana WhatsApp"
+          >
+            <i className="ri-whatsapp-line" />
+          </a>
+        )}
+        {!isOwner && author.badge === 'business' && author.businessPhone && (
+          <a href={`tel:+${author.businessPhone}`} className={styles.headMoreBtn} aria-label="Piga Simu">
+            <i className="ri-phone-line" />
+          </a>
+        )}
         {!isOwner && user && (
           <FollowBtn
             following={isFollowing(post.uid)}
