@@ -218,9 +218,33 @@
   font-weight: 600;
   font-size: 13px;
 }
+.whoText {
+  min-width: 0;
+  flex: 1;
+}
 .meta {
   font-size: 11px;
   color: var(--text-muted);
+}
+.metaWrap {
+  overflow: hidden;
+  display: block;
+  min-width: 0;
+}
+.metaMarquee {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text-muted);
+  animation-name: postCardMetaMarquee;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.bodyOverlay .metaMarquee { color: rgba(255, 255, 255, 0.75); }
+@keyframes postCardMetaMarquee {
+  0%, 15%   { transform: translateX(0); }
+  45%, 55%  { transform: translateX(var(--marquee-distance, 0px)); }
+  85%, 100% { transform: translateX(0); }
 }
 .more {
   color: var(--text-muted);

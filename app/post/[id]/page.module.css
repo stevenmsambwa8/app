@@ -222,6 +222,25 @@
   white-space: nowrap;
   display: block;
 }
+.metaWrap {
+  overflow: hidden;
+  display: block;
+  min-width: 0;
+}
+.metaMarquee {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  animation-name: postDetailMetaMarquee;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes postDetailMetaMarquee {
+  0%, 15%   { transform: translateX(0); }
+  45%, 55%  { transform: translateX(var(--marquee-distance, 0px)); }
+  85%, 100% { transform: translateX(0); }
+}
 
 .top {
 }

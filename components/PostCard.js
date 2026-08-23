@@ -9,6 +9,7 @@ import FollowBtn from './FollowBtn'
 import EditPostModal from './EditPostModal'
 import ShareCard from './ShareCard'
 import AddToCartButton from './AddToCartButton'
+import MarqueeText from './MarqueeText'
 import { useAuth } from './AuthProvider'
 import { useAuthModal } from './AuthModalProvider'
 import { usePosts } from './PostsProvider'
@@ -212,15 +213,19 @@ export default function PostCard({ post, liked, likeCount, onLike }) {
     <div className={styles.header}>
       <Link href={authorHref} className={styles.who} onClick={(e) => e.stopPropagation()}>
         <Avatar emoji={author.avatar} src={author.avatarUrl} alt={author.name} />
-        <div>
+        <div className={styles.whoText}>
           <div className={styles.nameRow}>
             <span className={styles.name}>{author.name}</span>
             <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
           </div>
-          <span className={styles.meta}>
-            {post.time} · {post.tag}
-            {author.badge === 'business' && author.businessCategory ? ` · ${author.businessCategory}` : ''}
-          </span>
+          <MarqueeText
+            text={
+              `${post.time} · ${post.tag}` +
+              (author.badge === 'business' && author.businessCategory ? ` · ${author.businessCategory}` : '')
+            }
+            wrapClassName={styles.metaWrap}
+            textClassName={styles.metaMarquee}
+          />
         </div>
       </Link>
       <div className={styles.headerActions}>

@@ -18,6 +18,7 @@ import { parsePostText } from '../../../lib/postText'
 import { getBlobDuration } from '../../../lib/audioDuration'
 import VoiceNote from '../../../components/VoiceNote'
 import ShareCard from '../../../components/ShareCard'
+import MarqueeText from '../../../components/MarqueeText'
 import styles from './page.module.css'
 
 function isImageUrl(src) {
@@ -450,10 +451,14 @@ export default function PostDetailPage() {
               <span className={styles.name}>{author.name}</span>
               <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
             </div>
-            <span className={styles.meta}>
-              {post.time} · {post.tag}
-              {author.badge === 'business' && author.businessCategory ? ` · ${author.businessCategory}` : ''}
-            </span>
+            <MarqueeText
+              text={
+                `${post.time} · ${post.tag}` +
+                (author.badge === 'business' && author.businessCategory ? ` · ${author.businessCategory}` : '')
+              }
+              wrapClassName={styles.metaWrap}
+              textClassName={styles.metaMarquee}
+            />
           </div>
         </Link>
         {!isOwner && author.badge === 'business' && author.whatsapp && (
