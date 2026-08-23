@@ -451,9 +451,12 @@ export default function PostDetailPage() {
               <UserBadge badge={author.badge} iconOnly={author.badge === 'business'} />
             </div>
             <span className={styles.meta}>{post.time} · {post.tag}</span>
+            {author.badge === 'business' && author.businessCategory && (
+              <span className={styles.businessCategoryChip}>{author.businessCategory}</span>
+            )}
           </div>
         </Link>
-        {!isOwner && author.badge === 'business' && author.whatsapp && (
+        {author.badge === 'business' && author.whatsapp && (
           <a
             href={`https://wa.me/${author.whatsapp}`}
             target="_blank"
@@ -464,7 +467,7 @@ export default function PostDetailPage() {
             <i className="ri-whatsapp-line" />
           </a>
         )}
-        {!isOwner && author.badge === 'business' && author.businessPhone && (
+        {author.badge === 'business' && author.businessPhone && (
           <a href={`tel:+${author.businessPhone}`} className={styles.headMoreBtn} aria-label="Piga Simu">
             <i className="ri-phone-line" />
           </a>
